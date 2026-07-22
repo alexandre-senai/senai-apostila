@@ -291,6 +291,14 @@
   .prefix-table code{font-family:var(--font-mono); color:var(--green); font-size:.85em;}
   .prefix-table td.desc{color:var(--text-muted);}
 
+  /* privileges table (DCL) */
+  .priv-table{width:100%; border-collapse:collapse; margin:20px 0; font-size:.88rem;}
+  .priv-table th{text-align:left; padding:10px 14px; border-bottom:2px solid var(--border); font-family:var(--font-mono); color:var(--purple); font-size:.72rem; text-transform:uppercase; letter-spacing:.05em;}
+  .priv-table td{padding:10px 14px; border-bottom:1px solid var(--border); vertical-align:top;}
+  .priv-table tr:hover td{background:var(--bg-panel);}
+  .priv-table code{font-family:var(--font-mono); color:var(--purple); font-size:.85em;}
+  .priv-table td.desc{color:var(--text-muted);}
+
   code.inline{font-family:var(--font-mono); background:var(--bg-panel-alt); color:var(--amber); padding:2px 6px; border-radius:4px; font-size:.85em;}
 
   .note{
@@ -327,6 +335,7 @@
       <li><a href="#cap-prefixos" data-nav>Boas práticas: prefixos</a></li>
       <li><a href="#cap4" data-nav>Criando tabelas</a></li>
       <li><a href="#cap5" data-nav>DDL, DML e DCL</a></li>
+      <li><a href="#cap-dcl" data-nav>DCL na prática</a></li>
       <li><a href="#cap6" data-nav>INSERT</a></li>
       <li><a href="#cap10" data-nav>SELECT</a></li>
       <li><a href="#cap7" data-nav>UPDATE</a></li>
@@ -644,7 +653,96 @@
       <div class="note"><span>➕</span><div><b>Bônus — TCL</b> (Transaction Control Language): <code class="inline">BEGIN</code>, <code class="inline">COMMIT</code> e <code class="inline">ROLLBACK</code> controlam transações, agrupando vários comandos como uma única operação tudo-ou-nada.</div></div>
     </section>
 
-    <!-- CAP 9: INSERT -->
+    <!-- CAP 9: DCL na prática -->
+    <section class="chapter" id="cap-dcl">
+      <div class="chapter-head"><span class="chapnum"></span><h2>DCL na prática: permissões e acesso</h2></div>
+      <p class="chapter-intro">O <b>DCL</b> (Data Control Language) é a parte do SQL que decide <b>quem pode fazer o quê</b> no banco — quem lê, quem grava, quem apaga, quem pode até criar novas tabelas. Sem ele, todo mundo que se conecta ao banco teria acesso total a tudo.</p>
+
+      <h3 class="subhead">Por que usar DCL</h3>
+      <div class="grid cols-3">
+        <div class="card"><h3>🔒 Princípio do menor privilégio</h3><p>Cada usuário ou aplicação recebe só o acesso necessário para o seu trabalho — nada mais.</p></div>
+        <div class="card"><h3>🛑 Evita desastres</h3><p>Uma aplicação de leitura não deveria conseguir rodar um <code class="inline">DELETE</code> por engano ou por uma falha de segurança.</p></div>
+        <div class="card"><h3>🧾 Auditoria e organização</h3><p>Fica claro quem tem acesso a quê — essencial em times grandes e em dados sensíveis.</p></div>
+      </div>
+
+      <h3 class="subhead">Todos os comandos</h3>
+      <div class="grid cols-2">
+        <div class="card"><span class="tag dcl">GRANT</span><h3>Conceder privilégio</h3><p>Dá a uma role/usuário permissão para executar uma ação sobre um objeto do banco.</p></div>
+        <div class="card"><span class="tag dcl">REVOKE</span><h3>Revogar privilégio</h3><p>Remove uma permissão concedida anteriormente.</p></div>
+        <div class="card"><span class="tag dcl">CREATE ROLE</span><h3>Criar uma role</h3><p>Cria um usuário ou grupo de permissões (no PostgreSQL, usuários <i>são</i> roles).</p></div>
+        <div class="card"><span class="tag dcl">ALTER ROLE</span><h3>Alterar uma role</h3><p>Muda senha, validade ou características de uma role já existente.</p></div>
+        <div class="card"><span class="tag dcl">DROP ROLE</span><h3>Remover uma role</h3><p>Apaga a role — só funciona se ela não tiver mais nenhum privilégio pendente.</p></div>
+      </div>
+
+      <h3 class="subhead">Tipos de privilégio</h3>
+      <table class="priv-table">
+        <thead><tr><th>Privilégio</th><th>Permite</th></tr></thead>
+        <tbody>
+          <tr><td><code>SELECT</code></td><td class="desc">Ler dados da tabela ou view.</td></tr>
+          <tr><td><code>INSERT</code></td><td class="desc">Inserir novas linhas.</td></tr>
+          <tr><td><code>UPDATE</code></td><td class="desc">Alterar linhas existentes.</td></tr>
+          <tr><td><code>DELETE</code></td><td class="desc">Remover linhas.</td></tr>
+          <tr><td><code>TRUNCATE</code></td><td class="desc">Esvaziar a tabela inteira de uma vez.</td></tr>
+          <tr><td><code>REFERENCES</code></td><td class="desc">Criar uma FOREIGN KEY apontando para a tabela.</td></tr>
+          <tr><td><code>TRIGGER</code></td><td class="desc">Criar triggers na tabela.</td></tr>
+          <tr><td><code>USAGE</code></td><td class="desc">Usar um schema, sequence ou tipo de dado.</td></tr>
+          <tr><td><code>EXECUTE</code></td><td class="desc">Executar uma function.</td></tr>
+          <tr><td><code>CREATE</code></td><td class="desc">Criar novos objetos dentro de um schema ou banco.</td></tr>
+          <tr><td><code>CONNECT</code></td><td class="desc">Conectar-se ao banco de dados.</td></tr>
+          <tr><td><code>ALL PRIVILEGES</code></td><td class="desc">Concede (ou revoga) todos os privilégios de uma vez.</td></tr>
+        </tbody>
+      </table>
+
+      <h3 class="subhead">Como criar uma role e conceder acesso</h3>
+      <div class="console">
+        <div class="bar"><span class="label">criar_role.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- cria uma role com login e senha (na prática, um "usuário")</span>
+<span class="kw">CREATE ROLE</span> app_leitura <span class="kw">WITH LOGIN PASSWORD</span> <span class="str">'senha_segura'</span>;</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ CREATE ROLE — "app_leitura" criada.</span></div></div>
+      </div>
+      <div class="console">
+        <div class="bar"><span class="label">grant.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- concede permissão só de leitura em uma tabela específica</span>
+<span class="kw">GRANT SELECT</span> <span class="kw">ON</span> tb_usuarios <span class="kw">TO</span> app_leitura;
+
+<span class="cmt">-- concede várias permissões de uma vez</span>
+<span class="kw">GRANT SELECT, INSERT, UPDATE</span> <span class="kw">ON</span> tb_pedidos <span class="kw">TO</span> app_leitura;
+
+<span class="cmt">-- concede em todas as tabelas de um schema</span>
+<span class="kw">GRANT SELECT</span> <span class="kw">ON ALL TABLES IN SCHEMA</span> public <span class="kw">TO</span> app_leitura;</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ GRANT — privilégios concedidos a "app_leitura".</span></div></div>
+      </div>
+      <div class="console">
+        <div class="bar"><span class="label">revoke.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- remove a permissão de inserir, mantendo a de ler</span>
+<span class="kw">REVOKE INSERT</span> <span class="kw">ON</span> tb_pedidos <span class="kw">FROM</span> app_leitura;</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ REVOKE — privilégio removido de "app_leitura".</span></div></div>
+      </div>
+
+      <h3 class="subhead">Como configurar: roles de grupo e privilégios padrão</h3>
+      <p class="chapter-intro">Em vez de conceder permissões usuário por usuário, é comum criar uma <b>role de grupo</b> com os privilégios certos e depois adicionar usuários a ela.</p>
+      <div class="console">
+        <div class="bar"><span class="label">role_de_grupo.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- role "sem login", usada só como grupo de permissões</span>
+<span class="kw">CREATE ROLE</span> grupo_financeiro <span class="kw">WITH NOLOGIN</span>;
+<span class="kw">GRANT SELECT, INSERT, UPDATE</span> <span class="kw">ON</span> tb_pedidos <span class="kw">TO</span> grupo_financeiro;
+
+<span class="cmt">-- adiciona um usuário real ao grupo</span>
+<span class="kw">GRANT</span> grupo_financeiro <span class="kw">TO</span> app_leitura;</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ "app_leitura" herdou os privilégios de "grupo_financeiro".</span></div></div>
+      </div>
+      <div class="console">
+        <div class="bar"><span class="label">privilegios_padrao.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- aplica automaticamente em toda tabela criada depois disso</span>
+<span class="kw">ALTER DEFAULT PRIVILEGES IN SCHEMA</span> public
+<span class="kw">GRANT SELECT</span> <span class="kw">ON TABLES TO</span> app_leitura;</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ ALTER DEFAULT PRIVILEGES — próximas tabelas já nascem visíveis para "app_leitura".</span></div></div>
+      </div>
+
+      <div class="note"><span>⚙️</span><div>O DCL controla o acesso <b>dentro</b> do banco (o que uma role pode fazer nos dados). Já a permissão de <b>conexão</b> ao servidor (de qual IP, com qual método de autenticação) é configurada fora do SQL, no arquivo <code class="inline">pg_hba.conf</code> do PostgreSQL.</div></div>
+    </section>
+
+    <!-- CAP 10: INSERT -->
     <section class="chapter" id="cap6">
       <div class="chapter-head"><span class="chapnum"></span><h2>INSERT — adicionando dados</h2></div>
       <p class="chapter-intro">Insere uma nova linha na tabela.</p>
@@ -656,7 +754,7 @@
       </div>
     </section>
 
-    <!-- CAP 10: SELECT -->
+    <!-- CAP 11: SELECT -->
     <section class="chapter" id="cap10">
       <div class="chapter-head"><span class="chapnum"></span><h2>SELECT — consultando dados</h2></div>
       <p class="chapter-intro">O <code class="inline">SELECT</code> é o comando mais usado do SQL: busca linhas de uma ou mais tabelas. O PostgreSQL primeiro localiza e filtra as linhas (<code class="inline">FROM</code> / <code class="inline">WHERE</code>), depois ordena e limita o resultado.</p>
@@ -680,7 +778,7 @@
       </div>
     </section>
 
-    <!-- CAP 11: UPDATE -->
+    <!-- CAP 12: UPDATE -->
     <section class="chapter" id="cap7">
       <div class="chapter-head"><span class="chapnum"></span><h2>UPDATE — alterando dados</h2></div>
       <p class="chapter-intro">Atualiza valores de uma ou mais linhas existentes. <b>Sempre use o <code class="inline">WHERE</code></b> — sem ele, todas as linhas da tabela são alteradas.</p>
@@ -693,7 +791,7 @@
       </div>
     </section>
 
-    <!-- CAP 12: DELETE -->
+    <!-- CAP 13: DELETE -->
     <section class="chapter" id="cap8">
       <div class="chapter-head"><span class="chapnum"></span><h2>DELETE — removendo dados</h2></div>
       <p class="chapter-intro">Remove linhas da tabela. Assim como o UPDATE, exige atenção redobrada com o <code class="inline">WHERE</code>.</p>
@@ -705,7 +803,7 @@
       </div>
     </section>
 
-    <!-- CAP 13: ALTER TABLE -->
+    <!-- CAP 14: ALTER TABLE -->
     <section class="chapter" id="cap9">
       <div class="chapter-head"><span class="chapnum"></span><h2>ALTER TABLE — mudando a estrutura</h2></div>
       <p class="chapter-intro">Modifica a estrutura de uma tabela já existente, sem precisar recriá-la.</p>
@@ -719,7 +817,7 @@
       </div>
     </section>
 
-    <!-- CAP 14: GROUP BY / HAVING -->
+    <!-- CAP 15: GROUP BY / HAVING -->
     <section class="chapter" id="cap11">
       <div class="chapter-head"><span class="chapnum"></span><h2>GROUP BY, HAVING, COUNT e SUM</h2></div>
       <p class="chapter-intro"><code class="inline">GROUP BY</code> agrupa linhas que compartilham o mesmo valor em uma coluna, para então aplicar <b>funções de agregação</b> como <code class="inline">COUNT</code> (conta linhas) e <code class="inline">SUM</code> (soma valores) em cada grupo. O <code class="inline">HAVING</code> filtra os grupos já formados — diferente do <code class="inline">WHERE</code>, que filtra linhas individuais antes de agrupar.</p>
@@ -739,7 +837,7 @@
       <div class="note"><span>💡</span><div><b>WHERE</b> filtra linhas antes de agrupar; <b>HAVING</b> filtra os grupos depois de agrupar — por isso é o único lugar onde faz sentido usar <code class="inline">SUM()</code> ou <code class="inline">COUNT()</code> dentro de uma condição.</div></div>
     </section>
 
-    <!-- CAP 15: JOINs -->
+    <!-- CAP 16: JOINs -->
     <section class="chapter" id="cap12">
       <div class="chapter-head"><span class="chapnum"></span><h2>INNER, LEFT e RIGHT JOIN</h2></div>
       <p class="chapter-intro">Um <code class="inline">JOIN</code> combina linhas de duas tabelas com base em uma condição — normalmente comparando uma chave estrangeira com a chave primária correspondente.</p>
@@ -796,7 +894,7 @@
       </div>
     </section>
 
-    <!-- CAP 16: Funções de data e texto -->
+    <!-- CAP 17: Funções de data e texto -->
     <section class="chapter" id="cap13">
       <div class="chapter-head"><span class="chapnum"></span><h2>Datas, textos e concatenação</h2></div>
       <p class="chapter-intro">Algumas funções prontas do PostgreSQL resolvem tarefas do dia a dia sem precisar de lógica extra na aplicação.</p>
@@ -837,7 +935,7 @@
       </div>
     </section>
 
-    <!-- CAP 17: WITH e subqueries -->
+    <!-- CAP 18: WITH e subqueries -->
     <section class="chapter" id="cap23">
       <div class="chapter-head"><span class="chapnum"></span><h2>WITH (CTE) e subqueries</h2></div>
       <p class="chapter-intro">Consultas complexas ficam mais fáceis de escrever e de ler quando são divididas em partes menores. É para isso que servem o <code class="inline">WITH</code> e as <b>subqueries</b>.</p>
@@ -916,7 +1014,7 @@
       <div class="note"><span>💡</span><div>Dentro de um <code class="inline">EXISTS</code> não importa o que vem depois do <code class="inline">SELECT</code> — por convenção usa-se <code class="inline">SELECT 1</code>, já que só a existência da linha importa, não seu conteúdo.</div></div>
     </section>
 
-    <!-- CAP 18: VIEW -->
+    <!-- CAP 19: VIEW -->
     <section class="chapter" id="cap15">
       <div class="chapter-head"><span class="chapnum"></span><h2>VIEW — consultas salvas</h2></div>
       <p class="chapter-intro">Uma <b>view</b> é uma consulta SQL salva com um nome, que se comporta como uma tabela virtual — sem duplicar os dados. Toda vez que a view é consultada, a query original roda por trás.</p>
@@ -930,7 +1028,7 @@
       </div>
     </section>
 
-    <!-- CAP 19: INDEX -->
+    <!-- CAP 20: INDEX -->
     <section class="chapter" id="cap19">
       <div class="chapter-head"><span class="chapnum"></span><h2>INDEX — acelerando buscas</h2></div>
       <p class="chapter-intro">Um <b>índice</b> é uma estrutura auxiliar que acelera buscas, funcionando como o índice remissivo de um livro. Acelera leituras, mas tem custo em espaço e em escrita (cada INSERT/UPDATE também atualiza o índice).</p>
@@ -941,7 +1039,7 @@
       </div>
     </section>
 
-    <!-- CAP 20: EXPLAIN ANALYZE -->
+    <!-- CAP 21: EXPLAIN ANALYZE -->
     <section class="chapter" id="cap20">
       <div class="chapter-head"><span class="chapnum"></span><h2>EXPLAIN ANALYZE — o raio-x da query</h2></div>
       <p class="chapter-intro">Mostra o plano de execução real usado pelo PostgreSQL: se ele varreu a tabela inteira (<i>Seq Scan</i>) ou usou um índice (<i>Index Scan</i>), quanto tempo levou e quantas linhas encontrou. Essencial para diagnosticar queries lentas.</p>
@@ -957,7 +1055,7 @@
       </div>
     </section>
 
-    <!-- CAP 21: SEQUENCE -->
+    <!-- CAP 22: SEQUENCE -->
     <section class="chapter" id="cap18">
       <div class="chapter-head"><span class="chapnum"></span><h2>SEQUENCE — geradores de número</h2></div>
       <p class="chapter-intro">Uma <b>sequence</b> gera números sequenciais únicos. É exatamente o mecanismo que o tipo <code class="inline">SERIAL</code> usa por trás dos panos para criar IDs automáticos.</p>
@@ -969,7 +1067,7 @@
       </div>
     </section>
 
-    <!-- CAP 22: FUNCTION -->
+    <!-- CAP 23: FUNCTION -->
     <section class="chapter" id="cap17">
       <div class="chapter-head"><span class="chapnum"></span><h2>FUNCTION — código reutilizável</h2></div>
       <p class="chapter-intro">Uma <b>function</b> é um bloco de lógica reutilizável dentro do banco: recebe parâmetros, executa comandos e pode retornar um valor. É o que a trigger acima está chamando.</p>
@@ -986,7 +1084,7 @@ $$ <span class="kw">LANGUAGE</span> plpgsql;</pre>
       </div>
     </section>
 
-    <!-- CAP 23: TRIGGER -->
+    <!-- CAP 24: TRIGGER -->
     <section class="chapter" id="cap16">
       <div class="chapter-head"><span class="chapnum"></span><h2>TRIGGER — reações automáticas</h2></div>
       <p class="chapter-intro">Uma <b>trigger</b> executa uma função automaticamente antes ou depois de um evento (<code class="inline">INSERT</code>, <code class="inline">UPDATE</code> ou <code class="inline">DELETE</code>) acontecer em uma tabela.</p>
@@ -1000,7 +1098,7 @@ $$ <span class="kw">LANGUAGE</span> plpgsql;</pre>
       </div>
     </section>
 
-    <!-- CAP 24: VACUUM -->
+    <!-- CAP 25: VACUUM -->
     <section class="chapter" id="cap21">
       <div class="chapter-head"><span class="chapnum"></span><h2>VACUUM — limpeza e manutenção</h2></div>
       <p class="chapter-intro">O PostgreSQL usa MVCC (controle de concorrência multiversão): ao fazer <code class="inline">UPDATE</code> ou <code class="inline">DELETE</code>, a linha antiga não é apagada na hora, fica marcada como "morta". O <b>VACUUM</b> libera esse espaço e atualiza estatísticas que o otimizador usa para montar planos de execução.</p>
@@ -1023,7 +1121,7 @@ $$ <span class="kw">LANGUAGE</span> plpgsql;</pre>
       <div class="note"><span>⚠️</span><div><b>VACUUM FULL</b> reescreve a tabela inteira do zero: libera mais espaço, mas é mais lento e bloqueia a tabela durante a execução — use com cuidado em produção. No dia a dia, o <b>autovacuum</b> já resolve a maior parte dos casos sem intervenção manual.</div></div>
     </section>
 
-    <!-- CAP 25: Backup e restauração -->
+    <!-- CAP 26: Backup e restauração -->
     <section class="chapter" id="cap22">
       <div class="chapter-head"><span class="chapnum"></span><h2>Backup e restauração</h2></div>
       <p class="chapter-intro">Um <b>backup</b> é uma cópia de segurança dos dados, feita para recuperar o banco em caso de falha de hardware, erro humano (um <code class="inline">DELETE</code> sem <code class="inline">WHERE</code>, por exemplo), corrupção de dados ou qualquer desastre. Sem backup, um problema desses pode significar perda definitiva de informação.</p>
