@@ -391,7 +391,7 @@
       <div class="chapter-head"><span class="chapnum"></span><h2>Tabela, linha e coluna</h2></div>
       <p class="chapter-intro">Em um banco relacional, os dados ficam em <b>tabelas</b>. Passe o mouse na tabela abaixo: cada <b>linha</b> (row) é um registro completo; cada <b>coluna</b> (column) é um atributo que se repete em todas as linhas.</p>
       <table class="diagram-table" id="diagTable">
-        <thead><tr><th data-col="0">id</th><th data-col="1">nome</th><th data-col="2">email</th><th data-col="3">idade</th></tr></thead>
+        <thead><tr><th data-col="0">id_usuario</th><th data-col="1">tx_nome</th><th data-col="2">tx_email</th><th data-col="3">nr_idade</th></tr></thead>
         <tbody>
           <tr><td data-col="0">1</td><td data-col="1">Ana Silva</td><td data-col="2">ana@email.com</td><td data-col="3">28</td></tr>
           <tr><td data-col="0">2</td><td data-col="1">Bruno Costa</td><td data-col="2">bruno@email.com</td><td data-col="3">34</td></tr>
@@ -481,31 +481,31 @@
 
       <div class="console">
         <div class="bar"><span class="label">1_para_1.sql — a chave estrangeira recebe UNIQUE</span><button class="run-btn">▶ Executar</button></div>
-        <pre><span class="kw">CREATE TABLE</span> perfis (
-    id <span class="fn">SERIAL</span> <span class="kw">PRIMARY KEY</span>,
-    usuario_id <span class="fn">INTEGER</span> <span class="kw">UNIQUE REFERENCES</span> usuarios(id),
-    bio <span class="fn">TEXT</span>
+        <pre><span class="kw">CREATE TABLE</span> tb_perfis (
+    id_perfil <span class="fn">SERIAL</span> <span class="kw">PRIMARY KEY</span>,
+    cd_usuario <span class="fn">INTEGER</span> <span class="kw">UNIQUE REFERENCES</span> tb_usuarios(id_usuario),
+    tx_bio <span class="fn">TEXT</span>
 );</pre>
-        <div class="result"><div class="result-inner"><span class="msg">✓ cada usuário só pode aparecer 1 vez em "perfis" — isso garante o 1:1.</span></div></div>
+        <div class="result"><div class="result-inner"><span class="msg">✓ cada usuário só pode aparecer 1 vez em "tb_perfis" — isso garante o 1:1.</span></div></div>
       </div>
       <div class="console">
         <div class="bar"><span class="label">1_para_n.sql — a chave estrangeira fica na tabela "muitos"</span><button class="run-btn">▶ Executar</button></div>
-        <pre><span class="kw">CREATE TABLE</span> pedidos (
-    id <span class="fn">SERIAL</span> <span class="kw">PRIMARY KEY</span>,
-    usuario_id <span class="fn">INTEGER</span> <span class="kw">REFERENCES</span> usuarios(id),
-    total <span class="fn">NUMERIC</span>(<span class="num">10</span>,<span class="num">2</span>)
+        <pre><span class="kw">CREATE TABLE</span> tb_pedidos (
+    id_pedido <span class="fn">SERIAL</span> <span class="kw">PRIMARY KEY</span>,
+    cd_usuario <span class="fn">INTEGER</span> <span class="kw">REFERENCES</span> tb_usuarios(id_usuario),
+    vl_total <span class="fn">NUMERIC</span>(<span class="num">10</span>,<span class="num">2</span>)
 );</pre>
-        <div class="result"><div class="result-inner"><span class="msg">✓ sem UNIQUE — o mesmo usuario_id pode se repetir em vários pedidos.</span></div></div>
+        <div class="result"><div class="result-inner"><span class="msg">✓ sem UNIQUE — o mesmo cd_usuario pode se repetir em vários pedidos.</span></div></div>
       </div>
       <div class="console">
         <div class="bar"><span class="label">n_para_n.sql — precisa de uma tabela associativa</span><button class="run-btn">▶ Executar</button></div>
-        <pre><span class="kw">CREATE TABLE</span> itens_pedido (
-    pedido_id <span class="fn">INTEGER</span> <span class="kw">REFERENCES</span> pedidos(id),
-    produto_id <span class="fn">INTEGER</span> <span class="kw">REFERENCES</span> produtos(id),
-    quantidade <span class="fn">INTEGER</span> <span class="kw">NOT NULL</span>,
-    <span class="kw">PRIMARY KEY</span> (pedido_id, produto_id)
+        <pre><span class="kw">CREATE TABLE</span> tb_itens_pedido (
+    cd_pedido <span class="fn">INTEGER</span> <span class="kw">REFERENCES</span> tb_pedidos(id_pedido),
+    cd_produto <span class="fn">INTEGER</span> <span class="kw">REFERENCES</span> tb_produtos(id_produto),
+    nr_quantidade <span class="fn">INTEGER</span> <span class="kw">NOT NULL</span>,
+    <span class="kw">PRIMARY KEY</span> (cd_pedido, cd_produto)
 );</pre>
-        <div class="result"><div class="result-inner"><span class="msg">✓ "itens_pedido" liga pedidos e produtos — uma linha por combinação.</span></div></div>
+        <div class="result"><div class="result-inner"><span class="msg">✓ "tb_itens_pedido" liga tb_pedidos e tb_produtos — uma linha por combinação.</span></div></div>
       </div>
       <div class="note"><span>⚠️</span><div>O PostgreSQL <b>não tem</b> um jeito direto de fazer N:N entre duas tabelas — sempre é necessária uma <b>tabela associativa</b> (também chamada de tabela pivô ou de junção) no meio, com uma FK para cada lado.</div></div>
     </section>
@@ -563,50 +563,73 @@
       <p class="chapter-intro">A tabela do capítulo anterior é criada com o comando <code class="inline">CREATE TABLE</code>. Cada coluna recebe um nome e um tipo de dado, e pode ter restrições (constraints).</p>
       <div class="console">
         <div class="bar"><span class="label">criar_tabela.sql</span><button class="run-btn">▶ Executar</button></div>
-        <pre><span class="kw">CREATE TABLE</span> usuarios (
-    id <span class="fn">SERIAL</span> <span class="kw">PRIMARY KEY</span>,
-    nome <span class="fn">VARCHAR</span>(<span class="num">100</span>) <span class="kw">NOT NULL</span>,
-    email <span class="fn">VARCHAR</span>(<span class="num">150</span>) <span class="kw">UNIQUE NOT NULL</span>,
-    idade <span class="fn">INTEGER</span> <span class="kw">CHECK</span> (idade &gt;= <span class="num">0</span>),
-    criado_em <span class="fn">TIMESTAMP</span> <span class="kw">DEFAULT</span> NOW()
+        <pre><span class="kw">CREATE TABLE</span> tb_usuarios (
+    id_usuario <span class="fn">SERIAL</span> <span class="kw">PRIMARY KEY</span>,
+    tx_nome <span class="fn">VARCHAR</span>(<span class="num">100</span>) <span class="kw">NOT NULL</span>,
+    tx_email <span class="fn">VARCHAR</span>(<span class="num">150</span>) <span class="kw">UNIQUE NOT NULL</span>,
+    nr_idade <span class="fn">INTEGER</span> <span class="kw">CHECK</span> (nr_idade &gt;= <span class="num">0</span>),
+    dt_criacao <span class="fn">TIMESTAMP</span> <span class="kw">DEFAULT</span> NOW()
 );</pre>
-        <div class="result"><div class="result-inner"><span class="msg">✓ CREATE TABLE — tabela "usuarios" criada com sucesso.</span></div></div>
+        <div class="result"><div class="result-inner"><span class="msg">✓ CREATE TABLE — tabela "tb_usuarios" criada com sucesso.</span></div></div>
       </div>
 
       <h3 class="subhead">Boas práticas para nomear tabelas e colunas</h3>
       <div class="grid cols-2">
-        <div class="card"><h3>📛 Nomes no plural, em minúsculo</h3><p>Tabelas representam coleções: <code class="inline">usuarios</code>, <code class="inline">pedidos</code>, não <code class="inline">Usuario</code> ou <code class="inline">USUARIOS</code>.</p></div>
-        <div class="card"><h3>🔤 snake_case, sem acento</h3><p>Palavras separadas por <code class="inline">_</code>: <code class="inline">data_nascimento</code>, não <code class="inline">dataNascimento</code> ou <code class="inline">data nascimento</code>.</p></div>
-        <div class="card"><h3>🎯 Nomes claros e no idioma do domínio</h3><p>Prefira <code class="inline">valor_total</code> a abreviações como <code class="inline">vlr_tot</code> — quem lê a query depois agradece.</p></div>
-        <div class="card"><h3>🔑 Chave estrangeira = tabela no singular + _id</h3><p>Em <code class="inline">pedidos</code>, a coluna que aponta para <code class="inline">usuarios</code> chama-se <code class="inline">usuario_id</code>.</p></div>
+        <div class="card"><h3>📛 Prefixo + minúsculo, sempre</h3><p>Tabelas levam <code class="inline">tb_</code>: <code class="inline">tb_usuarios</code>, <code class="inline">tb_pedidos</code> — nunca <code class="inline">Usuario</code> ou <code class="inline">USUARIOS</code>.</p></div>
+        <div class="card"><h3>🔤 Um prefixo, um significado</h3><p>O prefixo já entrega o tipo do dado: <code class="inline">dt_nascimento</code> deixa claro que é uma data, sem precisar consultar a tabela.</p></div>
+        <div class="card"><h3>🎯 Nomes claros, sem abreviar demais</h3><p>Prefira <code class="inline">vl_total</code> a algo como <code class="inline">vl_tot</code> — quem lê a query depois agradece.</p></div>
+        <div class="card"><h3>🔑 Chave estrangeira = cd_ + tabela referenciada</h3><p>Em <code class="inline">tb_pedidos</code>, a coluna que aponta para <code class="inline">tb_usuarios</code> chama-se <code class="inline">cd_usuario</code>.</p></div>
         <div class="card"><h3>🚫 Evite palavras reservadas</h3><p>Não nomeie colunas como <code class="inline">order</code>, <code class="inline">table</code> ou <code class="inline">user</code> — são palavras-chave do SQL.</p></div>
-        <div class="card"><h3>🧭 Consistência acima de tudo</h3><p>Se o padrão do projeto é <code class="inline">criado_em</code>, use sempre <code class="inline">criado_em</code> — nunca misture com <code class="inline">data_criacao</code> em outra tabela.</p></div>
+        <div class="card"><h3>🧭 Consistência acima de tudo</h3><p>Se o padrão do projeto usa <code class="inline">dt_criacao</code>, use sempre <code class="inline">dt_criacao</code> — nunca misture com <code class="inline">dt_criado</code> em outra tabela.</p></div>
       </div>
 
       <h3 class="subhead">Chave primária e chave estrangeira</h3>
       <p class="chapter-intro">A <b>chave primária (PRIMARY KEY)</b> identifica de forma única cada linha de uma tabela — nenhuma outra linha pode ter o mesmo valor. A <b>chave estrangeira (FOREIGN KEY)</b> é uma coluna que aponta para a chave primária de outra tabela, criando um relacionamento entre elas.</p>
       <div class="console">
         <div class="bar"><span class="label">chave_estrangeira.sql</span><button class="run-btn">▶ Executar</button></div>
-        <pre><span class="kw">CREATE TABLE</span> pedidos (
-    id <span class="fn">SERIAL</span> <span class="kw">PRIMARY KEY</span>,
-    usuario_id <span class="fn">INTEGER</span> <span class="kw">REFERENCES</span> usuarios(id),
-    valor_total <span class="fn">NUMERIC</span>(<span class="num">10</span>,<span class="num">2</span>) <span class="kw">NOT NULL</span>
+        <pre><span class="kw">CREATE TABLE</span> tb_pedidos (
+    id_pedido <span class="fn">SERIAL</span> <span class="kw">PRIMARY KEY</span>,
+    cd_usuario <span class="fn">INTEGER</span> <span class="kw">REFERENCES</span> tb_usuarios(id_usuario),
+    vl_total <span class="fn">NUMERIC</span>(<span class="num">10</span>,<span class="num">2</span>) <span class="kw">NOT NULL</span>
 );</pre>
-        <div class="result"><div class="result-inner"><span class="msg">✓ CREATE TABLE — "pedidos" criada; usuario_id só aceita ids que existam em "usuarios".</span></div></div>
+        <div class="result"><div class="result-inner"><span class="msg">✓ CREATE TABLE — "tb_pedidos" criada; cd_usuario só aceita ids que existam em "tb_usuarios".</span></div></div>
       </div>
-      <div class="note"><span>💡</span><div>A <b>FOREIGN KEY</b> garante integridade referencial: não é possível inserir um pedido com <code class="inline">usuario_id</code> que não exista na tabela <code class="inline">usuarios</code>, nem apagar um usuário que ainda tenha pedidos vinculados (a menos que isso seja configurado explicitamente).</div></div>
+      <div class="note"><span>💡</span><div>A <b>FOREIGN KEY</b> garante integridade referencial: não é possível inserir um pedido com <code class="inline">cd_usuario</code> que não exista na tabela <code class="inline">tb_usuarios</code>, nem apagar um usuário que ainda tenha pedidos vinculados (a menos que isso seja configurado explicitamente).</div></div>
 
       <h3 class="subhead">O que é o SERIAL</h3>
-      <p class="chapter-intro"><code class="inline">SERIAL</code> não é bem um tipo de dado — é um "atalho" do PostgreSQL que cria uma coluna <code class="inline">INTEGER</code>, gera uma <a href="#cap18" style="color:var(--cyan);">SEQUENCE</a> por trás dos panos e configura essa sequência como valor padrão da coluna. Na prática, cada novo <code class="inline">INSERT</code> recebe automaticamente o próximo número — ideal para IDs.</p>
+      <p class="chapter-intro"><code class="inline">SERIAL</code> não é bem um tipo de dado — é um "atalho" do PostgreSQL que cria uma coluna <code class="inline">INTEGER</code>, gera uma <a href="#cap18" style="color:var(--cyan);">SEQUENCE</a> por trás dos panos e configura essa sequência como valor padrão da coluna. Na prática, cada novo <code class="inline">INSERT</code> recebe automaticamente o próximo número — ideal para colunas <code class="inline">id_</code>.</p>
 
       <h3 class="subhead">NOT NULL, UNIQUE, CHECK e DEFAULT</h3>
       <p class="chapter-intro">Além das chaves, essas <b>constraints</b> (restrições) protegem a qualidade dos dados diretamente na definição da coluna:</p>
       <div class="grid cols-4">
         <div class="card"><h3>🚧 NOT NULL</h3><p>Obriga o preenchimento da coluna — não permite salvar a linha sem esse valor.</p></div>
         <div class="card"><h3>🎫 UNIQUE</h3><p>Impede que dois registros tenham o mesmo valor nessa coluna, como um e-mail duplicado.</p></div>
-        <div class="card"><h3>✅ CHECK</h3><p>Valida uma regra de negócio antes de gravar, como <code class="inline">idade &gt;= 0</code>.</p></div>
+        <div class="card"><h3>✅ CHECK</h3><p>Valida uma regra de negócio antes de gravar, como <code class="inline">nr_idade &gt;= 0</code>.</p></div>
         <div class="card"><h3>🧩 DEFAULT</h3><p>Define um valor automático quando nenhum é informado, como <code class="inline">DEFAULT NOW()</code>.</p></div>
       </div>
+
+      <h3 class="subhead">Uma segunda forma: criando a tabela "por extenso"</h3>
+      <p class="chapter-intro">Até aqui, as constraints foram escritas <b>inline</b>, coladas na coluna. Existe uma segunda forma, mais extensa: declarar as colunas "limpas" e, no final do <code class="inline">CREATE TABLE</code>, listar cada constraint separadamente com um <b>nome próprio</b> (<code class="inline">CONSTRAINT nome_da_regra ...</code>). Fica mais longo, mas deixa cada regra fácil de identificar, alterar ou remover depois — e um índice pode ser criado logo em seguida, já pensando em performance.</p>
+      <div class="console">
+        <div class="bar"><span class="label">criar_tabela_extensa.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">CREATE TABLE</span> tb_pedidos (
+    id_pedido <span class="fn">SERIAL</span>,
+    cd_usuario <span class="fn">INTEGER</span>,
+    vl_total <span class="fn">NUMERIC</span>(<span class="num">10</span>,<span class="num">2</span>),
+    tx_status <span class="fn">VARCHAR</span>(<span class="num">20</span>) <span class="kw">DEFAULT</span> <span class="str">'pendente'</span>,
+    dt_criacao <span class="fn">TIMESTAMP</span> <span class="kw">DEFAULT</span> NOW(),
+
+    <span class="kw">CONSTRAINT</span> pk_tb_pedidos <span class="kw">PRIMARY KEY</span> (id_pedido),
+    <span class="kw">CONSTRAINT</span> fk_tb_pedidos_cd_usuario <span class="kw">FOREIGN KEY</span> (cd_usuario) <span class="kw">REFERENCES</span> tb_usuarios(id_usuario),
+    <span class="kw">CONSTRAINT</span> ck_tb_pedidos_vl_total <span class="kw">CHECK</span> (vl_total &gt;= <span class="num">0</span>),
+    <span class="kw">CONSTRAINT</span> uq_tb_pedidos_cd_usuario_dt <span class="kw">UNIQUE</span> (cd_usuario, dt_criacao)
+);
+
+<span class="cmt">-- índice criado logo depois, para acelerar buscas por usuário</span>
+<span class="kw">CREATE INDEX</span> idx_tb_pedidos_cd_usuario <span class="kw">ON</span> tb_pedidos(cd_usuario);</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ CREATE TABLE + CREATE INDEX — "tb_pedidos" criada com todas as regras nomeadas.</span></div></div>
+      </div>
+      <div class="note"><span>💡</span><div>Dar um <b>nome</b> à constraint (<code class="inline">pk_tb_pedidos</code>, <code class="inline">fk_tb_pedidos_cd_usuario</code>...) faz o PostgreSQL usar esse nome nas mensagens de erro — muito mais fácil de identificar o problema do que um nome genérico gerado automaticamente. Também facilita usar <code class="inline">ALTER TABLE ... DROP CONSTRAINT nome</code> depois.</div></div>
     </section>
 
     <!-- CAP 8: DDL, DML e DCL -->
@@ -627,7 +650,7 @@
       <p class="chapter-intro">Insere uma nova linha na tabela.</p>
       <div class="console">
         <div class="bar"><span class="label">insert.sql</span><button class="run-btn">▶ Executar</button></div>
-        <pre><span class="kw">INSERT INTO</span> usuarios (nome, email, idade)
+        <pre><span class="kw">INSERT INTO</span> tb_usuarios (tx_nome, tx_email, nr_idade)
 <span class="kw">VALUES</span> (<span class="str">'Ana Silva'</span>, <span class="str">'ana@email.com'</span>, <span class="num">28</span>);</pre>
         <div class="result"><div class="result-inner"><span class="msg">✓ INSERT 0 1 — 1 linha inserida.</span></div></div>
       </div>
@@ -639,12 +662,12 @@
       <p class="chapter-intro">O <code class="inline">SELECT</code> é o comando mais usado do SQL: busca linhas de uma ou mais tabelas. O PostgreSQL primeiro localiza e filtra as linhas (<code class="inline">FROM</code> / <code class="inline">WHERE</code>), depois ordena e limita o resultado.</p>
       <div class="console">
         <div class="bar"><span class="label">select.sql</span><button class="run-btn">▶ Executar</button></div>
-        <pre><span class="kw">SELECT</span> nome, email
-<span class="kw">FROM</span> usuarios
-<span class="kw">WHERE</span> idade &gt;= <span class="num">18</span>
-<span class="kw">ORDER BY</span> nome <span class="kw">ASC</span>
+        <pre><span class="kw">SELECT</span> tx_nome, tx_email
+<span class="kw">FROM</span> tb_usuarios
+<span class="kw">WHERE</span> nr_idade &gt;= <span class="num">18</span>
+<span class="kw">ORDER BY</span> tx_nome <span class="kw">ASC</span>
 <span class="kw">LIMIT</span> <span class="num">10</span>;</pre>
-        <div class="result"><div class="result-inner"><table><thead><tr><th>nome</th><th>email</th></tr></thead><tbody>
+        <div class="result"><div class="result-inner"><table><thead><tr><th>tx_nome</th><th>tx_email</th></tr></thead><tbody>
           <tr><td>Ana Silva</td><td>ana@email.com</td></tr>
           <tr><td>Bruno Costa</td><td>bruno@email.com</td></tr>
         </tbody></table></div></div>
@@ -663,9 +686,9 @@
       <p class="chapter-intro">Atualiza valores de uma ou mais linhas existentes. <b>Sempre use o <code class="inline">WHERE</code></b> — sem ele, todas as linhas da tabela são alteradas.</p>
       <div class="console">
         <div class="bar"><span class="label">update.sql</span><button class="run-btn">▶ Executar</button></div>
-        <pre><span class="kw">UPDATE</span> usuarios
-<span class="kw">SET</span> idade = <span class="num">29</span>
-<span class="kw">WHERE</span> email = <span class="str">'ana@email.com'</span>;</pre>
+        <pre><span class="kw">UPDATE</span> tb_usuarios
+<span class="kw">SET</span> nr_idade = <span class="num">29</span>
+<span class="kw">WHERE</span> tx_email = <span class="str">'ana@email.com'</span>;</pre>
         <div class="result"><div class="result-inner"><span class="msg">✓ UPDATE 1 — 1 linha atualizada.</span></div></div>
       </div>
     </section>
@@ -676,8 +699,8 @@
       <p class="chapter-intro">Remove linhas da tabela. Assim como o UPDATE, exige atenção redobrada com o <code class="inline">WHERE</code>.</p>
       <div class="console">
         <div class="bar"><span class="label">delete.sql</span><button class="run-btn">▶ Executar</button></div>
-        <pre><span class="kw">DELETE FROM</span> usuarios
-<span class="kw">WHERE</span> id = <span class="num">5</span>;</pre>
+        <pre><span class="kw">DELETE FROM</span> tb_usuarios
+<span class="kw">WHERE</span> id_usuario = <span class="num">5</span>;</pre>
         <div class="result"><div class="result-inner"><span class="msg" style="color:var(--red);">✓ DELETE 1 — 1 linha removida.</span></div></div>
       </div>
     </section>
@@ -688,10 +711,10 @@
       <p class="chapter-intro">Modifica a estrutura de uma tabela já existente, sem precisar recriá-la.</p>
       <div class="console">
         <div class="bar"><span class="label">alter.sql</span><button class="run-btn">▶ Executar</button></div>
-        <pre><span class="kw">ALTER TABLE</span> usuarios <span class="kw">ADD COLUMN</span> telefone <span class="fn">VARCHAR</span>(<span class="num">20</span>);
-<span class="kw">ALTER TABLE</span> usuarios <span class="kw">DROP COLUMN</span> idade;
-<span class="kw">ALTER TABLE</span> usuarios <span class="kw">ALTER COLUMN</span> nome <span class="kw">TYPE</span> <span class="fn">VARCHAR</span>(<span class="num">200</span>);
-<span class="kw">ALTER TABLE</span> usuarios <span class="kw">RENAME COLUMN</span> email <span class="kw">TO</span> email_contato;</pre>
+        <pre><span class="kw">ALTER TABLE</span> tb_usuarios <span class="kw">ADD COLUMN</span> tx_telefone <span class="fn">VARCHAR</span>(<span class="num">20</span>);
+<span class="kw">ALTER TABLE</span> tb_usuarios <span class="kw">DROP COLUMN</span> nr_idade;
+<span class="kw">ALTER TABLE</span> tb_usuarios <span class="kw">ALTER COLUMN</span> tx_nome <span class="kw">TYPE</span> <span class="fn">VARCHAR</span>(<span class="num">200</span>);
+<span class="kw">ALTER TABLE</span> tb_usuarios <span class="kw">RENAME COLUMN</span> tx_email <span class="kw">TO</span> tx_email_contato;</pre>
         <div class="result"><div class="result-inner"><span class="msg">✓ ALTER TABLE — estrutura atualizada.</span></div></div>
       </div>
     </section>
@@ -702,13 +725,13 @@
       <p class="chapter-intro"><code class="inline">GROUP BY</code> agrupa linhas que compartilham o mesmo valor em uma coluna, para então aplicar <b>funções de agregação</b> como <code class="inline">COUNT</code> (conta linhas) e <code class="inline">SUM</code> (soma valores) em cada grupo. O <code class="inline">HAVING</code> filtra os grupos já formados — diferente do <code class="inline">WHERE</code>, que filtra linhas individuais antes de agrupar.</p>
       <div class="console">
         <div class="bar"><span class="label">group_by.sql</span><button class="run-btn">▶ Executar</button></div>
-        <pre><span class="kw">SELECT</span> usuario_id,
-       <span class="fn">COUNT</span>(*) <span class="kw">AS</span> total_pedidos,
-       <span class="fn">SUM</span>(valor_total) <span class="kw">AS</span> valor_gasto
-<span class="kw">FROM</span> pedidos
-<span class="kw">GROUP BY</span> usuario_id
-<span class="kw">HAVING</span> <span class="fn">SUM</span>(valor_total) &gt; <span class="num">500</span>;</pre>
-        <div class="result"><div class="result-inner"><table><thead><tr><th>usuario_id</th><th>total_pedidos</th><th>valor_gasto</th></tr></thead><tbody>
+        <pre><span class="kw">SELECT</span> cd_usuario,
+       <span class="fn">COUNT</span>(*) <span class="kw">AS</span> nr_total_pedidos,
+       <span class="fn">SUM</span>(vl_total) <span class="kw">AS</span> vl_total_gasto
+<span class="kw">FROM</span> tb_pedidos
+<span class="kw">GROUP BY</span> cd_usuario
+<span class="kw">HAVING</span> <span class="fn">SUM</span>(vl_total) &gt; <span class="num">500</span>;</pre>
+        <div class="result"><div class="result-inner"><table><thead><tr><th>cd_usuario</th><th>nr_total_pedidos</th><th>vl_total_gasto</th></tr></thead><tbody>
           <tr><td>1</td><td>4</td><td>812.50</td></tr>
           <tr><td>3</td><td>2</td><td>640.00</td></tr>
         </tbody></table></div></div>
@@ -752,24 +775,24 @@
       </div>
       <div class="console">
         <div class="bar"><span class="label">inner_join.sql</span><button class="run-btn">▶ Executar</button></div>
-        <pre><span class="kw">SELECT</span> p.id, u.nome, p.valor_total
-<span class="kw">FROM</span> pedidos p
-<span class="kw">INNER JOIN</span> usuarios u <span class="kw">ON</span> p.usuario_id = u.id;</pre>
+        <pre><span class="kw">SELECT</span> p.id_pedido, u.tx_nome, p.vl_total
+<span class="kw">FROM</span> tb_pedidos p
+<span class="kw">INNER JOIN</span> tb_usuarios u <span class="kw">ON</span> p.cd_usuario = u.id_usuario;</pre>
         <div class="result"><div class="result-inner"><span class="msg">✓ retorna só os pedidos que têm um usuário correspondente.</span></div></div>
       </div>
       <div class="console">
         <div class="bar"><span class="label">left_join.sql</span><button class="run-btn">▶ Executar</button></div>
-        <pre><span class="kw">SELECT</span> u.nome, p.id
-<span class="kw">FROM</span> usuarios u
-<span class="kw">LEFT JOIN</span> pedidos p <span class="kw">ON</span> p.usuario_id = u.id;</pre>
-        <div class="result"><div class="result-inner"><span class="msg">✓ traz todos os usuários, com NULL em "id" para quem não tem pedido.</span></div></div>
+        <pre><span class="kw">SELECT</span> u.tx_nome, p.id_pedido
+<span class="kw">FROM</span> tb_usuarios u
+<span class="kw">LEFT JOIN</span> tb_pedidos p <span class="kw">ON</span> p.cd_usuario = u.id_usuario;</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ traz todos os usuários, com NULL em "id_pedido" para quem não tem pedido.</span></div></div>
       </div>
       <div class="console">
         <div class="bar"><span class="label">right_join.sql</span><button class="run-btn">▶ Executar</button></div>
-        <pre><span class="kw">SELECT</span> u.nome, p.id
-<span class="kw">FROM</span> usuarios u
-<span class="kw">RIGHT JOIN</span> pedidos p <span class="kw">ON</span> p.usuario_id = u.id;</pre>
-        <div class="result"><div class="result-inner"><span class="msg">✓ traz todos os pedidos, com NULL em "nome" se o usuário não existir.</span></div></div>
+        <pre><span class="kw">SELECT</span> u.tx_nome, p.id_pedido
+<span class="kw">FROM</span> tb_usuarios u
+<span class="kw">RIGHT JOIN</span> tb_pedidos p <span class="kw">ON</span> p.cd_usuario = u.id_usuario;</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ traz todos os pedidos, com NULL em "tx_nome" se o usuário não existir.</span></div></div>
       </div>
     </section>
 
@@ -794,21 +817,21 @@
       <p class="chapter-intro">Para juntar textos, use o operador <code class="inline">||</code> ou a função <code class="inline">CONCAT()</code> — as duas formas fazem a mesma coisa.</p>
       <div class="console">
         <div class="bar"><span class="label">concat.sql</span><button class="run-btn">▶ Executar</button></div>
-        <pre><span class="kw">SELECT</span> nome || <span class="str">' &lt;'</span> || email || <span class="str">'&gt;'</span> <span class="kw">AS</span> contato
-<span class="kw">FROM</span> usuarios;
+        <pre><span class="kw">SELECT</span> tx_nome || <span class="str">' &lt;'</span> || tx_email || <span class="str">'&gt;'</span> <span class="kw">AS</span> tx_contato
+<span class="kw">FROM</span> tb_usuarios;
 <span class="cmt">-- equivalente com CONCAT():</span>
-<span class="kw">SELECT</span> <span class="fn">CONCAT</span>(nome, <span class="str">' &lt;'</span>, email, <span class="str">'&gt;'</span>) <span class="kw">AS</span> contato <span class="kw">FROM</span> usuarios;</pre>
-        <div class="result"><div class="result-inner"><table><thead><tr><th>contato</th></tr></thead><tbody>
+<span class="kw">SELECT</span> <span class="fn">CONCAT</span>(tx_nome, <span class="str">' &lt;'</span>, tx_email, <span class="str">'&gt;'</span>) <span class="kw">AS</span> tx_contato <span class="kw">FROM</span> tb_usuarios;</pre>
+        <div class="result"><div class="result-inner"><table><thead><tr><th>tx_contato</th></tr></thead><tbody>
           <tr><td>Ana Silva &lt;ana@email.com&gt;</td></tr>
         </tbody></table></div></div>
       </div>
       <div class="console">
         <div class="bar"><span class="label">string_agg.sql</span><button class="run-btn">▶ Executar</button></div>
-        <pre><span class="kw">SELECT</span> usuario_id,
-       <span class="fn">STRING_AGG</span>(produto, <span class="str">', '</span>) <span class="kw">AS</span> produtos_comprados
-<span class="kw">FROM</span> itens_pedido
-<span class="kw">GROUP BY</span> usuario_id;</pre>
-        <div class="result"><div class="result-inner"><table><thead><tr><th>usuario_id</th><th>produtos_comprados</th></tr></thead><tbody>
+        <pre><span class="kw">SELECT</span> cd_usuario,
+       <span class="fn">STRING_AGG</span>(tx_produto, <span class="str">', '</span>) <span class="kw">AS</span> tx_produtos_comprados
+<span class="kw">FROM</span> tb_itens_pedido
+<span class="kw">GROUP BY</span> cd_usuario;</pre>
+        <div class="result"><div class="result-inner"><table><thead><tr><th>cd_usuario</th><th>tx_produtos_comprados</th></tr></thead><tbody>
           <tr><td>1</td><td>Teclado, Mouse, Monitor</td></tr>
         </tbody></table></div></div>
       </div>
@@ -825,13 +848,13 @@
         <div class="bar"><span class="label">with.sql</span><button class="run-btn">▶ Executar</button></div>
         <pre><span class="kw">WITH</span> pedidos_recentes <span class="kw">AS</span> (
     <span class="kw">SELECT</span> *
-    <span class="kw">FROM</span> pedidos
-    <span class="kw">WHERE</span> criado_em &gt;= CURRENT_DATE - <span class="kw">INTERVAL</span> <span class="str">'30 days'</span>
+    <span class="kw">FROM</span> tb_pedidos
+    <span class="kw">WHERE</span> dt_criacao &gt;= CURRENT_DATE - <span class="kw">INTERVAL</span> <span class="str">'30 days'</span>
 )
-<span class="kw">SELECT</span> usuario_id, <span class="fn">COUNT</span>(*) <span class="kw">AS</span> total
+<span class="kw">SELECT</span> cd_usuario, <span class="fn">COUNT</span>(*) <span class="kw">AS</span> nr_total
 <span class="kw">FROM</span> pedidos_recentes
-<span class="kw">GROUP BY</span> usuario_id;</pre>
-        <div class="result"><div class="result-inner"><table><thead><tr><th>usuario_id</th><th>total</th></tr></thead><tbody>
+<span class="kw">GROUP BY</span> cd_usuario;</pre>
+        <div class="result"><div class="result-inner"><table><thead><tr><th>cd_usuario</th><th>nr_total</th></tr></thead><tbody>
           <tr><td>1</td><td>3</td></tr>
           <tr><td>2</td><td>1</td></tr>
         </tbody></table></div></div>
@@ -842,10 +865,10 @@
       <div class="console">
         <div class="bar"><span class="label">subquery_valor.sql</span><button class="run-btn">▶ Executar</button></div>
         <pre><span class="cmt">-- usuários mais velhos que a média de idade</span>
-<span class="kw">SELECT</span> nome, idade
-<span class="kw">FROM</span> usuarios
-<span class="kw">WHERE</span> idade &gt; (<span class="kw">SELECT</span> <span class="fn">AVG</span>(idade) <span class="kw">FROM</span> usuarios);</pre>
-        <div class="result"><div class="result-inner"><table><thead><tr><th>nome</th><th>idade</th></tr></thead><tbody>
+<span class="kw">SELECT</span> tx_nome, nr_idade
+<span class="kw">FROM</span> tb_usuarios
+<span class="kw">WHERE</span> nr_idade &gt; (<span class="kw">SELECT</span> <span class="fn">AVG</span>(nr_idade) <span class="kw">FROM</span> tb_usuarios);</pre>
+        <div class="result"><div class="result-inner"><table><thead><tr><th>tx_nome</th><th>nr_idade</th></tr></thead><tbody>
           <tr><td>Bruno Costa</td><td>34</td></tr>
         </tbody></table></div></div>
       </div>
@@ -853,12 +876,12 @@
         <div class="bar"><span class="label">subquery_tabela.sql</span><button class="run-btn">▶ Executar</button></div>
         <pre><span class="cmt">-- subquery usada como se fosse uma tabela (derived table)</span>
 <span class="kw">SELECT</span> * <span class="kw">FROM</span> (
-    <span class="kw">SELECT</span> usuario_id, <span class="fn">SUM</span>(valor_total) <span class="kw">AS</span> total
-    <span class="kw">FROM</span> pedidos
-    <span class="kw">GROUP BY</span> usuario_id
+    <span class="kw">SELECT</span> cd_usuario, <span class="fn">SUM</span>(vl_total) <span class="kw">AS</span> vl_total
+    <span class="kw">FROM</span> tb_pedidos
+    <span class="kw">GROUP BY</span> cd_usuario
 ) <span class="kw">AS</span> resumo
-<span class="kw">WHERE</span> total &gt; <span class="num">500</span>;</pre>
-        <div class="result"><div class="result-inner"><table><thead><tr><th>usuario_id</th><th>total</th></tr></thead><tbody>
+<span class="kw">WHERE</span> vl_total &gt; <span class="num">500</span>;</pre>
+        <div class="result"><div class="result-inner"><table><thead><tr><th>cd_usuario</th><th>vl_total</th></tr></thead><tbody>
           <tr><td>1</td><td>812.50</td></tr>
         </tbody></table></div></div>
       </div>
@@ -868,12 +891,12 @@
       <div class="console">
         <div class="bar"><span class="label">exists.sql</span><button class="run-btn">▶ Executar</button></div>
         <pre><span class="cmt">-- usuários que têm pelo menos um pedido</span>
-<span class="kw">SELECT</span> nome
-<span class="kw">FROM</span> usuarios u
+<span class="kw">SELECT</span> tx_nome
+<span class="kw">FROM</span> tb_usuarios u
 <span class="kw">WHERE EXISTS</span> (
-    <span class="kw">SELECT</span> <span class="num">1</span> <span class="kw">FROM</span> pedidos p <span class="kw">WHERE</span> p.usuario_id = u.id
+    <span class="kw">SELECT</span> <span class="num">1</span> <span class="kw">FROM</span> tb_pedidos p <span class="kw">WHERE</span> p.cd_usuario = u.id_usuario
 );</pre>
-        <div class="result"><div class="result-inner"><table><thead><tr><th>nome</th></tr></thead><tbody>
+        <div class="result"><div class="result-inner"><table><thead><tr><th>tx_nome</th></tr></thead><tbody>
           <tr><td>Ana Silva</td></tr>
           <tr><td>Carla Dias</td></tr>
         </tbody></table></div></div>
@@ -881,12 +904,12 @@
       <div class="console">
         <div class="bar"><span class="label">not_exists.sql</span><button class="run-btn">▶ Executar</button></div>
         <pre><span class="cmt">-- usuários que nunca fizeram nenhum pedido</span>
-<span class="kw">SELECT</span> nome
-<span class="kw">FROM</span> usuarios u
+<span class="kw">SELECT</span> tx_nome
+<span class="kw">FROM</span> tb_usuarios u
 <span class="kw">WHERE NOT EXISTS</span> (
-    <span class="kw">SELECT</span> <span class="num">1</span> <span class="kw">FROM</span> pedidos p <span class="kw">WHERE</span> p.usuario_id = u.id
+    <span class="kw">SELECT</span> <span class="num">1</span> <span class="kw">FROM</span> tb_pedidos p <span class="kw">WHERE</span> p.cd_usuario = u.id_usuario
 );</pre>
-        <div class="result"><div class="result-inner"><table><thead><tr><th>nome</th></tr></thead><tbody>
+        <div class="result"><div class="result-inner"><table><thead><tr><th>tx_nome</th></tr></thead><tbody>
           <tr><td>Bruno Costa</td></tr>
         </tbody></table></div></div>
       </div>
@@ -899,11 +922,11 @@
       <p class="chapter-intro">Uma <b>view</b> é uma consulta SQL salva com um nome, que se comporta como uma tabela virtual — sem duplicar os dados. Toda vez que a view é consultada, a query original roda por trás.</p>
       <div class="console">
         <div class="bar"><span class="label">view.sql</span><button class="run-btn">▶ Executar</button></div>
-        <pre><span class="kw">CREATE VIEW</span> usuarios_ativos <span class="kw">AS</span>
-<span class="kw">SELECT</span> id, nome, email
-<span class="kw">FROM</span> usuarios
-<span class="kw">WHERE</span> ativo = <span class="kw">true</span>;</pre>
-        <div class="result"><div class="result-inner"><span class="msg">✓ CREATE VIEW — "usuarios_ativos" pronta para uso como SELECT * FROM usuarios_ativos;</span></div></div>
+        <pre><span class="kw">CREATE VIEW</span> vw_usuarios_ativos <span class="kw">AS</span>
+<span class="kw">SELECT</span> id_usuario, tx_nome, tx_email
+<span class="kw">FROM</span> tb_usuarios
+<span class="kw">WHERE</span> fl_ativo = <span class="kw">true</span>;</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ CREATE VIEW — "vw_usuarios_ativos" pronta para uso como SELECT * FROM vw_usuarios_ativos;</span></div></div>
       </div>
     </section>
 
@@ -913,7 +936,7 @@
       <p class="chapter-intro">Um <b>índice</b> é uma estrutura auxiliar que acelera buscas, funcionando como o índice remissivo de um livro. Acelera leituras, mas tem custo em espaço e em escrita (cada INSERT/UPDATE também atualiza o índice).</p>
       <div class="console">
         <div class="bar"><span class="label">index.sql</span><button class="run-btn">▶ Executar</button></div>
-        <pre><span class="kw">CREATE INDEX</span> idx_usuarios_email <span class="kw">ON</span> usuarios(email);</pre>
+        <pre><span class="kw">CREATE INDEX</span> idx_tb_usuarios_tx_email <span class="kw">ON</span> tb_usuarios(tx_email);</pre>
         <div class="result"><div class="result-inner"><span class="msg">✓ CREATE INDEX — buscas por "email" ficam muito mais rápidas.</span></div></div>
       </div>
     </section>
@@ -925,9 +948,9 @@
       <div class="console">
         <div class="bar"><span class="label">explain.sql</span><button class="run-btn">▶ Executar</button></div>
         <pre><span class="kw">EXPLAIN ANALYZE</span>
-<span class="kw">SELECT</span> * <span class="kw">FROM</span> usuarios <span class="kw">WHERE</span> email = <span class="str">'ana@email.com'</span>;</pre>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> tb_usuarios <span class="kw">WHERE</span> tx_email = <span class="str">'ana@email.com'</span>;</pre>
         <div class="result"><div class="result-inner">
-<span class="msg" style="display:block; margin-bottom:6px;">Index Scan using idx_usuarios_email on usuarios</span>
+<span class="msg" style="display:block; margin-bottom:6px;">Index Scan using idx_tb_usuarios_tx_email on tb_usuarios</span>
 <span style="color:var(--text-muted);">  (cost=0.28..8.30 rows=1 width=64) (actual time=0.02..0.03 rows=1 loops=1)</span>
 <span style="color:var(--text-muted);">Planning Time: 0.08 ms · Execution Time: 0.04 ms</span>
         </div></div>
@@ -940,8 +963,8 @@
       <p class="chapter-intro">Uma <b>sequence</b> gera números sequenciais únicos. É exatamente o mecanismo que o tipo <code class="inline">SERIAL</code> usa por trás dos panos para criar IDs automáticos.</p>
       <div class="console">
         <div class="bar"><span class="label">sequence.sql</span><button class="run-btn">▶ Executar</button></div>
-        <pre><span class="kw">CREATE SEQUENCE</span> pedido_id_seq <span class="kw">START</span> <span class="num">1000</span> <span class="kw">INCREMENT</span> <span class="num">1</span>;
-<span class="kw">SELECT</span> nextval(<span class="str">'pedido_id_seq'</span>);</pre>
+        <pre><span class="kw">CREATE SEQUENCE</span> sq_pedido_id <span class="kw">START</span> <span class="num">1000</span> <span class="kw">INCREMENT</span> <span class="num">1</span>;
+<span class="kw">SELECT</span> nextval(<span class="str">'sq_pedido_id'</span>);</pre>
         <div class="result"><div class="result-inner"><table><thead><tr><th>nextval</th></tr></thead><tbody><tr><td>1000</td></tr></tbody></table></div></div>
       </div>
     </section>
@@ -952,14 +975,14 @@
       <p class="chapter-intro">Uma <b>function</b> é um bloco de lógica reutilizável dentro do banco: recebe parâmetros, executa comandos e pode retornar um valor. É o que a trigger acima está chamando.</p>
       <div class="console">
         <div class="bar"><span class="label">function.sql</span><button class="run-btn">▶ Executar</button></div>
-        <pre><span class="kw">CREATE FUNCTION</span> atualizar_timestamp()
+        <pre><span class="kw">CREATE FUNCTION</span> fn_atualizar_timestamp()
 <span class="kw">RETURNS TRIGGER AS</span> $$
 <span class="kw">BEGIN</span>
-    NEW.criado_em = NOW();
+    NEW.dt_criacao = NOW();
     <span class="kw">RETURN</span> NEW;
 <span class="kw">END</span>;
 $$ <span class="kw">LANGUAGE</span> plpgsql;</pre>
-        <div class="result"><div class="result-inner"><span class="msg">✓ CREATE FUNCTION — "atualizar_timestamp" disponível para uso.</span></div></div>
+        <div class="result"><div class="result-inner"><span class="msg">✓ CREATE FUNCTION — "fn_atualizar_timestamp" disponível para uso.</span></div></div>
       </div>
     </section>
 
@@ -969,10 +992,10 @@ $$ <span class="kw">LANGUAGE</span> plpgsql;</pre>
       <p class="chapter-intro">Uma <b>trigger</b> executa uma função automaticamente antes ou depois de um evento (<code class="inline">INSERT</code>, <code class="inline">UPDATE</code> ou <code class="inline">DELETE</code>) acontecer em uma tabela.</p>
       <div class="console">
         <div class="bar"><span class="label">trigger.sql</span><button class="run-btn">▶ Executar</button></div>
-        <pre><span class="kw">CREATE TRIGGER</span> atualiza_data
-<span class="kw">BEFORE UPDATE ON</span> usuarios
+        <pre><span class="kw">CREATE TRIGGER</span> trg_atualiza_data
+<span class="kw">BEFORE UPDATE ON</span> tb_usuarios
 <span class="kw">FOR EACH ROW</span>
-<span class="kw">EXECUTE FUNCTION</span> atualizar_timestamp();</pre>
+<span class="kw">EXECUTE FUNCTION</span> fn_atualizar_timestamp();</pre>
         <div class="result"><div class="result-inner"><span class="msg">✓ CREATE TRIGGER — a cada UPDATE, a função é disparada automaticamente.</span></div></div>
       </div>
     </section>
@@ -994,7 +1017,7 @@ $$ <span class="kw">LANGUAGE</span> plpgsql;</pre>
 
       <div class="console">
         <div class="bar"><span class="label">vacuum.sql</span><button class="run-btn">▶ Executar</button></div>
-        <pre><span class="kw">VACUUM ANALYZE</span> usuarios;</pre>
+        <pre><span class="kw">VACUUM ANALYZE</span> tb_usuarios;</pre>
         <div class="result"><div class="result-inner"><span class="msg">✓ VACUUM — espaço morto liberado e estatísticas atualizadas.</span></div></div>
       </div>
       <div class="note"><span>⚠️</span><div><b>VACUUM FULL</b> reescreve a tabela inteira do zero: libera mais espaço, mas é mais lento e bloqueia a tabela durante a execução — use com cuidado em produção. No dia a dia, o <b>autovacuum</b> já resolve a maior parte dos casos sem intervenção manual.</div></div>
@@ -1058,7 +1081,7 @@ pg_restore <span class="kw">-U</span> postgres <span class="kw">-d</span> minha_
 <script>
 // ---------- typing animation on hero ----------
 const typedEl = document.getElementById('typed');
-const typedText = "SELECT * FROM aprendizado;";
+const typedText = "SELECT * FROM tb_aprendizado;";
 let ti = 0;
 function typeLoop(){
   if(ti <= typedText.length){
@@ -1067,7 +1090,7 @@ function typeLoop(){
     setTimeout(typeLoop, 55);
   } else {
     setTimeout(()=>{
-      typedEl.innerHTML = typedText + '<div class="out">\\n id | nome      | email\\n----+-----------+------------------\\n  1 | Ana Silva | ana@email.com\\n(1 linha)</div>';
+      typedEl.innerHTML = typedText + '<div class="out">\\n id_usuario | tx_nome   | tx_email\\n-----------+-----------+------------------\\n          1 | Ana Silva | ana@email.com\\n(1 linha)</div>';
     }, 400);
   }
 }
