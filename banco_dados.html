@@ -1,0 +1,1681 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PostgreSQL do Zero — Guia Interativo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d1117;
+  --bg-panel: #161b22;
+  --bg-panel-alt: #1c2230;
+  --bg-card: #161b22;
+  --border: #21293a;
+  --border-mid: #2d3748;
+  --text: #e2e8f0;
+  --text-muted: #718096;
+  --text-subtle: #4a5568;
+  --cyan: #4dd9c0;
+  --cyan-dim: rgba(77,217,192,.12);
+  --amber: #f6ad55;
+  --amber-dim: rgba(246,173,85,.12);
+  --green: #68d391;
+  --green-dim: rgba(104,211,145,.12);
+  --red: #fc8181;
+  --red-dim: rgba(252,129,129,.12);
+  --blue: #63b3ed;
+  --blue-dim: rgba(99,179,237,.12);
+  --purple: #b794f4;
+  --purple-dim: rgba(183,148,244,.12);
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --sidebar-w: 240px;
+  --header-h: 56px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 15px; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.65;
+  min-height: 100vh;
+}
+a { color: var(--cyan); text-decoration: none; }
+a:hover { text-decoration: underline; }
+::selection { background: var(--cyan); color: #04140f; }
+
+/* ── TOP NAV BAR ── */
+#topbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  height: var(--header-h);
+  background: rgba(13,17,23,.92);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 20px; gap: 16px;
+}
+#topbar .brand {
+  font-family: var(--font-mono); font-weight: 600; font-size: .9rem;
+  color: var(--cyan); display: flex; align-items: center; gap: 8px; white-space: nowrap;
+}
+#topbar .brand .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--amber); box-shadow: 0 0 6px var(--amber);
+  animation: blink 1.8s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:.2;} }
+
+#topbar .search-wrap {
+  flex: 1; max-width: 400px; margin-left: auto;
+  position: relative;
+}
+#topbar .search-wrap input {
+  width: 100%; background: var(--bg-panel-alt); border: 1px solid var(--border-mid);
+  color: var(--text); font-family: var(--font-body); font-size: .85rem;
+  padding: 7px 12px 7px 34px; border-radius: var(--radius);
+  outline: none; transition: border-color .15s;
+}
+#topbar .search-wrap input:focus { border-color: var(--cyan); }
+#topbar .search-wrap input::placeholder { color: var(--text-subtle); }
+#topbar .search-wrap .ico {
+  position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+  color: var(--text-subtle); font-size: .85rem; pointer-events: none;
+}
+#progress {
+  position: fixed; top: var(--header-h); left: 0; height: 2px; width: 0%;
+  background: linear-gradient(90deg, var(--cyan), var(--blue));
+  z-index: 300; transition: width .08s linear;
+}
+
+/* ── LAYOUT ── */
+.layout {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-top: var(--header-h);
+  min-height: 100vh;
+}
+@media (max-width: 860px) {
+  .layout { grid-template-columns: 1fr; }
+  nav.sidebar { display: none; }
+}
+
+/* ── SIDEBAR ── */
+nav.sidebar {
+  position: sticky; top: var(--header-h); height: calc(100vh - var(--header-h));
+  overflow-y: auto; border-right: 1px solid var(--border);
+  padding: 24px 0;
+  scrollbar-width: thin; scrollbar-color: var(--border-mid) transparent;
+}
+.sidebar-section-label {
+  font-family: var(--font-mono); font-size: .65rem; font-weight: 600;
+  color: var(--text-subtle); text-transform: uppercase; letter-spacing: .1em;
+  padding: 12px 18px 4px;
+}
+nav.sidebar ol { list-style: none; }
+nav.sidebar li { position: relative; }
+nav.sidebar a {
+  display: flex; align-items: center; gap: 10px;
+  font-size: .82rem; color: var(--text-muted); text-decoration: none;
+  padding: 6px 18px; border-left: 2px solid transparent;
+  transition: all .12s ease; line-height: 1.3;
+}
+nav.sidebar a .n {
+  font-family: var(--font-mono); font-size: .68rem; color: var(--border-mid);
+  min-width: 20px; flex-shrink: 0;
+}
+nav.sidebar a:hover { color: var(--text); background: var(--cyan-dim); }
+nav.sidebar a.active {
+  color: var(--cyan); border-left-color: var(--cyan);
+  background: var(--cyan-dim);
+}
+nav.sidebar a.active .n { color: var(--cyan); }
+
+/* ── MAIN CONTENT ── */
+main { padding: 0 48px 100px; min-width: 0; max-width: 860px; }
+@media (max-width: 860px) { main { padding: 0 20px 80px; } }
+
+/* ── HERO ── */
+.hero {
+  padding: 64px 0 56px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 0;
+}
+.hero .eyebrow {
+  font-family: var(--font-mono); font-size: .75rem; color: var(--amber);
+  letter-spacing: .12em; text-transform: uppercase;
+  display: flex; align-items: center; gap: 8px; margin-bottom: 20px;
+}
+.hero .eyebrow::before { content: "›"; color: var(--cyan); }
+.hero h1 {
+  font-family: var(--font-display); font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 700; line-height: 1.1; letter-spacing: -.02em; margin-bottom: 16px;
+}
+.hero h1 em { color: var(--cyan); font-style: normal; }
+.hero .lead {
+  color: var(--text-muted); font-size: 1rem; max-width: 520px; margin-bottom: 32px; line-height: 1.7;
+}
+.hero-console {
+  background: var(--bg-panel); border: 1px solid var(--border-mid);
+  border-radius: var(--radius-lg); max-width: 580px;
+  box-shadow: 0 12px 40px rgba(0,0,0,.4); overflow: hidden;
+}
+.hero-console .bar {
+  display: flex; align-items: center; gap: 6px;
+  padding: 10px 14px; border-bottom: 1px solid var(--border);
+  background: var(--bg-panel-alt);
+}
+.hero-console .bar .dot-r { width:10px;height:10px;border-radius:50%;background:#fc8181; }
+.hero-console .bar .dot-y { width:10px;height:10px;border-radius:50%;background:#f6ad55; }
+.hero-console .bar .dot-g { width:10px;height:10px;border-radius:50%;background:#68d391; }
+.hero-console .bar .title {
+  margin-left: 8px; font-family: var(--font-mono); font-size: .72rem; color: var(--text-subtle);
+}
+.hero-console .body {
+  padding: 18px 20px; font-family: var(--font-mono); font-size: .88rem; min-height: 110px;
+}
+.hero-console .body .line { color: var(--text-muted); margin-bottom: 4px; }
+#typed { color: var(--text); }
+.cursor { display:inline-block;width:7px;height:1.1em;background:var(--cyan);animation:blink .9s infinite;margin-left:2px;vertical-align:text-bottom; }
+.hero-console .body .out { color: var(--green); white-space: pre; margin-top:8px; }
+
+/* ── CHAPTER SECTIONS ── */
+main { counter-reset: chapnum; }
+section.chapter {
+  padding: 56px 0 8px;
+  border-top: 1px solid var(--border);
+  scroll-margin-top: calc(var(--header-h) + 20px);
+  counter-increment: chapnum;
+}
+section.chapter:first-of-type { border-top: none; }
+
+.chapter-header {
+  display: flex; align-items: flex-start; gap: 16px;
+  margin-bottom: 12px;
+}
+.chap-num {
+  font-family: var(--font-mono); font-size: .7rem; font-weight: 600;
+  color: var(--cyan); background: var(--cyan-dim); border: 1px solid rgba(77,217,192,.25);
+  padding: 4px 8px; border-radius: 5px; flex-shrink: 0; margin-top: 6px;
+  min-width: 42px; text-align: center;
+}
+.chap-num::before { content: counter(chapnum, decimal-leading-zero); }
+.chapter-header h2 {
+  font-family: var(--font-display); font-size: 1.65rem; font-weight: 600; line-height: 1.2;
+}
+.chapter-intro {
+  color: var(--text-muted); font-size: .95rem; max-width: 680px;
+  margin-bottom: 24px; line-height: 1.75;
+}
+.chapter-intro b, .chapter-intro strong { color: var(--text); }
+h3.subhead {
+  font-family: var(--font-display); font-size: 1rem; font-weight: 600;
+  margin: 28px 0 8px; color: var(--text); display: flex; align-items: center; gap: 8px;
+}
+h3.subhead::before {
+  content: ""; display: inline-block; width: 3px; height: 14px;
+  background: var(--cyan); border-radius: 2px; flex-shrink: 0;
+}
+
+/* ── CARDS ── */
+.grid { display: grid; gap: 12px; margin: 20px 0; }
+.grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 720px) {
+  .grid.cols-2, .grid.cols-3, .grid.cols-4 { grid-template-columns: 1fr; }
+}
+
+.card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 18px;
+  transition: border-color .15s, transform .15s;
+}
+.card:hover { border-color: var(--border-mid); transform: translateY(-2px); }
+.card h3 {
+  font-family: var(--font-display); font-size: .95rem; font-weight: 600;
+  margin-bottom: 6px; display: flex; align-items: center; gap: 8px;
+}
+.card p { color: var(--text-muted); font-size: .85rem; line-height: 1.6; }
+.card code { font-family: var(--font-mono); color: var(--amber); font-size: .82em; }
+
+.tag {
+  font-family: var(--font-mono); font-size: .62rem; padding: 2px 8px;
+  border-radius: 20px; display: inline-block; margin-bottom: 8px;
+  letter-spacing: .06em; font-weight: 600; text-transform: uppercase;
+}
+.tag.ddl { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(99,179,237,.2); }
+.tag.dml { background: var(--green-dim); color: var(--green); border: 1px solid rgba(104,211,145,.2); }
+.tag.dcl { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(183,148,244,.2); }
+.tag.tcl { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(246,173,85,.2); }
+
+/* ── CONSOLE ── */
+.console {
+  background: var(--bg-panel); border: 1px solid var(--border-mid);
+  border-radius: var(--radius-lg); margin: 16px 0; overflow: hidden;
+}
+.console .bar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 14px; border-bottom: 1px solid var(--border);
+  background: var(--bg-panel-alt);
+}
+.console .bar .label {
+  font-family: var(--font-mono); font-size: .7rem; color: var(--text-subtle);
+  letter-spacing: .04em;
+}
+.console .bar button {
+  font-family: var(--font-mono); font-size: .7rem; color: #04140f;
+  background: var(--cyan); border: none; padding: 4px 12px;
+  border-radius: 5px; cursor: pointer; font-weight: 700;
+  transition: background .12s; white-space: nowrap;
+}
+.console .bar button:hover { background: #74e8d6; }
+.console pre {
+  padding: 16px 18px; overflow-x: auto; font-family: var(--font-mono);
+  font-size: .84rem; line-height: 1.7; tab-size: 2;
+}
+.console pre .kw { color: var(--blue); font-weight: 600; }
+.console pre .fn { color: var(--amber); }
+.console pre .str { color: var(--green); }
+.console pre .cmt { color: var(--text-subtle); font-style: italic; }
+.console pre .num { color: var(--purple); }
+.console .result {
+  max-height: 0; overflow: hidden; transition: max-height .3s ease;
+  border-top: 1px solid transparent;
+}
+.console .result.open { max-height: 280px; border-top: 1px solid var(--border); }
+.console .result-inner { padding: 12px 18px; font-family: var(--font-mono); font-size: .8rem; }
+.console .result table { width: 100%; border-collapse: collapse; }
+.console .result th { text-align: left; color: var(--cyan); font-weight: 600; padding: 3px 10px; border-bottom: 1px solid var(--border); }
+.console .result td { padding: 3px 10px; color: var(--text-muted); opacity: 0; transform: translateY(3px); animation: rowIn .25s forwards; }
+.console .result tr:nth-child(1) td { animation-delay: .04s; }
+.console .result tr:nth-child(2) td { animation-delay: .12s; }
+.console .result tr:nth-child(3) td { animation-delay: .2s; }
+.console .result .msg { color: var(--green); font-weight: 600; }
+@keyframes rowIn { to { opacity: 1; transform: translateY(0); } }
+
+/* ── DIAGRAM TABLE ── */
+.diagram-table {
+  border-collapse: collapse; margin: 20px 0; width: 100%; max-width: 520px;
+  font-family: var(--font-mono); font-size: .84rem;
+}
+.diagram-table th, .diagram-table td {
+  border: 1px solid var(--border-mid); padding: 10px 14px; text-align: left;
+}
+.diagram-table th { background: var(--bg-panel-alt); color: var(--cyan); cursor: pointer; transition: background .12s; }
+.diagram-table th:hover { background: rgba(77,217,192,.15); }
+.diagram-table td { background: var(--bg-panel); transition: background .12s; }
+.diagram-table tr:hover td { background: rgba(246,173,85,.08); }
+.diagram-table td.hl-col, .diagram-table th.hl-col { background: rgba(77,217,192,.18) !important; }
+.diagram-legend { display: flex; gap: 20px; margin-top: 8px; font-size: .8rem; color: var(--text-muted); flex-wrap: wrap; }
+.diagram-legend span { display: flex; align-items: center; gap: 6px; }
+.diagram-legend i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+
+/* ── TYPES TABLE ── */
+.types-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: .88rem; }
+.types-table th {
+  text-align: left; padding: 9px 14px; border-bottom: 2px solid var(--border-mid);
+  font-family: var(--font-mono); color: var(--cyan); font-size: .72rem;
+  text-transform: uppercase; letter-spacing: .07em;
+}
+.types-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.types-table tr:hover td { background: var(--bg-panel); }
+.types-table code { font-family: var(--font-mono); color: var(--amber); font-size: .83rem; }
+.types-table td.desc { color: var(--text-muted); }
+
+/* ── VENN JOINS ── */
+.venn-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 14px; margin: 20px 0; }
+@media (max-width: 640px) { .venn-grid { grid-template-columns: 1fr; } }
+.venn-card {
+  background: var(--bg-panel); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px;
+  display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;
+}
+.venn-card svg { width: 120px; height: 80px; }
+.venn-card .stroke { fill: none; stroke: var(--border-mid); stroke-width: 2; }
+.venn-card .fillzone { fill: var(--cyan); opacity: .5; }
+.venn-card h4 { font-family: var(--font-mono); font-size: .78rem; color: var(--cyan); margin-top: 2px; }
+.venn-card p { font-size: .76rem; color: var(--text-muted); line-height: 1.5; }
+
+/* ── ER CARDS ── */
+.er-card {
+  background: var(--bg-panel); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px;
+  display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center;
+}
+.er-card svg { width: 100%; max-width: 200px; height: 90px; }
+.er-card .box { fill: var(--bg-panel-alt); stroke: var(--border-mid); stroke-width: 1.5; }
+.er-card .box-label { fill: var(--text); font-family: var(--font-mono); font-size: 10px; }
+.er-card .rel-line { stroke: var(--cyan); stroke-width: 2; }
+.er-card .rel-label { fill: var(--amber); font-family: var(--font-mono); font-weight: 700; font-size: 11px; }
+.er-card h4 { font-family: var(--font-mono); font-size: .82rem; color: var(--cyan); }
+.er-card p { font-size: .76rem; color: var(--text-muted); line-height: 1.5; }
+
+/* ── ER STEPS ── */
+.er-steps { counter-reset: erstep; list-style: none; margin: 16px 0; }
+.er-steps li {
+  counter-increment: erstep; padding: 6px 0 6px 40px; position: relative;
+  color: var(--text-muted); font-size: .9rem; line-height: 1.6;
+}
+.er-steps li::before {
+  content: counter(erstep); position: absolute; left: 0; top: 7px;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--bg-panel-alt); border: 1px solid var(--cyan);
+  color: var(--cyan); font-family: var(--font-mono); font-size: .7rem;
+  display: flex; align-items: center; justify-content: center;
+}
+.er-steps li b { color: var(--text); }
+
+/* ── PREFIX TABLE ── */
+.prefix-chip {
+  font-family: var(--font-mono); font-weight: 700; font-size: .8rem;
+  color: #0d1117; background: var(--amber); padding: 2px 8px;
+  border-radius: 4px; display: inline-block;
+}
+.prefix-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: .88rem; }
+.prefix-table th {
+  text-align: left; padding: 9px 14px; border-bottom: 2px solid var(--border-mid);
+  font-family: var(--font-mono); color: var(--cyan); font-size: .7rem;
+  text-transform: uppercase; letter-spacing: .07em;
+}
+.prefix-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.prefix-table tr:hover td { background: var(--bg-panel); }
+.prefix-table code { font-family: var(--font-mono); color: var(--green); font-size: .83em; }
+.prefix-table td.desc { color: var(--text-muted); }
+
+/* ── PRIV TABLE ── */
+.priv-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: .86rem; }
+.priv-table th {
+  text-align: left; padding: 9px 14px; border-bottom: 2px solid var(--border-mid);
+  font-family: var(--font-mono); color: var(--purple); font-size: .68rem;
+  text-transform: uppercase; letter-spacing: .07em;
+}
+.priv-table td { padding: 9px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.priv-table tr:hover td { background: var(--bg-panel); }
+.priv-table code { font-family: var(--font-mono); color: var(--purple); font-size: .83em; }
+.priv-table td.desc { color: var(--text-muted); }
+
+/* ── INLINE CODE ── */
+code.inline {
+  font-family: var(--font-mono); background: var(--bg-panel-alt);
+  color: var(--amber); padding: 1px 6px; border-radius: 4px; font-size: .82em;
+}
+
+/* ── NOTE ── */
+.note {
+  display: flex; gap: 12px;
+  background: var(--bg-panel); border-left: 3px solid var(--cyan);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 12px 16px; margin: 16px 0; font-size: .88rem; color: var(--text-muted);
+}
+.note b { color: var(--text); }
+.note.warn { border-left-color: var(--amber); }
+.note.warn code.inline { background: var(--amber-dim); color: var(--amber); }
+
+/* ── SEARCH HIGHLIGHT ── */
+mark.search-match {
+  background: rgba(246,173,85,.35); color: var(--text);
+  border-radius: 2px; padding: 0 2px;
+}
+
+/* ── FOOTER ── */
+footer {
+  text-align: center; padding: 56px 20px 40px; color: var(--text-subtle);
+  font-size: .8rem; border-top: 1px solid var(--border);
+  margin-top: 48px; font-family: var(--font-mono);
+}
+footer .dot { color: var(--amber); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+  html { scroll-behavior: auto; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header id="topbar">
+  <div class="brand"><span class="dot"></span>psql://guia</div>
+  <div class="search-wrap">
+    <span class="ico">⌕</span>
+    <input type="text" id="searchInput" placeholder="Buscar no guia…" autocomplete="off" spellcheck="false">
+  </div>
+</header>
+
+<div id="progress"></div>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <nav class="sidebar" aria-label="Sumário">
+    <div class="sidebar-section-label">Fundamentos</div>
+    <ol>
+      <li><a href="#cap1" data-nav><span class="n">01</span>O que é um banco de dados</a></li>
+      <li><a href="#cap2" data-nav><span class="n">02</span>O que é um SGBD</a></li>
+      <li><a href="#cap3" data-nav><span class="n">03</span>Tabela, linha e coluna</a></li>
+      <li><a href="#cap-der" data-nav><span class="n">04</span>Diagrama ER</a></li>
+      <li><a href="#cap14" data-nav><span class="n">05</span>Tipos de dados</a></li>
+    </ol>
+    <div class="sidebar-section-label">Modelagem</div>
+    <ol>
+      <li><a href="#cap-prefixos" data-nav><span class="n">06</span>Boas práticas: prefixos</a></li>
+      <li><a href="#cap4" data-nav><span class="n">07</span>Criando tabelas</a></li>
+      <li><a href="#cap5" data-nav><span class="n">08</span>DDL, DML e DCL</a></li>
+      <li><a href="#cap-dcl" data-nav><span class="n">09</span>DCL na prática</a></li>
+    </ol>
+    <div class="sidebar-section-label">Manipulação de dados</div>
+    <ol>
+      <li><a href="#cap6" data-nav><span class="n">10</span>INSERT</a></li>
+      <li><a href="#cap10" data-nav><span class="n">11</span>SELECT</a></li>
+      <li><a href="#cap7" data-nav><span class="n">12</span>UPDATE</a></li>
+      <li><a href="#cap8" data-nav><span class="n">13</span>DELETE</a></li>
+      <li><a href="#cap9" data-nav><span class="n">14</span>ALTER TABLE</a></li>
+    </ol>
+    <div class="sidebar-section-label">Consultas avançadas</div>
+    <ol>
+      <li><a href="#cap11" data-nav><span class="n">15</span>GROUP BY / HAVING</a></li>
+      <li><a href="#cap12" data-nav><span class="n">16</span>JOINs</a></li>
+      <li><a href="#cap13" data-nav><span class="n">17</span>Datas e textos</a></li>
+      <li><a href="#cap23" data-nav><span class="n">18</span>WITH e subqueries</a></li>
+      <li><a href="#cap-filtros" data-nav><span class="n">18b</span>Filtros e funções</a></li>
+    </ol>
+    <div class="sidebar-section-label">Objetos do banco</div>
+    <ol>
+      <li><a href="#cap15" data-nav><span class="n">19</span>VIEW</a></li>
+      <li><a href="#cap19" data-nav><span class="n">20</span>INDEX</a></li>
+      <li><a href="#cap20" data-nav><span class="n">21</span>EXPLAIN ANALYZE</a></li>
+      <li><a href="#cap18" data-nav><span class="n">22</span>SEQUENCE</a></li>
+      <li><a href="#cap17" data-nav><span class="n">23</span>FUNCTION</a></li>
+      <li><a href="#cap16" data-nav><span class="n">24</span>TRIGGER</a></li>
+    </ol>
+    <div class="sidebar-section-label">Manutenção</div>
+    <ol>
+      <li><a href="#cap21" data-nav><span class="n">25</span>VACUUM</a></li>
+      <li><a href="#cap22" data-nav><span class="n">26</span>Backup e restauração</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero">
+      <div class="eyebrow">guia interativo · PostgreSQL</div>
+      <h1>Aprenda banco de dados <em>do jeito que ele funciona</em></h1>
+      <p class="lead">Do conceito de banco de dados até VACUUM e EXPLAIN ANALYZE — cada capítulo traz a explicação e um console para você ver o comando rodando.</p>
+      <div class="hero-console">
+        <div class="bar">
+          <span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span>
+          <span class="title">psql — guia interativo</span>
+        </div>
+        <div class="body">
+          <div class="line">-- bem-vindo(a). isto é uma simulação visual.</div>
+          <div id="typed"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CAP 1 -->
+    <section class="chapter" id="cap1">
+      <div class="chapter-header"><span class="chap-num"></span><h2>O que é um banco de dados?</h2></div>
+      <p class="chapter-intro">Um <b>banco de dados</b> é um conjunto organizado de dados, guardado de forma estruturada para que possam ser armazenados, consultados, alterados e apagados de maneira confiável — sem depender de arquivos soltos tipo planilhas ou textos.</p>
+      <div class="grid cols-3">
+        <div class="card"><h3>📦 Organização</h3><p>Os dados são guardados em estruturas previsíveis (tabelas), não em arquivos avulsos.</p></div>
+        <div class="card"><h3>🔒 Confiabilidade</h3><p>Regras garantem que os dados fiquem consistentes mesmo com vários acessos ao mesmo tempo.</p></div>
+        <div class="card"><h3>🔍 Consulta</h3><p>É possível buscar, filtrar e cruzar informações de forma rápida através de uma linguagem, o SQL.</p></div>
+      </div>
+      <div class="note"><span>💡</span><div><b>Analogia:</b> pense num arquivo de gavetas de um escritório, só que digital — cada gaveta é organizada por categoria, tem etiquetas e um sistema que sabe exatamente onde cada papel está.</div></div>
+    </section>
+
+    <!-- CAP 2 -->
+    <section class="chapter" id="cap2">
+      <div class="chapter-header"><span class="chap-num"></span><h2>O que é um SGBD?</h2></div>
+      <p class="chapter-intro"><b>SGBD</b> (Sistema Gerenciador de Banco de Dados) é o <i>software</i> que fica entre você (ou sua aplicação) e os dados guardados fisicamente no disco. Você nunca mexe nos dados diretamente — sempre pede para o SGBD fazer isso por você.</p>
+      <div class="grid cols-4">
+        <div class="card"><h3>Armazenamento</h3><p>Organiza fisicamente onde e como os dados ficam salvos.</p></div>
+        <div class="card"><h3>Controle de acesso</h3><p>Define quem pode ler, escrever ou apagar cada informação.</p></div>
+        <div class="card"><h3>Integridade</h3><p>Garante regras como "e-mail não pode se repetir".</p></div>
+        <div class="card"><h3>Concorrência</h3><p>Permite vários usuários acessando ao mesmo tempo sem corromper dados.</p></div>
+      </div>
+      <p style="margin-top:8px; color:var(--text-muted); font-size:.88rem;">Exemplos de SGBD: <code class="inline">PostgreSQL</code>, <code class="inline">MySQL</code>, <code class="inline">SQL Server</code>, <code class="inline">Oracle</code>, <code class="inline">SQLite</code>. Este guia usa o PostgreSQL, um SGBD relacional, open-source e muito usado no mercado.</p>
+    </section>
+
+    <!-- CAP 3 -->
+    <section class="chapter" id="cap3">
+      <div class="chapter-header"><span class="chap-num"></span><h2>Tabela, linha e coluna</h2></div>
+      <p class="chapter-intro">Em um banco relacional, os dados ficam em <b>tabelas</b>. Passe o mouse na tabela abaixo: cada <b>linha</b> (row) é um registro completo; cada <b>coluna</b> (column) é um atributo que se repete em todas as linhas.</p>
+      <table class="diagram-table" id="diagTable">
+        <thead><tr><th data-col="0">id_usuario</th><th data-col="1">tx_nome</th><th data-col="2">tx_email</th><th data-col="3">nr_idade</th></tr></thead>
+        <tbody>
+          <tr><td data-col="0">1</td><td data-col="1">Ana Silva</td><td data-col="2">ana@email.com</td><td data-col="3">28</td></tr>
+          <tr><td data-col="0">2</td><td data-col="1">Bruno Costa</td><td data-col="2">bruno@email.com</td><td data-col="3">34</td></tr>
+          <tr><td data-col="0">3</td><td data-col="1">Carla Dias</td><td data-col="2">carla@email.com</td><td data-col="3">21</td></tr>
+        </tbody>
+      </table>
+      <div class="diagram-legend">
+        <span><i style="background:var(--bg-panel-alt); border:1px solid var(--cyan);"></i>Coluna = atributo (campo)</span>
+        <span><i style="background:rgba(246,173,85,.3);"></i>Linha = registro</span>
+      </div>
+    </section>
+
+    <!-- CAP 4 DER -->
+    <section class="chapter" id="cap-der">
+      <div class="chapter-header"><span class="chap-num"></span><h2>Diagrama Entidade-Relacionamento (DER)</h2></div>
+      <p class="chapter-intro">Antes de criar a primeira tabela, é assim que se planeja um banco de dados: um <b>DER</b> é um desenho que representa as <b>entidades</b> (futuras tabelas), seus <b>atributos</b> (colunas) e como elas se <b>relacionam</b> entre si — tudo isso sem escrever uma linha de SQL.</p>
+      <div class="grid cols-3">
+        <div class="card"><h3>🧩 O que ele mostra</h3><p>As entidades do sistema, seus atributos principais, a chave primária de cada uma e os relacionamentos (com cardinalidade) entre elas.</p></div>
+        <div class="card"><h3>🎯 Por que é importante</h3><p>Planejar no papel é muito mais barato que corrigir uma tabela em produção. Evita retrabalho, revela problemas de modelagem cedo e serve como documentação viva do sistema.</p></div>
+        <div class="card"><h3>🗣️ Facilita comunicação</h3><p>É a linguagem comum entre quem programa e quem entende o negócio — dá pra validar as regras antes de implementar.</p></div>
+      </div>
+      <h3 class="subhead">Como criar um DER</h3>
+      <ol class="er-steps">
+        <li><b>Identifique as entidades</b> — os "substantivos" do sistema: usuário, pedido, produto...</li>
+        <li><b>Liste os atributos</b> de cada entidade — o que precisa ser guardado sobre ela.</li>
+        <li><b>Defina a chave primária</b> — o que identifica cada registro de forma única.</li>
+        <li><b>Trace os relacionamentos</b> entre as entidades e defina a cardinalidade de cada um.</li>
+        <li><b>Desenhe</b> — no papel ou em ferramentas como draw.io, dbdiagram.io, brModelo ou o próprio pgAdmin.</li>
+      </ol>
+      <h3 class="subhead">Boas práticas</h3>
+      <div class="grid cols-2">
+        <div class="card"><h3>✅ Nomeie com clareza</h3><p>Nomes de entidades no singular na modelagem (Usuário, Pedido) — cada um vira uma tabela depois.</p></div>
+        <div class="card"><h3>✅ Um atributo, um valor</h3><p>Evite colunas que guardam vários valores juntos (ex: "telefones" separados por vírgula).</p></div>
+        <div class="card"><h3>✅ Cardinalidade explícita</h3><p>Toda linha de relacionamento deve deixar claro se é 1:1, 1:N ou N:N.</p></div>
+        <div class="card"><h3>✅ Valide com o negócio</h3><p>Confirme as regras com quem entende o processo antes de implementar no banco.</p></div>
+      </div>
+      <h3 class="subhead">Como vincular uma tabela a outra</h3>
+      <p class="chapter-intro">No DER, uma linha conectando duas entidades representa um relacionamento. A forma de <b>implementar</b> esse relacionamento no banco depende da cardinalidade:</p>
+      <div class="venn-grid">
+        <div class="er-card">
+          <svg viewBox="0 0 200 100">
+            <rect class="box" x="10" y="30" width="70" height="40" rx="4"/>
+            <text class="box-label" x="45" y="54" text-anchor="middle">usuario</text>
+            <rect class="box" x="120" y="30" width="70" height="40" rx="4"/>
+            <text class="box-label" x="155" y="54" text-anchor="middle">perfil</text>
+            <line class="rel-line" x1="80" y1="50" x2="120" y2="50"/>
+            <text class="rel-label" x="88" y="42">1</text>
+            <text class="rel-label" x="104" y="42">1</text>
+          </svg>
+          <h4>Um para um (1:1)</h4>
+          <p>1 usuário tem no máximo 1 perfil, e vice-versa.</p>
+        </div>
+        <div class="er-card">
+          <svg viewBox="0 0 200 100">
+            <rect class="box" x="10" y="30" width="70" height="40" rx="4"/>
+            <text class="box-label" x="45" y="54" text-anchor="middle">usuario</text>
+            <rect class="box" x="120" y="30" width="70" height="40" rx="4"/>
+            <text class="box-label" x="155" y="54" text-anchor="middle">pedido</text>
+            <line class="rel-line" x1="80" y1="50" x2="120" y2="50"/>
+            <text class="rel-label" x="88" y="42">1</text>
+            <text class="rel-label" x="103" y="42">N</text>
+          </svg>
+          <h4>Um para muitos (1:N)</h4>
+          <p>1 usuário pode ter vários pedidos; cada pedido é de 1 usuário só.</p>
+        </div>
+        <div class="er-card">
+          <svg viewBox="0 0 200 100">
+            <rect class="box" x="10" y="30" width="70" height="40" rx="4"/>
+            <text class="box-label" x="45" y="54" text-anchor="middle">pedido</text>
+            <rect class="box" x="120" y="30" width="70" height="40" rx="4"/>
+            <text class="box-label" x="155" y="54" text-anchor="middle">produto</text>
+            <line class="rel-line" x1="80" y1="50" x2="120" y2="50"/>
+            <text class="rel-label" x="88" y="42">N</text>
+            <text class="rel-label" x="103" y="42">N</text>
+          </svg>
+          <h4>Muitos para muitos (N:N)</h4>
+          <p>Vários pedidos têm vários produtos, e vice-versa.</p>
+        </div>
+      </div>
+      <div class="note"><span>💡</span><div><b>"Muitos para um" (N:1)</b> é a mesma relação que 1:N, só vista do outro lado: muitos pedidos pertencem a um único usuário. É sempre a mesma linha do diagrama, lida em duas direções.</div></div>
+      <div class="console">
+        <div class="bar"><span class="label">1_para_1.sql — a chave estrangeira recebe UNIQUE</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">CREATE TABLE</span> tb_perfis (
+    id_perfil <span class="fn">SERIAL</span> <span class="kw">PRIMARY KEY</span>,
+    cd_usuario <span class="fn">INTEGER</span> <span class="kw">UNIQUE REFERENCES</span> tb_usuarios(id_usuario),
+    tx_bio <span class="fn">TEXT</span>
+);</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ cada usuário só pode aparecer 1 vez em "tb_perfis" — isso garante o 1:1.</span></div></div>
+      </div>
+      <div class="console">
+        <div class="bar"><span class="label">1_para_n.sql — a chave estrangeira fica na tabela "muitos"</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">CREATE TABLE</span> tb_pedidos (
+    id_pedido <span class="fn">SERIAL</span> <span class="kw">PRIMARY KEY</span>,
+    cd_usuario <span class="fn">INTEGER</span> <span class="kw">REFERENCES</span> tb_usuarios(id_usuario),
+    vl_total <span class="fn">NUMERIC</span>(<span class="num">10</span>,<span class="num">2</span>)
+);</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ sem UNIQUE — o mesmo cd_usuario pode se repetir em vários pedidos.</span></div></div>
+      </div>
+      <div class="console">
+        <div class="bar"><span class="label">n_para_n.sql — precisa de uma tabela associativa</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">CREATE TABLE</span> tb_itens_pedido (
+    cd_pedido <span class="fn">INTEGER</span> <span class="kw">REFERENCES</span> tb_pedidos(id_pedido),
+    cd_produto <span class="fn">INTEGER</span> <span class="kw">REFERENCES</span> tb_produtos(id_produto),
+    nr_quantidade <span class="fn">INTEGER</span> <span class="kw">NOT NULL</span>,
+    <span class="kw">PRIMARY KEY</span> (cd_pedido, cd_produto)
+);</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ "tb_itens_pedido" liga tb_pedidos e tb_produtos — uma linha por combinação.</span></div></div>
+      </div>
+      <div class="note warn"><span>⚠️</span><div>O PostgreSQL <b>não tem</b> um jeito direto de fazer N:N entre duas tabelas — sempre é necessária uma <b>tabela associativa</b> (também chamada de tabela pivô ou de junção) no meio, com uma FK para cada lado.</div></div>
+    </section>
+
+    <!-- CAP 5 TIPOS -->
+    <section class="chapter" id="cap14">
+      <div class="chapter-header"><span class="chap-num"></span><h2>Tipos de dados</h2></div>
+      <p class="chapter-intro">Cada coluna precisa de um tipo, que define que tipo de valor ela aceita e quanto espaço ocupa.</p>
+      <table class="types-table">
+        <thead><tr><th>Tipo</th><th>Uso</th></tr></thead>
+        <tbody id="typesBody"></tbody>
+      </table>
+    </section>
+
+    <!-- CAP 6 PREFIXOS -->
+    <section class="chapter" id="cap-prefixos">
+      <div class="chapter-header"><span class="chap-num"></span><h2>Boas práticas: nomes com prefixo</h2></div>
+      <p class="chapter-intro">Além das convenções já vistas (snake_case, plural nas tabelas), muitas empresas adotam um padrão ainda mais explícito: um <b>prefixo de 2 letras</b> no nome de cada coluna, indicando o tipo de dado que ela guarda. Tudo sempre em <b>minúsculo</b>. Isso deixa o significado do dado visível só de olhar o nome — sem precisar abrir a estrutura da tabela.</p>
+      <table class="prefix-table">
+        <thead><tr><th>Prefixo</th><th>Uso</th><th>Exemplo</th></tr></thead>
+        <tbody>
+          <tr><td><span class="prefix-chip">tb_</span></td><td class="desc">Nome de tabela</td><td><code>tb_usuarios</code></td></tr>
+          <tr><td><span class="prefix-chip">id_</span></td><td class="desc">Identificador sequencial — chave primária da própria tabela</td><td><code>id_usuario</code></td></tr>
+          <tr><td><span class="prefix-chip">cd_</span></td><td class="desc">Código — chave estrangeira, referenciando outra tabela</td><td><code>cd_usuario</code></td></tr>
+          <tr><td><span class="prefix-chip">vl_</span></td><td class="desc">Valor — números reais/decimais (dinheiro, medidas)</td><td><code>vl_salario</code></td></tr>
+          <tr><td><span class="prefix-chip">nr_</span></td><td class="desc">Número — valores inteiros</td><td><code>nr_idade</code></td></tr>
+          <tr><td><span class="prefix-chip">tx_</span></td><td class="desc">Texto — strings em geral</td><td><code>tx_descricao</code></td></tr>
+          <tr><td><span class="prefix-chip">fl_</span></td><td class="desc">Flag — valores booleanos (verdadeiro/falso)</td><td><code>fl_ativo</code></td></tr>
+          <tr><td><span class="prefix-chip">dt_</span></td><td class="desc">Data — datas ou data e hora</td><td><code>dt_nascimento</code></td></tr>
+        </tbody>
+      </table>
+      <p class="chapter-intro">Juntando tudo em uma tabela real:</p>
+      <div class="console">
+        <div class="bar"><span class="label">tabela_com_prefixos.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">CREATE TABLE</span> tb_pedidos (
+    id_pedido <span class="fn">SERIAL</span> <span class="kw">PRIMARY KEY</span>,
+    cd_usuario <span class="fn">INTEGER</span> <span class="kw">REFERENCES</span> tb_usuarios(id_usuario),
+    vl_total <span class="fn">NUMERIC</span>(<span class="num">10</span>,<span class="num">2</span>) <span class="kw">NOT NULL</span>,
+    nr_itens <span class="fn">INTEGER</span> <span class="kw">NOT NULL</span>,
+    tx_observacao <span class="fn">TEXT</span>,
+    fl_pago <span class="fn">BOOLEAN</span> <span class="kw">DEFAULT</span> <span class="kw">false</span>,
+    dt_criacao <span class="fn">TIMESTAMP</span> <span class="kw">DEFAULT</span> NOW()
+);</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ CREATE TABLE — basta ler os nomes das colunas pra saber o tipo de cada uma.</span></div></div>
+      </div>
+      <div class="note"><span>💡</span><div>A regra de ouro é a <b>consistência</b>: escolhido o padrão, ele precisa valer para <b>todas</b> as tabelas do banco — sempre minúsculo, sempre o mesmo prefixo para o mesmo tipo de dado, do início ao fim do projeto.</div></div>
+    </section>
+
+    <!-- CAP 7 CREATE TABLE -->
+    <section class="chapter" id="cap4">
+      <div class="chapter-header"><span class="chap-num"></span><h2>Como criar uma tabela</h2></div>
+      <p class="chapter-intro">A tabela do capítulo anterior é criada com o comando <code class="inline">CREATE TABLE</code>. Cada coluna recebe um nome e um tipo de dado, e pode ter restrições (constraints).</p>
+      <div class="console">
+        <div class="bar"><span class="label">criar_tabela.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">CREATE TABLE</span> tb_usuarios (
+    id_usuario <span class="fn">SERIAL</span> <span class="kw">PRIMARY KEY</span>,
+    tx_nome <span class="fn">VARCHAR</span>(<span class="num">100</span>) <span class="kw">NOT NULL</span>,
+    tx_email <span class="fn">VARCHAR</span>(<span class="num">150</span>) <span class="kw">UNIQUE NOT NULL</span>,
+    nr_idade <span class="fn">INTEGER</span> <span class="kw">CHECK</span> (nr_idade &gt;= <span class="num">0</span>),
+    dt_criacao <span class="fn">TIMESTAMP</span> <span class="kw">DEFAULT</span> NOW()
+);</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ CREATE TABLE — tabela "tb_usuarios" criada com sucesso.</span></div></div>
+      </div>
+      <h3 class="subhead">Boas práticas para nomear tabelas e colunas</h3>
+      <div class="grid cols-2">
+        <div class="card"><h3>📛 Prefixo + minúsculo, sempre</h3><p>Tabelas levam <code class="inline">tb_</code>: <code class="inline">tb_usuarios</code>, <code class="inline">tb_pedidos</code> — nunca <code class="inline">Usuario</code> ou <code class="inline">USUARIOS</code>.</p></div>
+        <div class="card"><h3>🔤 Um prefixo, um significado</h3><p>O prefixo já entrega o tipo do dado: <code class="inline">dt_nascimento</code> deixa claro que é uma data, sem precisar consultar a tabela.</p></div>
+        <div class="card"><h3>🎯 Nomes claros, sem abreviar demais</h3><p>Prefira <code class="inline">vl_total</code> a algo como <code class="inline">vl_tot</code> — quem lê a query depois agradece.</p></div>
+        <div class="card"><h3>🔑 FK = cd_ + tabela referenciada</h3><p>Em <code class="inline">tb_pedidos</code>, a coluna que aponta para <code class="inline">tb_usuarios</code> chama-se <code class="inline">cd_usuario</code>.</p></div>
+        <div class="card"><h3>🚫 Evite palavras reservadas</h3><p>Não nomeie colunas como <code class="inline">order</code>, <code class="inline">table</code> ou <code class="inline">user</code> — são palavras-chave do SQL.</p></div>
+        <div class="card"><h3>🧭 Consistência acima de tudo</h3><p>Se o padrão do projeto usa <code class="inline">dt_criacao</code>, use sempre <code class="inline">dt_criacao</code> — nunca misture com <code class="inline">dt_criado</code> em outra tabela.</p></div>
+      </div>
+      <h3 class="subhead">Chave primária e chave estrangeira</h3>
+      <p class="chapter-intro">A <b>chave primária (PRIMARY KEY)</b> identifica de forma única cada linha de uma tabela — nenhuma outra linha pode ter o mesmo valor. A <b>chave estrangeira (FOREIGN KEY)</b> é uma coluna que aponta para a chave primária de outra tabela, criando um relacionamento entre elas.</p>
+      <div class="console">
+        <div class="bar"><span class="label">chave_estrangeira.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">CREATE TABLE</span> tb_pedidos (
+    id_pedido <span class="fn">SERIAL</span> <span class="kw">PRIMARY KEY</span>,
+    cd_usuario <span class="fn">INTEGER</span> <span class="kw">REFERENCES</span> tb_usuarios(id_usuario),
+    vl_total <span class="fn">NUMERIC</span>(<span class="num">10</span>,<span class="num">2</span>) <span class="kw">NOT NULL</span>
+);</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ CREATE TABLE — "tb_pedidos" criada; cd_usuario só aceita ids que existam em "tb_usuarios".</span></div></div>
+      </div>
+      <div class="note"><span>💡</span><div>A <b>FOREIGN KEY</b> garante integridade referencial: não é possível inserir um pedido com <code class="inline">cd_usuario</code> que não exista na tabela <code class="inline">tb_usuarios</code>, nem apagar um usuário que ainda tenha pedidos vinculados (a menos que isso seja configurado explicitamente).</div></div>
+      <h3 class="subhead">O que é o SERIAL</h3>
+      <p class="chapter-intro"><code class="inline">SERIAL</code> não é bem um tipo de dado — é um "atalho" do PostgreSQL que cria uma coluna <code class="inline">INTEGER</code>, gera uma <a href="#cap18">SEQUENCE</a> por trás dos panos e configura essa sequência como valor padrão da coluna. Na prática, cada novo <code class="inline">INSERT</code> recebe automaticamente o próximo número — ideal para colunas <code class="inline">id_</code>.</p>
+      <h3 class="subhead">NOT NULL, UNIQUE, CHECK e DEFAULT</h3>
+      <p class="chapter-intro">Além das chaves, essas <b>constraints</b> (restrições) protegem a qualidade dos dados diretamente na definição da coluna:</p>
+      <div class="grid cols-4">
+        <div class="card"><h3>🚧 NOT NULL</h3><p>Obriga o preenchimento da coluna — não permite salvar a linha sem esse valor.</p></div>
+        <div class="card"><h3>🎫 UNIQUE</h3><p>Impede que dois registros tenham o mesmo valor nessa coluna, como um e-mail duplicado.</p></div>
+        <div class="card"><h3>✅ CHECK</h3><p>Valida uma regra de negócio antes de gravar, como <code class="inline">nr_idade &gt;= 0</code>.</p></div>
+        <div class="card"><h3>🧩 DEFAULT</h3><p>Define um valor automático quando nenhum é informado, como <code class="inline">DEFAULT NOW()</code>.</p></div>
+      </div>
+      <h3 class="subhead">Criando a tabela "por extenso" com constraints nomeadas</h3>
+      <p class="chapter-intro">Existe uma segunda forma: declarar as colunas "limpas" e, no final do <code class="inline">CREATE TABLE</code>, listar cada constraint separadamente com um <b>nome próprio</b>. Fica mais longo, mas deixa cada regra fácil de identificar, alterar ou remover depois.</p>
+      <div class="console">
+        <div class="bar"><span class="label">criar_tabela_extensa.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">CREATE TABLE</span> tb_pedidos (
+    id_pedido <span class="fn">SERIAL</span>,
+    cd_usuario <span class="fn">INTEGER</span>,
+    vl_total <span class="fn">NUMERIC</span>(<span class="num">10</span>,<span class="num">2</span>),
+    tx_status <span class="fn">VARCHAR</span>(<span class="num">20</span>) <span class="kw">DEFAULT</span> <span class="str">'pendente'</span>,
+    dt_criacao <span class="fn">TIMESTAMP</span> <span class="kw">DEFAULT</span> NOW(),
+
+    <span class="kw">CONSTRAINT</span> pk_tb_pedidos <span class="kw">PRIMARY KEY</span> (id_pedido),
+    <span class="kw">CONSTRAINT</span> fk_tb_pedidos_cd_usuario <span class="kw">FOREIGN KEY</span> (cd_usuario) <span class="kw">REFERENCES</span> tb_usuarios(id_usuario),
+    <span class="kw">CONSTRAINT</span> ck_tb_pedidos_vl_total <span class="kw">CHECK</span> (vl_total &gt;= <span class="num">0</span>),
+    <span class="kw">CONSTRAINT</span> uq_tb_pedidos_cd_usuario_dt <span class="kw">UNIQUE</span> (cd_usuario, dt_criacao)
+);
+
+<span class="cmt">-- índice criado logo depois, para acelerar buscas por usuário</span>
+<span class="kw">CREATE INDEX</span> idx_tb_pedidos_cd_usuario <span class="kw">ON</span> tb_pedidos(cd_usuario);</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ CREATE TABLE + CREATE INDEX — "tb_pedidos" criada com todas as regras nomeadas.</span></div></div>
+      </div>
+      <div class="note"><span>💡</span><div>Dar um <b>nome</b> à constraint (<code class="inline">pk_tb_pedidos</code>, <code class="inline">fk_tb_pedidos_cd_usuario</code>...) faz o PostgreSQL usar esse nome nas mensagens de erro — muito mais fácil de identificar o problema. Também facilita usar <code class="inline">ALTER TABLE ... DROP CONSTRAINT nome</code> depois.</div></div>
+    </section>
+
+    <!-- CAP 8 DDL DML DCL -->
+    <section class="chapter" id="cap5">
+      <div class="chapter-header"><span class="chap-num"></span><h2>DDL, DML e DCL</h2></div>
+      <p class="chapter-intro">O SQL é dividido em sub-linguagens de acordo com o que o comando faz:</p>
+      <div class="grid cols-3">
+        <div class="card"><span class="tag ddl">DDL</span><h3>Data Definition Language</h3><p>Define e altera a <b>estrutura</b>: <code class="inline">CREATE</code>, <code class="inline">ALTER</code>, <code class="inline">DROP</code>, <code class="inline">TRUNCATE</code>.</p></div>
+        <div class="card"><span class="tag dml">DML</span><h3>Data Manipulation Language</h3><p>Manipula os <b>dados</b> dentro das tabelas: <code class="inline">SELECT</code>, <code class="inline">INSERT</code>, <code class="inline">UPDATE</code>, <code class="inline">DELETE</code>.</p></div>
+        <div class="card"><span class="tag dcl">DCL</span><h3>Data Control Language</h3><p>Controla <b>permissões</b> de acesso: <code class="inline">GRANT</code>, <code class="inline">REVOKE</code>.</p></div>
+      </div>
+      <div class="note"><span>➕</span><div><b>Bônus — TCL</b> (Transaction Control Language): <code class="inline">BEGIN</code>, <code class="inline">COMMIT</code> e <code class="inline">ROLLBACK</code> controlam transações, agrupando vários comandos como uma única operação tudo-ou-nada.</div></div>
+    </section>
+
+    <!-- CAP 9 DCL -->
+    <section class="chapter" id="cap-dcl">
+      <div class="chapter-header"><span class="chap-num"></span><h2>DCL na prática: permissões e acesso</h2></div>
+      <p class="chapter-intro">O <b>DCL</b> (Data Control Language) é a parte do SQL que decide <b>quem pode fazer o quê</b> no banco — quem lê, quem grava, quem apaga, quem pode até criar novas tabelas. Sem ele, todo mundo que se conecta ao banco teria acesso total a tudo.</p>
+      <h3 class="subhead">Por que usar DCL</h3>
+      <div class="grid cols-3">
+        <div class="card"><h3>🔒 Menor privilégio</h3><p>Cada usuário ou aplicação recebe só o acesso necessário para o seu trabalho — nada mais.</p></div>
+        <div class="card"><h3>🛑 Evita desastres</h3><p>Uma aplicação de leitura não deveria conseguir rodar um <code class="inline">DELETE</code> por engano ou por uma falha de segurança.</p></div>
+        <div class="card"><h3>🧾 Auditoria</h3><p>Fica claro quem tem acesso a quê — essencial em times grandes e em dados sensíveis.</p></div>
+      </div>
+      <h3 class="subhead">Todos os comandos</h3>
+      <div class="grid cols-2">
+        <div class="card"><span class="tag dcl">GRANT</span><h3>Conceder privilégio</h3><p>Dá a uma role/usuário permissão para executar uma ação sobre um objeto do banco.</p></div>
+        <div class="card"><span class="tag dcl">REVOKE</span><h3>Revogar privilégio</h3><p>Remove uma permissão concedida anteriormente.</p></div>
+        <div class="card"><span class="tag dcl">CREATE ROLE</span><h3>Criar uma role</h3><p>Cria um usuário ou grupo de permissões (no PostgreSQL, usuários <i>são</i> roles).</p></div>
+        <div class="card"><span class="tag dcl">ALTER ROLE</span><h3>Alterar uma role</h3><p>Muda senha, validade ou características de uma role já existente.</p></div>
+        <div class="card"><span class="tag dcl">DROP ROLE</span><h3>Remover uma role</h3><p>Apaga a role — só funciona se ela não tiver mais nenhum privilégio pendente.</p></div>
+      </div>
+      <h3 class="subhead">Tipos de privilégio</h3>
+      <table class="priv-table">
+        <thead><tr><th>Privilégio</th><th>Permite</th></tr></thead>
+        <tbody>
+          <tr><td><code>SELECT</code></td><td class="desc">Ler dados da tabela ou view.</td></tr>
+          <tr><td><code>INSERT</code></td><td class="desc">Inserir novas linhas.</td></tr>
+          <tr><td><code>UPDATE</code></td><td class="desc">Alterar linhas existentes.</td></tr>
+          <tr><td><code>DELETE</code></td><td class="desc">Remover linhas.</td></tr>
+          <tr><td><code>TRUNCATE</code></td><td class="desc">Esvaziar a tabela inteira de uma vez.</td></tr>
+          <tr><td><code>REFERENCES</code></td><td class="desc">Criar uma FOREIGN KEY apontando para a tabela.</td></tr>
+          <tr><td><code>TRIGGER</code></td><td class="desc">Criar triggers na tabela.</td></tr>
+          <tr><td><code>USAGE</code></td><td class="desc">Usar um schema, sequence ou tipo de dado.</td></tr>
+          <tr><td><code>EXECUTE</code></td><td class="desc">Executar uma function.</td></tr>
+          <tr><td><code>CREATE</code></td><td class="desc">Criar novos objetos dentro de um schema ou banco.</td></tr>
+          <tr><td><code>CONNECT</code></td><td class="desc">Conectar-se ao banco de dados.</td></tr>
+          <tr><td><code>ALL PRIVILEGES</code></td><td class="desc">Concede (ou revoga) todos os privilégios de uma vez.</td></tr>
+        </tbody>
+      </table>
+      <h3 class="subhead">Como criar uma role e conceder acesso</h3>
+      <div class="console">
+        <div class="bar"><span class="label">criar_role.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- cria uma role com login e senha (na prática, um "usuário")</span>
+<span class="kw">CREATE ROLE</span> app_leitura <span class="kw">WITH LOGIN PASSWORD</span> <span class="str">'senha_segura'</span>;</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ CREATE ROLE — "app_leitura" criada.</span></div></div>
+      </div>
+      <div class="console">
+        <div class="bar"><span class="label">grant.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- concede permissão só de leitura em uma tabela específica</span>
+<span class="kw">GRANT SELECT</span> <span class="kw">ON</span> tb_usuarios <span class="kw">TO</span> app_leitura;
+
+<span class="cmt">-- concede várias permissões de uma vez</span>
+<span class="kw">GRANT SELECT, INSERT, UPDATE</span> <span class="kw">ON</span> tb_pedidos <span class="kw">TO</span> app_leitura;
+
+<span class="cmt">-- concede em todas as tabelas de um schema</span>
+<span class="kw">GRANT SELECT</span> <span class="kw">ON ALL TABLES IN SCHEMA</span> public <span class="kw">TO</span> app_leitura;</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ GRANT — privilégios concedidos a "app_leitura".</span></div></div>
+      </div>
+      <div class="console">
+        <div class="bar"><span class="label">revoke.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- remove a permissão de inserir, mantendo a de ler</span>
+<span class="kw">REVOKE INSERT</span> <span class="kw">ON</span> tb_pedidos <span class="kw">FROM</span> app_leitura;</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ REVOKE — privilégio removido de "app_leitura".</span></div></div>
+      </div>
+      <h3 class="subhead">Roles de grupo e privilégios padrão</h3>
+      <p class="chapter-intro">Em vez de conceder permissões usuário por usuário, é comum criar uma <b>role de grupo</b> com os privilégios certos e depois adicionar usuários a ela.</p>
+      <div class="console">
+        <div class="bar"><span class="label">role_de_grupo.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- role "sem login", usada só como grupo de permissões</span>
+<span class="kw">CREATE ROLE</span> grupo_financeiro <span class="kw">WITH NOLOGIN</span>;
+<span class="kw">GRANT SELECT, INSERT, UPDATE</span> <span class="kw">ON</span> tb_pedidos <span class="kw">TO</span> grupo_financeiro;
+
+<span class="cmt">-- adiciona um usuário real ao grupo</span>
+<span class="kw">GRANT</span> grupo_financeiro <span class="kw">TO</span> app_leitura;</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ "app_leitura" herdou os privilégios de "grupo_financeiro".</span></div></div>
+      </div>
+      <div class="console">
+        <div class="bar"><span class="label">privilegios_padrao.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- aplica automaticamente em toda tabela criada depois disso</span>
+<span class="kw">ALTER DEFAULT PRIVILEGES IN SCHEMA</span> public
+<span class="kw">GRANT SELECT</span> <span class="kw">ON TABLES TO</span> app_leitura;</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ ALTER DEFAULT PRIVILEGES — próximas tabelas já nascem visíveis para "app_leitura".</span></div></div>
+      </div>
+      <div class="note"><span>⚙️</span><div>O DCL controla o acesso <b>dentro</b> do banco. Já a permissão de <b>conexão</b> ao servidor (de qual IP, com qual método de autenticação) é configurada fora do SQL, no arquivo <code class="inline">pg_hba.conf</code> do PostgreSQL.</div></div>
+    </section>
+
+    <!-- CAP 10 INSERT -->
+    <section class="chapter" id="cap6">
+      <div class="chapter-header"><span class="chap-num"></span><h2>INSERT — adicionando dados</h2></div>
+      <p class="chapter-intro">Insere uma nova linha na tabela.</p>
+      <div class="console">
+        <div class="bar"><span class="label">insert.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">INSERT INTO</span> tb_usuarios (tx_nome, tx_email, nr_idade)
+<span class="kw">VALUES</span> (<span class="str">'Ana Silva'</span>, <span class="str">'ana@email.com'</span>, <span class="num">28</span>);</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ INSERT 0 1 — 1 linha inserida.</span></div></div>
+      </div>
+    </section>
+
+    <!-- CAP 11 SELECT -->
+    <section class="chapter" id="cap10">
+      <div class="chapter-header"><span class="chap-num"></span><h2>SELECT — consultando dados</h2></div>
+      <p class="chapter-intro">O <code class="inline">SELECT</code> é o comando mais usado do SQL: busca linhas de uma ou mais tabelas. O PostgreSQL primeiro localiza e filtra as linhas (<code class="inline">FROM</code> / <code class="inline">WHERE</code>), depois ordena e limita o resultado.</p>
+      <div class="console">
+        <div class="bar"><span class="label">select.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">SELECT</span> tx_nome, tx_email
+<span class="kw">FROM</span> tb_usuarios
+<span class="kw">WHERE</span> nr_idade &gt;= <span class="num">18</span>
+<span class="kw">ORDER BY</span> tx_nome <span class="kw">ASC</span>
+<span class="kw">LIMIT</span> <span class="num">10</span>;</pre>
+        <div class="result"><div class="result-inner"><table><thead><tr><th>tx_nome</th><th>tx_email</th></tr></thead><tbody>
+          <tr><td>Ana Silva</td><td>ana@email.com</td></tr>
+          <tr><td>Bruno Costa</td><td>bruno@email.com</td></tr>
+        </tbody></table></div></div>
+      </div>
+      <div class="grid cols-4">
+        <div class="card"><h3>SELECT</h3><p>Quais colunas trazer no resultado.</p></div>
+        <div class="card"><h3>FROM</h3><p>De qual tabela os dados saem.</p></div>
+        <div class="card"><h3>WHERE</h3><p>Filtra as linhas antes de ordenar.</p></div>
+        <div class="card"><h3>ORDER BY / LIMIT</h3><p>Define a ordem e quantas linhas voltam.</p></div>
+      </div>
+    </section>
+
+    <!-- CAP 12 UPDATE -->
+    <section class="chapter" id="cap7">
+      <div class="chapter-header"><span class="chap-num"></span><h2>UPDATE — alterando dados</h2></div>
+      <p class="chapter-intro">Atualiza valores de uma ou mais linhas existentes. <b>Sempre use o <code class="inline">WHERE</code></b> — sem ele, todas as linhas da tabela são alteradas.</p>
+      <div class="console">
+        <div class="bar"><span class="label">update.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">UPDATE</span> tb_usuarios
+<span class="kw">SET</span> nr_idade = <span class="num">29</span>
+<span class="kw">WHERE</span> tx_email = <span class="str">'ana@email.com'</span>;</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ UPDATE 1 — 1 linha atualizada.</span></div></div>
+      </div>
+    </section>
+
+    <!-- CAP 13 DELETE -->
+    <section class="chapter" id="cap8">
+      <div class="chapter-header"><span class="chap-num"></span><h2>DELETE — removendo dados</h2></div>
+      <p class="chapter-intro">Remove linhas da tabela. Assim como o UPDATE, exige atenção redobrada com o <code class="inline">WHERE</code>.</p>
+      <div class="console">
+        <div class="bar"><span class="label">delete.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">DELETE FROM</span> tb_usuarios
+<span class="kw">WHERE</span> id_usuario = <span class="num">5</span>;</pre>
+        <div class="result"><div class="result-inner"><span class="msg" style="color:var(--red);">✓ DELETE 1 — 1 linha removida.</span></div></div>
+      </div>
+    </section>
+
+    <!-- CAP 14 ALTER -->
+    <section class="chapter" id="cap9">
+      <div class="chapter-header"><span class="chap-num"></span><h2>ALTER TABLE — mudando a estrutura</h2></div>
+      <p class="chapter-intro">Modifica a estrutura de uma tabela já existente, sem precisar recriá-la.</p>
+      <div class="console">
+        <div class="bar"><span class="label">alter.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">ALTER TABLE</span> tb_usuarios <span class="kw">ADD COLUMN</span> tx_telefone <span class="fn">VARCHAR</span>(<span class="num">20</span>);
+<span class="kw">ALTER TABLE</span> tb_usuarios <span class="kw">DROP COLUMN</span> nr_idade;
+<span class="kw">ALTER TABLE</span> tb_usuarios <span class="kw">ALTER COLUMN</span> tx_nome <span class="kw">TYPE</span> <span class="fn">VARCHAR</span>(<span class="num">200</span>);
+<span class="kw">ALTER TABLE</span> tb_usuarios <span class="kw">RENAME COLUMN</span> tx_email <span class="kw">TO</span> tx_email_contato;</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ ALTER TABLE — estrutura atualizada.</span></div></div>
+      </div>
+    </section>
+
+    <!-- CAP 15 GROUP BY -->
+    <section class="chapter" id="cap11">
+      <div class="chapter-header"><span class="chap-num"></span><h2>GROUP BY, HAVING, COUNT e SUM</h2></div>
+      <p class="chapter-intro"><code class="inline">GROUP BY</code> agrupa linhas que compartilham o mesmo valor em uma coluna, para então aplicar <b>funções de agregação</b> como <code class="inline">COUNT</code> (conta linhas) e <code class="inline">SUM</code> (soma valores) em cada grupo. O <code class="inline">HAVING</code> filtra os grupos já formados — diferente do <code class="inline">WHERE</code>, que filtra linhas individuais antes de agrupar.</p>
+      <div class="console">
+        <div class="bar"><span class="label">group_by.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">SELECT</span> cd_usuario,
+       <span class="fn">COUNT</span>(*) <span class="kw">AS</span> nr_total_pedidos,
+       <span class="fn">SUM</span>(vl_total) <span class="kw">AS</span> vl_total_gasto
+<span class="kw">FROM</span> tb_pedidos
+<span class="kw">GROUP BY</span> cd_usuario
+<span class="kw">HAVING</span> <span class="fn">SUM</span>(vl_total) &gt; <span class="num">500</span>;</pre>
+        <div class="result"><div class="result-inner"><table><thead><tr><th>cd_usuario</th><th>nr_total_pedidos</th><th>vl_total_gasto</th></tr></thead><tbody>
+          <tr><td>1</td><td>4</td><td>812.50</td></tr>
+          <tr><td>3</td><td>2</td><td>640.00</td></tr>
+        </tbody></table></div></div>
+      </div>
+      <div class="note"><span>💡</span><div><b>WHERE</b> filtra linhas antes de agrupar; <b>HAVING</b> filtra os grupos depois de agrupar — por isso é o único lugar onde faz sentido usar <code class="inline">SUM()</code> ou <code class="inline">COUNT()</code> dentro de uma condição.</div></div>
+    </section>
+
+    <!-- CAP 16 JOINS -->
+    <section class="chapter" id="cap12">
+      <div class="chapter-header"><span class="chap-num"></span><h2>INNER, LEFT e RIGHT JOIN</h2></div>
+      <p class="chapter-intro">Um <code class="inline">JOIN</code> combina linhas de duas tabelas com base em uma condição — normalmente comparando uma chave estrangeira com a chave primária correspondente.</p>
+      <div class="venn-grid">
+        <div class="venn-card">
+          <svg viewBox="0 0 120 90">
+            <defs><clipPath id="clipInnerB"><circle cx="75" cy="45" r="40"/></clipPath></defs>
+            <circle class="fillzone" cx="45" cy="45" r="40" clip-path="url(#clipInnerB)"/>
+            <circle class="stroke" cx="45" cy="45" r="40"/>
+            <circle class="stroke" cx="75" cy="45" r="40"/>
+          </svg>
+          <h4>INNER JOIN</h4>
+          <p>Só as linhas que casam nas duas tabelas.</p>
+        </div>
+        <div class="venn-card">
+          <svg viewBox="0 0 120 90">
+            <circle class="fillzone" cx="45" cy="45" r="40"/>
+            <circle class="stroke" cx="45" cy="45" r="40"/>
+            <circle class="stroke" cx="75" cy="45" r="40"/>
+          </svg>
+          <h4>LEFT JOIN</h4>
+          <p>Todas as linhas da esquerda + as que casam à direita.</p>
+        </div>
+        <div class="venn-card">
+          <svg viewBox="0 0 120 90">
+            <circle class="fillzone" cx="75" cy="45" r="40"/>
+            <circle class="stroke" cx="45" cy="45" r="40"/>
+            <circle class="stroke" cx="75" cy="45" r="40"/>
+          </svg>
+          <h4>RIGHT JOIN</h4>
+          <p>Todas as linhas da direita + as que casam à esquerda.</p>
+        </div>
+      </div>
+      <div class="console">
+        <div class="bar"><span class="label">inner_join.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">SELECT</span> p.id_pedido, u.tx_nome, p.vl_total
+<span class="kw">FROM</span> tb_pedidos p
+<span class="kw">INNER JOIN</span> tb_usuarios u <span class="kw">ON</span> p.cd_usuario = u.id_usuario;</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ retorna só os pedidos que têm um usuário correspondente.</span></div></div>
+      </div>
+      <div class="console">
+        <div class="bar"><span class="label">left_join.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">SELECT</span> u.tx_nome, p.id_pedido
+<span class="kw">FROM</span> tb_usuarios u
+<span class="kw">LEFT JOIN</span> tb_pedidos p <span class="kw">ON</span> p.cd_usuario = u.id_usuario;</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ traz todos os usuários, com NULL em "id_pedido" para quem não tem pedido.</span></div></div>
+      </div>
+      <div class="console">
+        <div class="bar"><span class="label">right_join.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">SELECT</span> u.tx_nome, p.id_pedido
+<span class="kw">FROM</span> tb_usuarios u
+<span class="kw">RIGHT JOIN</span> tb_pedidos p <span class="kw">ON</span> p.cd_usuario = u.id_usuario;</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ traz todos os pedidos, com NULL em "tx_nome" se o usuário não existir.</span></div></div>
+      </div>
+    </section>
+
+    <!-- CAP 17 DATAS -->
+    <section class="chapter" id="cap13">
+      <div class="chapter-header"><span class="chap-num"></span><h2>Datas, textos e concatenação</h2></div>
+      <p class="chapter-intro">Algumas funções prontas do PostgreSQL resolvem tarefas do dia a dia sem precisar de lógica extra na aplicação.</p>
+      <div class="grid cols-4">
+        <div class="card"><h3>🕒 NOW()</h3><p>Data e hora atuais, com fuso horário.</p></div>
+        <div class="card"><h3>📅 CURRENT_DATE</h3><p>Apenas a data atual, sem hora.</p></div>
+        <div class="card"><h3>⏱️ CURRENT_TIMESTAMP</h3><p>Padrão SQL equivalente ao NOW().</p></div>
+        <div class="card"><h3>🧵 STRING_AGG</h3><p>Junta valores de várias linhas em uma string só.</p></div>
+      </div>
+      <div class="console">
+        <div class="bar"><span class="label">datas.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">SELECT</span> NOW(), CURRENT_DATE, CURRENT_TIMESTAMP;</pre>
+        <div class="result"><div class="result-inner"><table><thead><tr><th>now</th><th>current_date</th><th>current_timestamp</th></tr></thead><tbody>
+          <tr><td>2026-07-16 14:32:05</td><td>2026-07-16</td><td>2026-07-16 14:32:05</td></tr>
+        </tbody></table></div></div>
+      </div>
+      <h3 class="subhead">Concatenando textos</h3>
+      <p class="chapter-intro">Para juntar textos, use o operador <code class="inline">||</code> ou a função <code class="inline">CONCAT()</code> — as duas formas fazem a mesma coisa.</p>
+      <div class="console">
+        <div class="bar"><span class="label">concat.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">SELECT</span> tx_nome || <span class="str">' &lt;'</span> || tx_email || <span class="str">'&gt;'</span> <span class="kw">AS</span> tx_contato
+<span class="kw">FROM</span> tb_usuarios;
+<span class="cmt">-- equivalente com CONCAT():</span>
+<span class="kw">SELECT</span> <span class="fn">CONCAT</span>(tx_nome, <span class="str">' &lt;'</span>, tx_email, <span class="str">'&gt;'</span>) <span class="kw">AS</span> tx_contato <span class="kw">FROM</span> tb_usuarios;</pre>
+        <div class="result"><div class="result-inner"><table><thead><tr><th>tx_contato</th></tr></thead><tbody>
+          <tr><td>Ana Silva &lt;ana@email.com&gt;</td></tr>
+        </tbody></table></div></div>
+      </div>
+      <div class="console">
+        <div class="bar"><span class="label">string_agg.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">SELECT</span> cd_usuario,
+       <span class="fn">STRING_AGG</span>(tx_produto, <span class="str">', '</span>) <span class="kw">AS</span> tx_produtos_comprados
+<span class="kw">FROM</span> tb_itens_pedido
+<span class="kw">GROUP BY</span> cd_usuario;</pre>
+        <div class="result"><div class="result-inner"><table><thead><tr><th>cd_usuario</th><th>tx_produtos_comprados</th></tr></thead><tbody>
+          <tr><td>1</td><td>Teclado, Mouse, Monitor</td></tr>
+        </tbody></table></div></div>
+      </div>
+    </section>
+
+    <!-- CAP 18 WITH -->
+    <section class="chapter" id="cap23">
+      <div class="chapter-header"><span class="chap-num"></span><h2>WITH (CTE) e subqueries</h2></div>
+      <p class="chapter-intro">Consultas complexas ficam mais fáceis de escrever e de ler quando são divididas em partes menores. É para isso que servem o <code class="inline">WITH</code> e as <b>subqueries</b>.</p>
+      <h3 class="subhead">WITH — Common Table Expression (CTE)</h3>
+      <p class="chapter-intro">O <code class="inline">WITH</code> cria uma "tabela temporária" nomeada, que existe só durante aquela consulta. Ajuda a dividir uma query grande em passos nomeados, em vez de aninhar subqueries difíceis de ler.</p>
+      <div class="console">
+        <div class="bar"><span class="label">with.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">WITH</span> pedidos_recentes <span class="kw">AS</span> (
+    <span class="kw">SELECT</span> *
+    <span class="kw">FROM</span> tb_pedidos
+    <span class="kw">WHERE</span> dt_criacao &gt;= CURRENT_DATE - <span class="kw">INTERVAL</span> <span class="str">'30 days'</span>
+)
+<span class="kw">SELECT</span> cd_usuario, <span class="fn">COUNT</span>(*) <span class="kw">AS</span> nr_total
+<span class="kw">FROM</span> pedidos_recentes
+<span class="kw">GROUP BY</span> cd_usuario;</pre>
+        <div class="result"><div class="result-inner"><table><thead><tr><th>cd_usuario</th><th>nr_total</th></tr></thead><tbody>
+          <tr><td>1</td><td>3</td></tr>
+          <tr><td>2</td><td>1</td></tr>
+        </tbody></table></div></div>
+      </div>
+      <h3 class="subhead">Subquery — consulta dentro de consulta</h3>
+      <p class="chapter-intro">Uma <b>subquery</b> é um <code class="inline">SELECT</code> usado dentro de outro comando — como valor de comparação, lista de valores ou até como se fosse uma tabela.</p>
+      <div class="console">
+        <div class="bar"><span class="label">subquery_valor.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- usuários mais velhos que a média de idade</span>
+<span class="kw">SELECT</span> tx_nome, nr_idade
+<span class="kw">FROM</span> tb_usuarios
+<span class="kw">WHERE</span> nr_idade &gt; (<span class="kw">SELECT</span> <span class="fn">AVG</span>(nr_idade) <span class="kw">FROM</span> tb_usuarios);</pre>
+        <div class="result"><div class="result-inner"><table><thead><tr><th>tx_nome</th><th>nr_idade</th></tr></thead><tbody>
+          <tr><td>Bruno Costa</td><td>34</td></tr>
+        </tbody></table></div></div>
+      </div>
+      <div class="console">
+        <div class="bar"><span class="label">subquery_tabela.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- subquery usada como se fosse uma tabela (derived table)</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> (
+    <span class="kw">SELECT</span> cd_usuario, <span class="fn">SUM</span>(vl_total) <span class="kw">AS</span> vl_total
+    <span class="kw">FROM</span> tb_pedidos
+    <span class="kw">GROUP BY</span> cd_usuario
+) <span class="kw">AS</span> resumo
+<span class="kw">WHERE</span> vl_total &gt; <span class="num">500</span>;</pre>
+        <div class="result"><div class="result-inner"><table><thead><tr><th>cd_usuario</th><th>vl_total</th></tr></thead><tbody>
+          <tr><td>1</td><td>812.50</td></tr>
+        </tbody></table></div></div>
+      </div>
+      <h3 class="subhead">EXISTS e NOT EXISTS</h3>
+      <p class="chapter-intro"><code class="inline">EXISTS</code> testa se uma subquery retorna <b>pelo menos uma linha</b> — o resultado é apenas verdadeiro ou falso. Costuma ser mais eficiente que comparar com <code class="inline">IN</code>, porque o PostgreSQL para de procurar assim que encontra a primeira linha.</p>
+      <div class="console">
+        <div class="bar"><span class="label">exists.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- usuários que têm pelo menos um pedido</span>
+<span class="kw">SELECT</span> tx_nome
+<span class="kw">FROM</span> tb_usuarios u
+<span class="kw">WHERE EXISTS</span> (
+    <span class="kw">SELECT</span> <span class="num">1</span> <span class="kw">FROM</span> tb_pedidos p <span class="kw">WHERE</span> p.cd_usuario = u.id_usuario
+);</pre>
+        <div class="result"><div class="result-inner"><table><thead><tr><th>tx_nome</th></tr></thead><tbody>
+          <tr><td>Ana Silva</td></tr>
+          <tr><td>Carla Dias</td></tr>
+        </tbody></table></div></div>
+      </div>
+      <div class="console">
+        <div class="bar"><span class="label">not_exists.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- usuários que nunca fizeram nenhum pedido</span>
+<span class="kw">SELECT</span> tx_nome
+<span class="kw">FROM</span> tb_usuarios u
+<span class="kw">WHERE NOT EXISTS</span> (
+    <span class="kw">SELECT</span> <span class="num">1</span> <span class="kw">FROM</span> tb_pedidos p <span class="kw">WHERE</span> p.cd_usuario = u.id_usuario
+);</pre>
+        <div class="result"><div class="result-inner"><table><thead><tr><th>tx_nome</th></tr></thead><tbody>
+          <tr><td>Bruno Costa</td></tr>
+        </tbody></table></div></div>
+      </div>
+      <div class="note"><span>💡</span><div>Dentro de um <code class="inline">EXISTS</code> não importa o que vem depois do <code class="inline">SELECT</code> — por convenção usa-se <code class="inline">SELECT 1</code>, já que só a existência da linha importa, não seu conteúdo.</div></div>
+    </section>
+
+    <!-- CAP FILTROS E FUNÇÕES -->
+    <section class="chapter" id="cap-filtros">
+      <div class="chapter-header"><span class="chap-num"></span><h2>Filtros e funções essenciais</h2></div>
+      <p class="chapter-intro">Este capítulo reúne os operadores e funções que você vai usar o tempo todo em consultas reais — do filtro mais básico até transformações condicionais de valores. Eles estão ordenados do <b>mais simples ao mais composto</b>: comece pelo <code class="inline">BETWEEN</code> e vá até o <code class="inline">CASE WHEN</code>.</p>
+
+      <!-- BETWEEN -->
+      <h3 class="subhead">BETWEEN — intervalo de valores</h3>
+      <p class="chapter-intro"><code class="inline">BETWEEN</code> filtra linhas cujo valor está dentro de um intervalo (inclusive nas bordas). Funciona com números, datas e textos. Use quando quiser substituir um <code class="inline">valor &gt;= X AND valor &lt;= Y</code> por uma leitura mais limpa.</p>
+      <div class="console">
+        <div class="bar"><span class="label">between.sql — faixa de idades</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- traz usuários com idade entre 18 e 30 (18 e 30 incluídos)</span>
+<span class="kw">SELECT</span> tx_nome, nr_idade
+<span class="kw">FROM</span> tb_usuarios
+<span class="kw">WHERE</span> nr_idade <span class="kw">BETWEEN</span> <span class="num">18</span> <span class="kw">AND</span> <span class="num">30</span>;</pre>
+        <div class="result"><div class="result-inner"><table><thead><tr><th>tx_nome</th><th>nr_idade</th></tr></thead><tbody>
+          <tr><td>Ana Silva</td><td>28</td></tr>
+          <tr><td>Carla Dias</td><td>21</td></tr>
+        </tbody></table></div></div>
+      </div>
+      <div class="console">
+        <div class="bar"><span class="label">between.sql — faixa de datas</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- pedidos feitos em janeiro de 2026</span>
+<span class="kw">SELECT</span> id_pedido, vl_total
+<span class="kw">FROM</span> tb_pedidos
+<span class="kw">WHERE</span> dt_criacao <span class="kw">BETWEEN</span> <span class="str">'2026-01-01'</span> <span class="kw">AND</span> <span class="str">'2026-01-31'</span>;</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ retorna pedidos do mês de janeiro de 2026.</span></div></div>
+      </div>
+
+      <!-- WHERE IN -->
+      <h3 class="subhead">WHERE IN — lista de valores permitidos</h3>
+      <p class="chapter-intro"><code class="inline">IN</code> filtra linhas cujo valor seja igual a <b>qualquer um</b> dos itens de uma lista. É o atalho para evitar vários <code class="inline">OR</code> encadeados. Use quando você tem um conjunto fixo de valores aceitáveis.</p>
+      <div class="console">
+        <div class="bar"><span class="label">where_in.sql — lista estática</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- traz apenas as cidades da lista (sem vários OR)</span>
+<span class="kw">SELECT</span> tx_nome, tx_cidade
+<span class="kw">FROM</span> tb_usuarios
+<span class="kw">WHERE</span> tx_cidade <span class="kw">IN</span> (<span class="str">'Florianópolis'</span>, <span class="str">'Chapecó'</span>, <span class="str">'Joinville'</span>);</pre>
+        <div class="result"><div class="result-inner"><table><thead><tr><th>tx_nome</th><th>tx_cidade</th></tr></thead><tbody>
+          <tr><td>Ana Silva</td><td>Florianópolis</td></tr>
+          <tr><td>Bruno Costa</td><td>Joinville</td></tr>
+        </tbody></table></div></div>
+      </div>
+      <div class="console">
+        <div class="bar"><span class="label">where_in.sql — com subquery</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- traz pedidos cujo usuário também tem conta ativa</span>
+<span class="kw">SELECT</span> id_pedido, vl_total
+<span class="kw">FROM</span> tb_pedidos
+<span class="kw">WHERE</span> cd_usuario <span class="kw">IN</span> (
+    <span class="kw">SELECT</span> id_usuario <span class="kw">FROM</span> tb_usuarios <span class="kw">WHERE</span> fl_ativo = <span class="kw">true</span>
+);</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ o IN também aceita uma subquery como lista de valores.</span></div></div>
+      </div>
+
+      <!-- UPPER / LOWER -->
+      <h3 class="subhead">UPPER e LOWER — normalizar capitalização</h3>
+      <p class="chapter-intro"><code class="inline">UPPER()</code> converte um texto para maiúsculas; <code class="inline">LOWER()</code> para minúsculas. Use para padronizar comparações de texto — assim <code class="inline">'ana'</code>, <code class="inline">'Ana'</code> e <code class="inline">'ANA'</code> se tornam equivalentes, evitando falsos negativos em buscas.</p>
+      <div class="console">
+        <div class="bar"><span class="label">upper_lower.sql — busca sem distinguir maiúsculas</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- encontra "Ana", "ANA" ou "ana" — a comparação é case-insensitive</span>
+<span class="kw">SELECT</span> tx_nome
+<span class="kw">FROM</span> tb_usuarios
+<span class="kw">WHERE</span> <span class="fn">LOWER</span>(tx_nome) = <span class="fn">LOWER</span>(<span class="str">'ANA SILVA'</span>);</pre>
+        <div class="result"><div class="result-inner"><table><thead><tr><th>tx_nome</th></tr></thead><tbody>
+          <tr><td>Ana Silva</td></tr>
+        </tbody></table></div></div>
+      </div>
+      <div class="console">
+        <div class="bar"><span class="label">upper_lower.sql — exibir formatado</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- exibe o e-mail sempre em minúsculo e o nome em maiúsculo</span>
+<span class="kw">SELECT</span>
+    <span class="fn">UPPER</span>(tx_nome)  <span class="kw">AS</span> tx_nome_exibicao,
+    <span class="fn">LOWER</span>(tx_email) <span class="kw">AS</span> tx_email_normalizado
+<span class="kw">FROM</span> tb_usuarios;</pre>
+        <div class="result"><div class="result-inner"><table><thead><tr><th>tx_nome_exibicao</th><th>tx_email_normalizado</th></tr></thead><tbody>
+          <tr><td>ANA SILVA</td><td>ana@email.com</td></tr>
+          <tr><td>BRUNO COSTA</td><td>bruno@email.com</td></tr>
+        </tbody></table></div></div>
+      </div>
+      <div class="note"><span>💡</span><div>Em PostgreSQL, a forma preferida para buscas case-insensitive com índice é o operador <code class="inline">ILIKE</code> ou criar um índice funcional com <code class="inline">LOWER(coluna)</code>. Usar <code class="inline">LOWER()</code> no WHERE sem índice faz uma varredura completa na tabela.</div></div>
+
+      <!-- LIKE -->
+      <h3 class="subhead">LIKE e % — busca por padrão de texto</h3>
+      <p class="chapter-intro"><code class="inline">LIKE</code> filtra textos que seguem um <b>padrão</b>. O símbolo <code class="inline">%</code> representa <i>qualquer sequência de caracteres</i> (incluindo nenhum) e o <code class="inline">_</code> representa exatamente um caractere. Use quando você sabe só uma parte do valor que procura.</p>
+      <div class="grid cols-3">
+        <div class="card"><h3><code>'Ana%'</code></h3><p>Começa com "Ana" — qualquer coisa depois.</p></div>
+        <div class="card"><h3><code>'%Silva'</code></h3><p>Termina com "Silva" — qualquer coisa antes.</p></div>
+        <div class="card"><h3><code>'%silva%'</code></h3><p>Contém "silva" em qualquer posição.</p></div>
+      </div>
+      <div class="console">
+        <div class="bar"><span class="label">like.sql — começa com</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- nomes que começam com "Ana"</span>
+<span class="kw">SELECT</span> tx_nome
+<span class="kw">FROM</span> tb_usuarios
+<span class="kw">WHERE</span> tx_nome <span class="kw">LIKE</span> <span class="str">'Ana%'</span>;</pre>
+        <div class="result"><div class="result-inner"><table><thead><tr><th>tx_nome</th></tr></thead><tbody>
+          <tr><td>Ana Silva</td></tr>
+          <tr><td>Ana Beatriz</td></tr>
+        </tbody></table></div></div>
+      </div>
+      <div class="console">
+        <div class="bar"><span class="label">like.sql — contém em qualquer posição</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- e-mails do domínio @gmail.com</span>
+<span class="kw">SELECT</span> tx_nome, tx_email
+<span class="kw">FROM</span> tb_usuarios
+<span class="kw">WHERE</span> tx_email <span class="kw">LIKE</span> <span class="str">'%@gmail.com'</span>;
+
+<span class="cmt">-- ILIKE faz a mesma busca ignorando maiúsculas/minúsculas</span>
+<span class="kw">SELECT</span> tx_nome <span class="kw">FROM</span> tb_usuarios <span class="kw">WHERE</span> tx_nome <span class="kw">ILIKE</span> <span class="str">'%silva%'</span>;</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ ILIKE é a versão case-insensitive do LIKE — exclusividade do PostgreSQL.</span></div></div>
+      </div>
+      <div class="note"><span>⚠️</span><div>Evite iniciar o padrão com <code class="inline">%</code> (ex: <code class="inline">LIKE '%texto'</code>) em tabelas grandes: o PostgreSQL não consegue usar índice e varre a tabela inteira. Prefira busca por prefixo (<code class="inline">LIKE 'texto%'</code>) ou extensões como <b>pg_trgm</b> para busca textual avançada.</div></div>
+
+      <!-- ORDER BY -->
+      <h3 class="subhead">ORDER BY ASC e DESC — ordenar resultados</h3>
+      <p class="chapter-intro"><code class="inline">ORDER BY</code> define a ordem em que as linhas aparecem no resultado. <code class="inline">ASC</code> (crescente) é o padrão e pode ser omitido; <code class="inline">DESC</code> (decrescente) precisa ser declarado explicitamente. Use sempre que a ordem importar para quem vai consumir os dados.</p>
+      <div class="console">
+        <div class="bar"><span class="label">order_by.sql — mais recente primeiro</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- pedidos mais recentes primeiro (DESC), e dentro da mesma data, maior valor primeiro</span>
+<span class="kw">SELECT</span> id_pedido, dt_criacao, vl_total
+<span class="kw">FROM</span> tb_pedidos
+<span class="kw">ORDER BY</span> dt_criacao <span class="kw">DESC</span>, vl_total <span class="kw">DESC</span>;</pre>
+        <div class="result"><div class="result-inner"><table><thead><tr><th>id_pedido</th><th>dt_criacao</th><th>vl_total</th></tr></thead><tbody>
+          <tr><td>42</td><td>2026-07-15</td><td>450.00</td></tr>
+          <tr><td>39</td><td>2026-07-10</td><td>212.00</td></tr>
+        </tbody></table></div></div>
+      </div>
+      <div class="console">
+        <div class="bar"><span class="label">order_by.sql — alfabético crescente</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- lista de usuários em ordem alfabética (ASC é o padrão, pode omitir)</span>
+<span class="kw">SELECT</span> tx_nome, tx_email
+<span class="kw">FROM</span> tb_usuarios
+<span class="kw">ORDER BY</span> tx_nome <span class="kw">ASC</span>;</pre>
+        <div class="result"><div class="result-inner"><table><thead><tr><th>tx_nome</th><th>tx_email</th></tr></thead><tbody>
+          <tr><td>Ana Silva</td><td>ana@email.com</td></tr>
+          <tr><td>Bruno Costa</td><td>bruno@email.com</td></tr>
+          <tr><td>Carla Dias</td><td>carla@email.com</td></tr>
+        </tbody></table></div></div>
+      </div>
+
+      <!-- COUNT e SUM -->
+      <h3 class="subhead">COUNT e SUM — contagem e soma</h3>
+      <p class="chapter-intro"><code class="inline">COUNT()</code> e <code class="inline">SUM()</code> são <b>funções de agregação</b>: operam sobre um conjunto de linhas e retornam um único valor. <code class="inline">COUNT(*)</code> conta quantas linhas existem; <code class="inline">COUNT(coluna)</code> ignora <code class="inline">NULL</code>s; <code class="inline">SUM(coluna)</code> soma os valores numéricos.</p>
+      <div class="grid cols-2">
+        <div class="card"><h3>COUNT(*)</h3><p>Conta todas as linhas do grupo, incluindo NULLs. Use para saber quantos registros existem.</p></div>
+        <div class="card"><h3>COUNT(coluna)</h3><p>Conta só as linhas onde a coluna não é NULL. Use quando o campo pode estar vazio e isso importa.</p></div>
+        <div class="card"><h3>SUM(coluna)</h3><p>Soma os valores numéricos da coluna. Ignora NULLs automaticamente. Use para totais financeiros ou quantidades.</p></div>
+        <div class="card"><h3>COUNT(DISTINCT coluna)</h3><p>Conta valores únicos — sem repetição. Use quando o mesmo valor pode aparecer várias vezes e você quer a contagem distinta.</p></div>
+      </div>
+      <div class="console">
+        <div class="bar"><span class="label">count_sum.sql — contagem e soma simples</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- total de pedidos e soma de todos os valores</span>
+<span class="kw">SELECT</span>
+    <span class="fn">COUNT</span>(*) <span class="kw">AS</span> nr_total_pedidos,
+    <span class="fn">SUM</span>(vl_total) <span class="kw">AS</span> vl_receita_total,
+    <span class="fn">COUNT</span>(<span class="kw">DISTINCT</span> cd_usuario) <span class="kw">AS</span> nr_clientes_unicos
+<span class="kw">FROM</span> tb_pedidos;</pre>
+        <div class="result"><div class="result-inner"><table><thead><tr><th>nr_total_pedidos</th><th>vl_receita_total</th><th>nr_clientes_unicos</th></tr></thead><tbody>
+          <tr><td>18</td><td>4320.00</td><td>7</td></tr>
+        </tbody></table></div></div>
+      </div>
+
+      <!-- GROUP BY -->
+      <h3 class="subhead">GROUP BY — agrupar antes de agregar</h3>
+      <p class="chapter-intro"><code class="inline">GROUP BY</code> divide as linhas em grupos com o mesmo valor em uma ou mais colunas, e então aplica uma função de agregação (<code class="inline">COUNT</code>, <code class="inline">SUM</code>, <code class="inline">AVG</code>…) a cada grupo separadamente. Use quando você quer um resumo <i>por categoria</i> — por usuário, por mês, por produto, etc.</p>
+      <div class="console">
+        <div class="bar"><span class="label">group_by.sql — total por usuário</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- quantos pedidos e quanto cada usuário gastou no total</span>
+<span class="kw">SELECT</span>
+    cd_usuario,
+    <span class="fn">COUNT</span>(*) <span class="kw">AS</span> nr_pedidos,
+    <span class="fn">SUM</span>(vl_total) <span class="kw">AS</span> vl_total_gasto
+<span class="kw">FROM</span> tb_pedidos
+<span class="kw">GROUP BY</span> cd_usuario
+<span class="kw">ORDER BY</span> vl_total_gasto <span class="kw">DESC</span>;</pre>
+        <div class="result"><div class="result-inner"><table><thead><tr><th>cd_usuario</th><th>nr_pedidos</th><th>vl_total_gasto</th></tr></thead><tbody>
+          <tr><td>1</td><td>4</td><td>812.50</td></tr>
+          <tr><td>3</td><td>2</td><td>640.00</td></tr>
+          <tr><td>2</td><td>3</td><td>390.00</td></tr>
+        </tbody></table></div></div>
+      </div>
+      <div class="console">
+        <div class="bar"><span class="label">group_by.sql — agrupando por múltiplas colunas</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- vendas por usuário e por mês (agrupamento composto)</span>
+<span class="kw">SELECT</span>
+    cd_usuario,
+    <span class="fn">DATE_TRUNC</span>(<span class="str">'month'</span>, dt_criacao) <span class="kw">AS</span> dt_mes,
+    <span class="fn">COUNT</span>(*)     <span class="kw">AS</span> nr_pedidos,
+    <span class="fn">SUM</span>(vl_total) <span class="kw">AS</span> vl_total
+<span class="kw">FROM</span> tb_pedidos
+<span class="kw">GROUP BY</span> cd_usuario, <span class="fn">DATE_TRUNC</span>(<span class="str">'month'</span>, dt_criacao)
+<span class="kw">ORDER BY</span> dt_mes <span class="kw">DESC</span>, vl_total <span class="kw">DESC</span>;</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ cada linha representa um par (usuário, mês) único.</span></div></div>
+      </div>
+      <div class="note"><span>💡</span><div>Regra de ouro do <code class="inline">GROUP BY</code>: toda coluna que aparece no <code class="inline">SELECT</code> e <b>não está dentro de uma função de agregação</b> precisa obrigatoriamente estar no <code class="inline">GROUP BY</code>. O PostgreSQL retorna erro se você esquecer.</div></div>
+
+      <!-- CASE WHEN -->
+      <h3 class="subhead">CASE WHEN — lógica condicional na query</h3>
+      <p class="chapter-intro"><code class="inline">CASE WHEN</code> é o <i>if/else</i> do SQL: avalia condições em sequência e retorna o valor do primeiro <code class="inline">WHEN</code> verdadeiro. Use quando você precisa categorizar, rotular ou transformar valores direto na consulta — sem precisar fazer isso no código da aplicação.</p>
+      <div class="console">
+        <div class="bar"><span class="label">case_when.sql — categorizar faixa etária</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- classifica cada usuário em uma faixa etária</span>
+<span class="kw">SELECT</span>
+    tx_nome,
+    nr_idade,
+    <span class="kw">CASE</span>
+        <span class="kw">WHEN</span> nr_idade &lt; <span class="num">18</span>  <span class="kw">THEN</span> <span class="str">'Menor de idade'</span>
+        <span class="kw">WHEN</span> nr_idade &lt;= <span class="num">30</span> <span class="kw">THEN</span> <span class="str">'Jovem adulto'</span>
+        <span class="kw">WHEN</span> nr_idade &lt;= <span class="num">60</span> <span class="kw">THEN</span> <span class="str">'Adulto'</span>
+        <span class="kw">ELSE</span>                       <span class="str">'Sênior'</span>
+    <span class="kw">END</span> <span class="kw">AS</span> tx_faixa_etaria
+<span class="kw">FROM</span> tb_usuarios;</pre>
+        <div class="result"><div class="result-inner"><table><thead><tr><th>tx_nome</th><th>nr_idade</th><th>tx_faixa_etaria</th></tr></thead><tbody>
+          <tr><td>Ana Silva</td><td>28</td><td>Jovem adulto</td></tr>
+          <tr><td>Bruno Costa</td><td>34</td><td>Adulto</td></tr>
+          <tr><td>Carla Dias</td><td>21</td><td>Jovem adulto</td></tr>
+        </tbody></table></div></div>
+      </div>
+      <div class="console">
+        <div class="bar"><span class="label">case_when.sql — com GROUP BY para contar por categoria</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- CASE WHEN dentro de um COUNT para contar por status</span>
+<span class="kw">SELECT</span>
+    <span class="fn">COUNT</span>(<span class="kw">CASE WHEN</span> fl_ativo = <span class="kw">true</span>  <span class="kw">THEN</span> <span class="num">1</span> <span class="kw">END</span>) <span class="kw">AS</span> nr_ativos,
+    <span class="fn">COUNT</span>(<span class="kw">CASE WHEN</span> fl_ativo = <span class="kw">false</span> <span class="kw">THEN</span> <span class="num">1</span> <span class="kw">END</span>) <span class="kw">AS</span> nr_inativos
+<span class="kw">FROM</span> tb_usuarios;</pre>
+        <div class="result"><div class="result-inner"><table><thead><tr><th>nr_ativos</th><th>nr_inativos</th></tr></thead><tbody>
+          <tr><td>10</td><td>3</td></tr>
+        </tbody></table></div></div>
+      </div>
+      <div class="note"><span>💡</span><div><b>CASE WHEN</b> pode ser usado em qualquer parte do SELECT: no resultado, dentro de um <code class="inline">COUNT()</code>, dentro de um <code class="inline">SUM()</code>, no <code class="inline">ORDER BY</code> e até no <code class="inline">WHERE</code>. É uma das ferramentas mais versáteis do SQL.</div></div>
+
+      <!-- Tabela resumo -->
+      <h3 class="subhead">Resumo — quando usar cada um</h3>
+      <div class="grid cols-2">
+        <div class="card"><h3>🔢 BETWEEN</h3><p>Filtrar por <b>faixa</b> de número ou data. Ex: pedidos do mês, usuários entre 20 e 40 anos.</p></div>
+        <div class="card"><h3>📋 WHERE IN</h3><p>Filtrar por uma <b>lista de valores</b> conhecidos. Ex: UFs de interesse, categorias selecionadas.</p></div>
+        <div class="card"><h3>🔡 UPPER / LOWER</h3><p>Normalizar capitalização para <b>comparação</b> ou <b>exibição</b>. Ex: busca por nome sem diferenciar maiúsculas.</p></div>
+        <div class="card"><h3>🔍 LIKE / %</h3><p>Buscar por <b>padrão parcial</b> de texto. Ex: e-mails de um domínio, nomes que começam com determinada letra.</p></div>
+        <div class="card"><h3>↕️ ORDER BY ASC/DESC</h3><p>Ordenar o resultado por <b>uma ou mais colunas</b>. Ex: lista alfabética, mais recente primeiro, maior valor primeiro.</p></div>
+        <div class="card"><h3>🔢 COUNT / SUM</h3><p>Agregar linhas em <b>um valor</b>. Ex: total de pedidos, receita acumulada, clientes únicos.</p></div>
+        <div class="card"><h3>📦 GROUP BY</h3><p>Resumir dados <b>por categoria</b>. Ex: pedidos por usuário, vendas por mês, alunos por turma.</p></div>
+        <div class="card"><h3>🔀 CASE WHEN</h3><p>Lógica <b>if/else</b> dentro da query. Ex: rotular faixas, contar por status, exibir textos condicionais.</p></div>
+      </div>
+    </section>
+
+    <!-- CAP 19 VIEW -->
+    <section class="chapter" id="cap15">
+      <div class="chapter-header"><span class="chap-num"></span><h2>VIEW — consultas salvas</h2></div>
+      <p class="chapter-intro">Uma <b>view</b> é uma consulta SQL salva com um nome, que se comporta como uma tabela virtual — sem duplicar os dados. Toda vez que a view é consultada, a query original roda por trás.</p>
+      <div class="console">
+        <div class="bar"><span class="label">view.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">CREATE VIEW</span> vw_usuarios_ativos <span class="kw">AS</span>
+<span class="kw">SELECT</span> id_usuario, tx_nome, tx_email
+<span class="kw">FROM</span> tb_usuarios
+<span class="kw">WHERE</span> fl_ativo = <span class="kw">true</span>;</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ CREATE VIEW — "vw_usuarios_ativos" pronta para uso como SELECT * FROM vw_usuarios_ativos;</span></div></div>
+      </div>
+    </section>
+
+    <!-- CAP 20 INDEX -->
+    <section class="chapter" id="cap19">
+      <div class="chapter-header"><span class="chap-num"></span><h2>INDEX — acelerando buscas</h2></div>
+      <p class="chapter-intro">Um <b>índice</b> é uma estrutura auxiliar que acelera buscas, funcionando como o índice remissivo de um livro. Acelera leituras, mas tem custo em espaço e em escrita (cada INSERT/UPDATE também atualiza o índice).</p>
+      <div class="console">
+        <div class="bar"><span class="label">index.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">CREATE INDEX</span> idx_tb_usuarios_tx_email <span class="kw">ON</span> tb_usuarios(tx_email);</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ CREATE INDEX — buscas por "email" ficam muito mais rápidas.</span></div></div>
+      </div>
+    </section>
+
+    <!-- CAP 21 EXPLAIN -->
+    <section class="chapter" id="cap20">
+      <div class="chapter-header"><span class="chap-num"></span><h2>EXPLAIN ANALYZE — o raio-x da query</h2></div>
+      <p class="chapter-intro">Mostra o plano de execução real usado pelo PostgreSQL: se ele varreu a tabela inteira (<i>Seq Scan</i>) ou usou um índice (<i>Index Scan</i>), quanto tempo levou e quantas linhas encontrou. Essencial para diagnosticar queries lentas.</p>
+      <div class="console">
+        <div class="bar"><span class="label">explain.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">EXPLAIN ANALYZE</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> tb_usuarios <span class="kw">WHERE</span> tx_email = <span class="str">'ana@email.com'</span>;</pre>
+        <div class="result"><div class="result-inner">
+<span class="msg" style="display:block; margin-bottom:6px;">Index Scan using idx_tb_usuarios_tx_email on tb_usuarios</span>
+<span style="color:var(--text-muted);">&nbsp;&nbsp;(cost=0.28..8.30 rows=1 width=64) (actual time=0.02..0.03 rows=1 loops=1)</span><br>
+<span style="color:var(--text-muted);">Planning Time: 0.08 ms · Execution Time: 0.04 ms</span>
+        </div></div>
+      </div>
+    </section>
+
+    <!-- CAP 22 SEQUENCE -->
+    <section class="chapter" id="cap18">
+      <div class="chapter-header"><span class="chap-num"></span><h2>SEQUENCE — geradores de número</h2></div>
+      <p class="chapter-intro">Uma <b>sequence</b> gera números sequenciais únicos. É exatamente o mecanismo que o tipo <code class="inline">SERIAL</code> usa por trás dos panos para criar IDs automáticos.</p>
+      <div class="console">
+        <div class="bar"><span class="label">sequence.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">CREATE SEQUENCE</span> sq_pedido_id <span class="kw">START</span> <span class="num">1000</span> <span class="kw">INCREMENT</span> <span class="num">1</span>;
+<span class="kw">SELECT</span> nextval(<span class="str">'sq_pedido_id'</span>);</pre>
+        <div class="result"><div class="result-inner"><table><thead><tr><th>nextval</th></tr></thead><tbody><tr><td>1000</td></tr></tbody></table></div></div>
+      </div>
+    </section>
+
+    <!-- CAP 23 FUNCTION -->
+    <section class="chapter" id="cap17">
+      <div class="chapter-header"><span class="chap-num"></span><h2>FUNCTION — código reutilizável</h2></div>
+      <p class="chapter-intro">Uma <b>function</b> é um bloco de lógica reutilizável dentro do banco: recebe parâmetros, executa comandos e pode retornar um valor. É o que a trigger abaixo está chamando.</p>
+      <div class="console">
+        <div class="bar"><span class="label">function.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">CREATE FUNCTION</span> fn_atualizar_timestamp()
+<span class="kw">RETURNS TRIGGER AS</span> $$
+<span class="kw">BEGIN</span>
+    NEW.dt_criacao = NOW();
+    <span class="kw">RETURN</span> NEW;
+<span class="kw">END</span>;
+$$ <span class="kw">LANGUAGE</span> plpgsql;</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ CREATE FUNCTION — "fn_atualizar_timestamp" disponível para uso.</span></div></div>
+      </div>
+    </section>
+
+    <!-- CAP 24 TRIGGER -->
+    <section class="chapter" id="cap16">
+      <div class="chapter-header"><span class="chap-num"></span><h2>TRIGGER — reações automáticas</h2></div>
+      <p class="chapter-intro">Uma <b>trigger</b> executa uma função automaticamente antes ou depois de um evento (<code class="inline">INSERT</code>, <code class="inline">UPDATE</code> ou <code class="inline">DELETE</code>) acontecer em uma tabela.</p>
+      <div class="console">
+        <div class="bar"><span class="label">trigger.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">CREATE TRIGGER</span> trg_atualiza_data
+<span class="kw">BEFORE UPDATE ON</span> tb_usuarios
+<span class="kw">FOR EACH ROW</span>
+<span class="kw">EXECUTE FUNCTION</span> fn_atualizar_timestamp();</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ CREATE TRIGGER — a cada UPDATE, a função é disparada automaticamente.</span></div></div>
+      </div>
+    </section>
+
+    <!-- CAP 25 VACUUM -->
+    <section class="chapter" id="cap21">
+      <div class="chapter-header"><span class="chap-num"></span><h2>VACUUM — limpeza e manutenção</h2></div>
+      <p class="chapter-intro">O PostgreSQL usa MVCC (controle de concorrência multiversão): ao fazer <code class="inline">UPDATE</code> ou <code class="inline">DELETE</code>, a linha antiga não é apagada na hora, fica marcada como "morta". O <b>VACUUM</b> libera esse espaço e atualiza estatísticas que o otimizador usa para montar planos de execução.</p>
+      <h3 class="subhead">Tipos de VACUUM</h3>
+      <div class="grid cols-2">
+        <div class="card"><h3>🧹 VACUUM (padrão)</h3><p>Marca o espaço das linhas mortas como reutilizável pela própria tabela, mas <b>não devolve</b> o espaço para o SO. Não bloqueia leituras nem escritas.</p></div>
+        <div class="card"><h3>🗜️ VACUUM FULL</h3><p>Reescreve a tabela inteira do zero e <b>devolve o espaço</b> para o SO. Mais eficiente em espaço, porém bloqueia a tabela durante a execução.</p></div>
+        <div class="card"><h3>📊 VACUUM ANALYZE</h3><p>Faz o VACUUM padrão e, em seguida, atualiza as estatísticas da tabela — as mesmas que o planejador usa para decidir entre Seq Scan ou Index Scan.</p></div>
+        <div class="card"><h3>📈 ANALYZE</h3><p>Só atualiza as estatísticas, sem liberar espaço. Útil quando os dados mudaram bastante mas não há muitas linhas mortas para limpar.</p></div>
+        <div class="card"><h3>🧊 VACUUM FREEZE</h3><p>Força o "congelamento" de linhas antigas para evitar o problema de <i>transaction ID wraparound</i> — importante em tabelas grandes e pouco alteradas.</p></div>
+        <div class="card"><h3>🤖 Autovacuum</h3><p>Processo em segundo plano que roda VACUUM e ANALYZE automaticamente quando uma tabela acumula mudanças suficientes — cuida da manutenção do dia a dia.</p></div>
+      </div>
+      <div class="console">
+        <div class="bar"><span class="label">vacuum.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">VACUUM ANALYZE</span> tb_usuarios;</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ VACUUM — espaço morto liberado e estatísticas atualizadas.</span></div></div>
+      </div>
+      <div class="note warn"><span>⚠️</span><div><b>VACUUM FULL</b> reescreve a tabela inteira do zero: libera mais espaço, mas é mais lento e bloqueia a tabela durante a execução — use com cuidado em produção. No dia a dia, o <b>autovacuum</b> já resolve a maior parte dos casos sem intervenção manual.</div></div>
+    </section>
+
+    <!-- CAP 26 BACKUP -->
+    <section class="chapter" id="cap22">
+      <div class="chapter-header"><span class="chap-num"></span><h2>Backup e restauração</h2></div>
+      <p class="chapter-intro">Um <b>backup</b> é uma cópia de segurança dos dados, feita para recuperar o banco em caso de falha de hardware, erro humano (um <code class="inline">DELETE</code> sem <code class="inline">WHERE</code>, por exemplo), corrupção de dados ou qualquer desastre. Sem backup, um problema desses pode significar perda definitiva de informação.</p>
+      <p class="chapter-intro"><code class="inline">psql</code> é o cliente de linha de comando oficial do PostgreSQL — é por ele que você se conecta a um banco direto pelo terminal, executa comandos SQL de forma interativa e roda tarefas administrativas, incluindo restaurar arquivos <code class="inline">.sql</code>.</p>
+      <div class="grid cols-3">
+        <div class="card"><h3>🛡️ pg_dump</h3><p>Gera o backup <b>lógico</b> de um único banco de dados — as tabelas, dados, views, functions etc.</p></div>
+        <div class="card"><h3>🗄️ pg_dumpall</h3><p>Faz backup de <b>todos os bancos</b> do servidor, incluindo roles (usuários) e permissões globais.</p></div>
+        <div class="card"><h3>♻️ pg_restore / psql</h3><p>Restauram um backup gerado pelo <code class="inline">pg_dump</code>, recriando estrutura e dados.</p></div>
+      </div>
+      <h3 class="subhead">Como criar um backup</h3>
+      <p class="chapter-intro">O <code class="inline">pg_dump</code> é executado no terminal (fora do <code class="inline">psql</code>). Aceita dois formatos principais: <b>plain</b> (arquivo .sql legível) ou <b>custom</b> (binário, comprimido, mais rápido e flexível na hora de restaurar).</p>
+      <div class="console">
+        <div class="bar"><span class="label">terminal — backup em formato .sql (plain)</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt"># gera um arquivo .sql legível com toda a estrutura e os dados</span>
+pg_dump <span class="kw">-U</span> postgres <span class="kw">-d</span> minha_base <span class="kw">-f</span> backup.sql</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ backup.sql gerado com sucesso.</span></div></div>
+      </div>
+      <div class="console">
+        <div class="bar"><span class="label">terminal — backup em formato custom (recomendado)</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt"># -F c = formato custom (compactado, permite restauração seletiva)</span>
+pg_dump <span class="kw">-U</span> postgres <span class="kw">-d</span> minha_base <span class="kw">-F</span> c <span class="kw">-f</span> backup.dump</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ backup.dump gerado com sucesso.</span></div></div>
+      </div>
+      <div class="console">
+        <div class="bar"><span class="label">terminal — backup de todos os bancos do servidor</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt"># inclui todos os bancos + roles/usuários do cluster</span>
+pg_dumpall <span class="kw">-U</span> postgres <span class="kw">-f</span> backup_completo.sql</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ backup_completo.sql gerado com sucesso.</span></div></div>
+      </div>
+      <h3 class="subhead">Como restaurar um backup</h3>
+      <p class="chapter-intro">A ferramenta usada depende do formato: arquivos <b>.sql</b> são executados com <code class="inline">psql</code>; arquivos <b>.dump</b> (custom) são restaurados com <code class="inline">pg_restore</code>.</p>
+      <div class="console">
+        <div class="bar"><span class="label">terminal — restaurar um backup .sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt"># o banco de destino já precisa existir</span>
+psql <span class="kw">-U</span> postgres <span class="kw">-d</span> minha_base_nova <span class="kw">-f</span> backup.sql</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ dados restaurados em "minha_base_nova".</span></div></div>
+      </div>
+      <div class="console">
+        <div class="bar"><span class="label">terminal — restaurar um backup .dump (custom)</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt"># --clean remove os objetos existentes antes de recriá-los</span>
+pg_restore <span class="kw">-U</span> postgres <span class="kw">-d</span> minha_base_nova <span class="kw">--clean</span> backup.dump</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ dados restaurados em "minha_base_nova".</span></div></div>
+      </div>
+      <div class="note"><span>💡</span><div>Boas práticas: agende backups automáticos, <b>teste a restauração</b> periodicamente (um backup nunca testado é um backup que você não sabe se funciona) e guarde as cópias em um local diferente do servidor original.</div></div>
+    </section>
+
+    <footer>fim do guia <span class="dot">●</span> continue praticando com um PostgreSQL de verdade</footer>
+  </main>
+</div>
+
+<script>
+// ── TYPING ANIMATION ──
+const typedEl = document.getElementById('typed');
+const typedText = "SELECT * FROM tb_aprendizado;";
+let ti = 0;
+function typeLoop() {
+  if (ti <= typedText.length) {
+    typedEl.innerHTML = typedText.slice(0, ti) + '<span class="cursor">&nbsp;</span>';
+    ti++;
+    setTimeout(typeLoop, 55);
+  } else {
+    setTimeout(() => {
+      typedEl.innerHTML = typedText + '<div class="out">\n id_usuario | tx_nome   | tx_email\n-----------+-----------+------------------\n          1 | Ana Silva | ana@email.com\n(1 linha)</div>';
+    }, 400);
+  }
+}
+typeLoop();
+
+// ── PROGRESS BAR ──
+const bar = document.getElementById('progress');
+window.addEventListener('scroll', () => {
+  const h = document.documentElement;
+  const pct = h.scrollTop / (h.scrollHeight - h.clientHeight) * 100;
+  bar.style.width = pct + '%';
+});
+
+// ── SCROLLSPY ──
+const navLinks = document.querySelectorAll('nav.sidebar a[data-nav]');
+const sections = document.querySelectorAll('section.chapter');
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navLinks.forEach(a => a.classList.remove('active'));
+      const link = document.querySelector('nav.sidebar a[href="#' + e.target.id + '"]');
+      if (link) {
+        link.classList.add('active');
+        link.scrollIntoView({ block: 'nearest' });
+      }
+    }
+  });
+}, { rootMargin: '-15% 0px -70% 0px' });
+sections.forEach(s => io.observe(s));
+
+// ── RUN BUTTONS ──
+document.querySelectorAll('.run-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const result = btn.closest('.console').querySelector('.result');
+    const isOpen = result.classList.contains('open');
+    result.classList.toggle('open');
+    btn.textContent = isOpen ? '▶ Executar' : '↺ Fechar';
+  });
+});
+
+// ── TABLE COLUMN HIGHLIGHT ──
+const diagTable = document.getElementById('diagTable');
+diagTable.querySelectorAll('th').forEach(th => {
+  th.addEventListener('mouseenter', () => {
+    diagTable.querySelectorAll('[data-col="' + th.dataset.col + '"]').forEach(c => c.classList.add('hl-col'));
+  });
+  th.addEventListener('mouseleave', () => {
+    diagTable.querySelectorAll('[data-col="' + th.dataset.col + '"]').forEach(c => c.classList.remove('hl-col'));
+  });
+});
+
+// ── TYPES TABLE ──
+const types = [
+  ["INTEGER / INT", "Números inteiros, de -2147483648 a 2147483647."],
+  ["SERIAL", "Inteiro autoincrementável — usado em chaves primárias (id)."],
+  ["BIGINT", "Inteiros grandes, para valores acima do limite do INTEGER."],
+  ["NUMERIC(p,s) / DECIMAL", "Números exatos com casas decimais — ideal para dinheiro."],
+  ["REAL / DOUBLE PRECISION", "Números de ponto flutuante, com pequena perda de precisão."],
+  ["VARCHAR(n)", "Texto de tamanho variável, limitado a n caracteres."],
+  ["TEXT", "Texto de tamanho ilimitado."],
+  ["CHAR(n)", "Texto de tamanho fixo, preenchido com espaços se necessário."],
+  ["BOOLEAN", "Verdadeiro ou falso (true / false)."],
+  ["DATE / TIME / TIMESTAMP", "Apenas data, apenas hora, ou data e hora juntas."],
+  ["UUID", "Identificador único universal, ótimo para IDs distribuídos."],
+  ["JSON / JSONB", "Dados semi-estruturados; JSONB é binário e mais rápido para consultas."],
+  ["ARRAY", "Coleção de valores do mesmo tipo dentro de uma única coluna."]
+];
+const tbody = document.getElementById('typesBody');
+types.forEach(([type, desc]) => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = '<td><code>' + type + '</code></td><td class="desc">' + desc + '</td>';
+  tbody.appendChild(tr);
+});
+
+// ── SEARCH ──
+const searchInput = document.getElementById('searchInput');
+let searchMarks = [];
+
+function clearSearch() {
+  searchMarks.forEach(el => {
+    const parent = el.parentNode;
+    parent.replaceChild(document.createTextNode(el.textContent), el);
+    parent.normalize();
+  });
+  searchMarks = [];
+}
+
+function highlightText(node, term) {
+  if (node.nodeType === 3) {
+    const idx = node.textContent.toLowerCase().indexOf(term);
+    if (idx === -1) return;
+    const mark = document.createElement('mark');
+    mark.className = 'search-match';
+    const before = document.createTextNode(node.textContent.slice(0, idx));
+    const matched = document.createTextNode(node.textContent.slice(idx, idx + term.length));
+    const after = document.createTextNode(node.textContent.slice(idx + term.length));
+    mark.appendChild(matched);
+    const parent = node.parentNode;
+    parent.insertBefore(before, node);
+    parent.insertBefore(mark, node);
+    parent.insertBefore(after, node);
+    parent.removeChild(node);
+    searchMarks.push(mark);
+  } else if (node.nodeType === 1 && !['SCRIPT','STYLE','MARK'].includes(node.tagName)) {
+    Array.from(node.childNodes).forEach(child => highlightText(child, term));
+  }
+}
+
+searchInput.addEventListener('input', () => {
+  clearSearch();
+  const term = searchInput.value.trim().toLowerCase();
+  if (term.length < 2) return;
+  const main = document.querySelector('main');
+  highlightText(main, term);
+  if (searchMarks.length > 0) {
+    searchMarks[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+});
+
+searchInput.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { searchInput.value = ''; clearSearch(); }
+});
+</script>
+</body>
+</html>
