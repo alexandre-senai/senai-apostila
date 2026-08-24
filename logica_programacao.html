@@ -391,6 +391,9 @@
     <div class="nav-group-title">Back-end</div>
     <a class="nav-link" href="#middleware"><span class="dot"></span>Middleware</a>
     <a class="nav-link" href="#postgres"><span class="dot"></span>PostgreSQL + Node</a>
+    <a class="nav-link" href="#dotenv"><span class="dot"></span>Variáveis de Ambiente (.env)</a>
+    <a class="nav-link" href="#promise"><span class="dot"></span>Promise e async/await</a>
+    <a class="nav-link" href="#rows"><span class="dot"></span>O que é rows</a>
   </div>
 </nav>
 
@@ -807,55 +810,6 @@ npm install -D @types/pg</code></pre>
   <span class="kw">return</span> rows[<span class="num">0</span>];
 }</code></pre>
 
-    <h3>Opção B — Prisma ORM (recomendado para novos projetos)</h3>
-    <pre><code><span class="cm"># Instalação</span>
-npm install prisma @prisma/client
-npx prisma init <span class="cm"># cria prisma/schema.prisma e .env</span></code></pre>
-
-    <pre><code><span class="file-tag">prisma/schema.prisma</span>
-datasource db {
-  provider = <span class="str">"postgresql"</span>
-  url      = env(<span class="str">"DATABASE_URL"</span>)
-}
-
-generator client {
-  provider = <span class="str">"prisma-client-js"</span>
-}
-
-model Usuario {
-  id        Int      @id @default(autoincrement())
-  nome      String
-  email     String   @unique
-  senhaHash String   @map(<span class="str">"senha_hash"</span>)
-  criadoEm  DateTime @default(now()) @map(<span class="str">"criado_em"</span>)
-}</code></pre>
-
-    <pre><code><span class="cm"># Gerar o cliente e aplicar migrations</span>
-npx prisma migrate dev --name init
-npx prisma generate</code></pre>
-
-    <pre><code><span class="file-tag">src/database/prisma.ts</span>
-<span class="kw">import</span> { PrismaClient } <span class="kw">from</span> <span class="str">'@prisma/client'</span>;
-
-<span class="cm">// Instância única (singleton)</span>
-<span class="kw">const</span> prisma = <span class="kw">new</span> <span class="cls">PrismaClient</span>();
-<span class="kw">export default</span> prisma;</code></pre>
-
-    <pre><code><span class="file-tag">src/users/userService.ts</span>
-<span class="kw">import</span> prisma <span class="kw">from</span> <span class="str">'../database/prisma'</span>;
-
-<span class="kw">export async function</span> <span class="fn">listarUsuarios</span>() {
-  <span class="kw">return</span> prisma.usuario.<span class="fn">findMany</span>({
-    select: { id: <span class="kw">true</span>, nome: <span class="kw">true</span>, email: <span class="kw">true</span> },
-  });
-}
-
-<span class="kw">export async function</span> <span class="fn">criarUsuario</span>(nome: <span class="kw">string</span>, email: <span class="kw">string</span>, senhaHash: <span class="kw">string</span>) {
-  <span class="kw">return</span> prisma.usuario.<span class="fn">create</span>({
-    data: { nome, email, senhaHash },
-  });
-}</code></pre>
-
     <h3>Arquivo .env</h3>
     <pre><code><span class="file-tag">.env</span>
 <span class="cm"># Formato de conexão Prisma</span>
@@ -879,6 +833,513 @@ JWT_SECRET=use-uma-chave-longa-e-aleatoria-aqui</code></pre>
       <tr><td>TypeScript</td><td>Manual (interfaces)</td><td>Automático via geração</td></tr>
       <tr><td>Migrations</td><td>Manual</td><td>Automático (prisma migrate)</td></tr>
       <tr><td>Indicado para</td><td>Controle total / queries complexas</td><td>Produtividade / projetos novos</td></tr>
+    </table>
+  </section>
+
+
+  <!-- ═══ .ENV ═══ -->
+  <section class="section" id="dotenv">
+    <div class="section-tag">Back-end</div>
+    <h2>Variáveis de Ambiente (.env)</h2>
+
+    <p>Um arquivo <code>.env</code> (<em>dotenv</em>) armazena <strong>configurações sensíveis e variáveis que mudam entre ambientes</strong> (desenvolvimento, teste, produção) fora do código-fonte. Em vez de escrever senhas e chaves diretamente no código, você lê esses valores como <strong>variáveis de ambiente</strong> em tempo de execução.</p>
+
+    <div class="callout warn">
+      <strong>Regra de ouro:</strong> qualquer valor que muda entre máquinas ou que não pode ser público pertence ao <code>.env</code>, não no código.
+    </div>
+
+    <h3>Por que usar variáveis de ambiente?</h3>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-label">🔒 Segurança</div>
+        <div class="card-value">Senhas, tokens e chaves secretas ficam fora do repositório — não vão para o GitHub</div>
+      </div>
+      <div class="card">
+        <div class="card-label">🔄 Portabilidade</div>
+        <div class="card-value">O mesmo código roda em dev, staging e produção apenas trocando o <code>.env</code></div>
+      </div>
+      <div class="card">
+        <div class="card-label">👥 Colaboração</div>
+        <div class="card-value">Cada dev tem suas próprias credenciais locais sem conflito</div>
+      </div>
+      <div class="card">
+        <div class="card-label">☁️ Deploy</div>
+        <div class="card-value">Serviços como Railway, Vercel e AWS injetam variáveis diretamente — sem arquivo necessário</div>
+      </div>
+    </div>
+
+    <h3>O que NÃO deve estar no código-fonte</h3>
+    <table>
+      <tr><th>Tipo</th><th>Exemplos</th></tr>
+      <tr><td>Credenciais de banco</td><td>Usuário, senha, host, nome do banco</td></tr>
+      <tr><td>Chaves secretas</td><td><code>JWT_SECRET</code>, chaves de API (Stripe, SendGrid…)</td></tr>
+      <tr><td>URLs de serviços</td><td>URL do banco, endpoint de pagamento, URL do Redis</td></tr>
+      <tr><td>Configurações de ambiente</td><td><code>NODE_ENV</code>, porta do servidor, nível de log</td></tr>
+      <tr><td>Credenciais de e-mail</td><td>SMTP host, usuário, senha, porta</td></tr>
+    </table>
+
+    <h3>Estrutura de um arquivo .env</h3>
+    <pre><code><span class="file-tag">.env</span>
+<span class="cm"># ── Servidor ──────────────────────────────</span>
+NODE_ENV=development
+PORT=3000
+
+<span class="cm"># ── Banco de dados ────────────────────────</span>
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=minha_aplicacao
+DB_USER=postgres
+DB_PASSWORD=minha_senha_segura
+
+<span class="cm"># Alternativa: string de conexão completa (Prisma)</span>
+DATABASE_URL=<span class="str">"postgresql://postgres:minha_senha_segura@localhost:5432/minha_aplicacao"</span>
+
+<span class="cm"># ── Autenticação ──────────────────────────</span>
+JWT_SECRET=gere-uma-chave-longa-e-aleatoria-aqui-minimo-32-chars
+JWT_EXPIRES_IN=8h
+
+<span class="cm"># ── E-mail (SMTP) ─────────────────────────</span>
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=meu@email.com
+SMTP_PASS=app-password-gerada
+
+<span class="cm"># ── APIs externas ─────────────────────────</span>
+STRIPE_SECRET_KEY=sk_test_xxxxxxxxxxxx
+SENDGRID_API_KEY=SG.xxxxxxxxxxxxxxxx</code></pre>
+
+    <div class="callout info">
+      Cada linha segue o padrão <code>CHAVE=valor</code> — sem espaços ao redor do <code>=</code>. Linhas iniciadas com <code>#</code> são comentários.
+    </div>
+
+    <h3>Como usar no Node.js + TypeScript</h3>
+
+    <p>A biblioteca <strong>dotenv</strong> carrega o <code>.env</code> automaticamente para <code>process.env</code>:</p>
+
+    <pre><code><span class="cm"># Instalação</span>
+npm install dotenv
+npm install -D @types/node</code></pre>
+
+    <pre><code><span class="file-tag">src/index.ts  ← importe dotenv ANTES de tudo</span>
+<span class="kw">import</span> <span class="str">'dotenv/config'</span>; <span class="cm">// carrega o .env automaticamente</span>
+<span class="kw">import</span> express <span class="kw">from</span> <span class="str">'express'</span>;
+
+<span class="kw">const</span> app = <span class="fn">express</span>();
+<span class="kw">const</span> PORT = <span class="cls">process</span>.env.<span class="cls">PORT</span> ?? <span class="str">'3000'</span>;
+
+app.<span class="fn">listen</span>(<span class="cls">Number</span>(PORT), () => {
+  <span class="cls">console</span>.<span class="fn">log</span>(<span class="str">`Servidor rodando na porta <span class="kw">${</span>PORT<span class="kw">}</span>`</span>);
+});</code></pre>
+
+    <h3>Criando um módulo de configuração tipado</h3>
+
+    <p>Em vez de espalhar <code>process.env.ALGUMA_COISA</code> pelo código inteiro, centralize tudo em um arquivo de config com <strong>validação e tipagem</strong>:</p>
+
+    <pre><code><span class="file-tag">src/config/env.ts</span>
+<span class="kw">import</span> <span class="str">'dotenv/config'</span>;
+
+<span class="kw">function</span> <span class="fn">obrigatorio</span>(chave: <span class="kw">string</span>): <span class="kw">string</span> {
+  <span class="kw">const</span> valor = <span class="cls">process</span>.env[chave];
+  <span class="kw">if</span> (!valor) <span class="kw">throw new</span> <span class="cls">Error</span>(<span class="str">`Variável de ambiente ausente: <span class="kw">${</span>chave<span class="kw">}</span>`</span>);
+  <span class="kw">return</span> valor;
+}
+
+<span class="kw">export const</span> env = {
+  nodeEnv:    <span class="cls">process</span>.env.<span class="cls">NODE_ENV</span> ?? <span class="str">'development'</span>,
+  port:       <span class="cls">Number</span>(<span class="cls">process</span>.env.<span class="cls">PORT</span>) || <span class="num">3000</span>,
+
+  db: {
+    host:     <span class="fn">obrigatorio</span>(<span class="str">'DB_HOST'</span>),
+    port:     <span class="cls">Number</span>(<span class="cls">process</span>.env.<span class="cls">DB_PORT</span>) || <span class="num">5432</span>,
+    name:     <span class="fn">obrigatorio</span>(<span class="str">'DB_NAME'</span>),
+    user:     <span class="fn">obrigatorio</span>(<span class="str">'DB_USER'</span>),
+    password: <span class="fn">obrigatorio</span>(<span class="str">'DB_PASSWORD'</span>),
+  },
+
+  jwt: {
+    secret:    <span class="fn">obrigatorio</span>(<span class="str">'JWT_SECRET'</span>),
+    expiresIn: <span class="cls">process</span>.env.<span class="cls">JWT_EXPIRES_IN</span> ?? <span class="str">'8h'</span>,
+  },
+} <span class="kw">as const</span>;</code></pre>
+
+    <pre><code><span class="file-tag">src/database/pool.ts  ← usando o módulo de config</span>
+<span class="kw">import</span> { Pool } <span class="kw">from</span> <span class="str">'pg'</span>;
+<span class="kw">import</span> { env } <span class="kw">from</span> <span class="str">'../config/env'</span>;
+
+<span class="kw">export const</span> pool = <span class="kw">new</span> <span class="cls">Pool</span>({
+  host:     env.db.host,
+  port:     env.db.port,
+  database: env.db.name,
+  user:     env.db.user,
+  password: env.db.password,
+});</code></pre>
+
+    <div class="callout tip">
+      A função <code>obrigatorio()</code> faz o servidor <strong>parar imediatamente</strong> na inicialização se uma variável essencial estiver faltando — muito melhor do que descobrir o erro em produção durante uma requisição.
+    </div>
+
+    <h3>Múltiplos ambientes</h3>
+
+    <p>É comum ter um arquivo <code>.env</code> por ambiente. As ferramentas como dotenv e frameworks como Next.js reconhecem automaticamente:</p>
+
+    <table>
+      <tr><th>Arquivo</th><th>Quando é carregado</th></tr>
+      <tr><td>.env</td><td>Sempre (valores padrão / compartilhados)</td></tr>
+      <tr><td>.env.local</td><td>Localmente — sobrescreve <code>.env</code></td></tr>
+      <tr><td>.env.development</td><td>Quando <code>NODE_ENV=development</code></td></tr>
+      <tr><td>.env.production</td><td>Quando <code>NODE_ENV=production</code></td></tr>
+      <tr><td>.env.test</td><td>Quando <code>NODE_ENV=test</code></td></tr>
+    </table>
+
+    <h3>O arquivo .env.example</h3>
+
+    <p>Como o <code>.env</code> real nunca vai para o repositório, crie um <code>.env.example</code> com as chaves (sem os valores reais) para orientar outros desenvolvedores:</p>
+
+    <pre><code><span class="file-tag">.env.example  ← este SIM vai para o Git</span>
+<span class="cm"># Copie este arquivo para .env e preencha os valores</span>
+
+NODE_ENV=development
+PORT=3000
+
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=
+DB_USER=
+DB_PASSWORD=
+
+DATABASE_URL=
+
+JWT_SECRET=
+JWT_EXPIRES_IN=8h
+
+SMTP_HOST=
+SMTP_PORT=587
+SMTP_USER=
+SMTP_PASS=</code></pre>
+
+    <h3>Configurando o .gitignore</h3>
+
+    <pre><code><span class="file-tag">.gitignore</span>
+<span class="cm"># Variáveis de ambiente — NUNCA versionar</span>
+.env
+.env.local
+.env.*.local
+
+<span class="cm"># Mas o exemplo pode (e deve) ir para o repositório</span>
+!.env.example
+
+node_modules/
+dist/</code></pre>
+
+    <div class="callout warn">
+      <strong>Atenção:</strong> Se você acidentalmente publicar um <code>.env</code> com segredos no GitHub, considere as credenciais comprometidas — troque todas imediatamente. O histórico do Git guarda o arquivo mesmo após deletá-lo.
+    </div>
+
+    <h3>Validação avançada com Zod</h3>
+
+    <p>Para projetos maiores, a biblioteca <strong>Zod</strong> permite validar e tipar variáveis de ambiente de forma robusta:</p>
+
+    <pre><code><span class="cm"># Instalação</span>
+npm install zod</code></pre>
+
+    <pre><code><span class="file-tag">src/config/env.ts  ← versão com Zod</span>
+<span class="kw">import</span> <span class="str">'dotenv/config'</span>;
+<span class="kw">import</span> { z } <span class="kw">from</span> <span class="str">'zod'</span>;
+
+<span class="kw">const</span> schema = z.<span class="fn">object</span>({
+  NODE_ENV:    z.<span class="fn">enum</span>([<span class="str">'development'</span>, <span class="str">'test'</span>, <span class="str">'production'</span>]).<span class="fn">default</span>(<span class="str">'development'</span>),
+  PORT:        z.<span class="fn">coerce</span>.number().<span class="fn">default</span>(<span class="num">3000</span>),
+  DB_HOST:     z.<span class="fn">string</span>().<span class="fn">min</span>(<span class="num">1</span>),
+  DB_PORT:     z.<span class="fn">coerce</span>.number().<span class="fn">default</span>(<span class="num">5432</span>),
+  DB_NAME:     z.<span class="fn">string</span>().<span class="fn">min</span>(<span class="num">1</span>),
+  DB_USER:     z.<span class="fn">string</span>().<span class="fn">min</span>(<span class="num">1</span>),
+  DB_PASSWORD: z.<span class="fn">string</span>().<span class="fn">min</span>(<span class="num">1</span>),
+  JWT_SECRET:  z.<span class="fn">string</span>().<span class="fn">min</span>(<span class="num">32</span>, <span class="str">'JWT_SECRET deve ter ao menos 32 caracteres'</span>),
+  JWT_EXPIRES_IN: z.<span class="fn">string</span>().<span class="fn">default</span>(<span class="str">'8h'</span>),
+});
+
+<span class="kw">const</span> parsed = schema.<span class="fn">safeParse</span>(<span class="cls">process</span>.env);
+
+<span class="kw">if</span> (!parsed.success) {
+  <span class="cls">console</span>.<span class="fn">error</span>(<span class="str">'❌ Variáveis de ambiente inválidas:'</span>);
+  <span class="cls">console</span>.<span class="fn">error</span>(parsed.error.<span class="fn">flatten</span>().fieldErrors);
+  <span class="cls">process</span>.<span class="fn">exit</span>(<span class="num">1</span>); <span class="cm">// para o servidor antes de iniciar</span>
+}
+
+<span class="kw">export const</span> env = parsed.data;</code></pre>
+
+    <h3>Fluxo completo resumido</h3>
+
+    <ul class="steps">
+      <li><span class="step-n">1</span>Crie o <code>.env</code> com suas credenciais locais e adicione ao <code>.gitignore</code>.</li>
+      <li><span class="step-n">2</span>Crie o <code>.env.example</code> com as chaves (sem valores) e versione no Git.</li>
+      <li><span class="step-n">3</span>Instale <code>dotenv</code> e importe <code>'dotenv/config'</code> no ponto de entrada da aplicação.</li>
+      <li><span class="step-n">4</span>Centralize o acesso em um módulo <code>src/config/env.ts</code> com validação.</li>
+      <li><span class="step-n">5</span>Use <code>env.db.host</code>, <code>env.jwt.secret</code> etc. no restante do código — nunca <code>process.env</code> diretamente.</li>
+      <li><span class="step-n">6</span>Em produção (Railway, Vercel, Heroku), configure as variáveis no painel do serviço — sem arquivo <code>.env</code>.</li>
+    </ul>
+  </section>
+
+  <!-- ═══ PROMISE ═══ -->
+  <section class="section" id="promise">
+    <div class="section-tag">JavaScript / TypeScript</div>
+    <h2>O que é Promise e async/await</h2>
+
+    <p>JavaScript é <strong>single-threaded</strong> — executa uma coisa de cada vez. Mas certas operações levam tempo: consultar um banco, chamar uma API, ler um arquivo. Se o código esperasse travado até terminar, a aplicação inteira pausaria.</p>
+
+    <p>A solução é o modelo <strong>assíncrono</strong>: você dispara a operação, continua executando outras coisas, e quando o resultado chegar o código retoma. Uma <strong>Promise</strong> é o objeto que representa esse valor futuro.</p>
+
+    <div class="card-grid">
+      <div class="card"><div class="card-label">pending</div><div class="card-value">Operação ainda em andamento</div></div>
+      <div class="card"><div class="card-label">fulfilled</div><div class="card-value">Concluiu com sucesso — tem um valor</div></div>
+      <div class="card"><div class="card-label">rejected</div><div class="card-value">Falhou — tem um erro</div></div>
+    </div>
+
+    <h3>Estados de uma Promise</h3>
+
+    <pre><code><span class="cm">// Uma Promise começa "pending" e termina em fulfilled ou rejected</span>
+<span class="kw">const</span> promessa = <span class="kw">new</span> <span class="cls">Promise</span>&lt;<span class="kw">string</span>&gt;((resolve, reject) => {
+  <span class="kw">const</span> sucesso = <span class="kw">true</span>;
+
+  <span class="kw">if</span> (sucesso) {
+    <span class="fn">resolve</span>(<span class="str">'Dados carregados!'</span>); <span class="cm">// fulfilled</span>
+  } <span class="kw">else</span> {
+    <span class="fn">reject</span>(<span class="kw">new</span> <span class="cls">Error</span>(<span class="str">'Algo deu errado'</span>)); <span class="cm">// rejected</span>
+  }
+});
+
+<span class="cm">// Consumindo com .then() / .catch()</span>
+promessa
+  .<span class="fn">then</span>((resultado) => <span class="cls">console</span>.<span class="fn">log</span>(resultado))   <span class="cm">// 'Dados carregados!'</span>
+  .<span class="fn">catch</span>((erro) => <span class="cls">console</span>.<span class="fn">error</span>(erro.message)); <span class="cm">// se rejected</span></code></pre>
+
+    <h3>async / await — a forma moderna</h3>
+
+    <p><code>async/await</code> é uma sintaxe introduzida no ES2017 que torna o código assíncrono <strong>parecido com código síncrono</strong>, sem perder os benefícios das Promises. Por baixo dos panos, é exatamente a mesma coisa.</p>
+
+    <pre><code><span class="cm">// Sem async/await — usando .then() encadeado</span>
+<span class="kw">function</span> <span class="fn">buscarUsuario</span>(id: <span class="kw">number</span>) {
+  <span class="kw">return</span> pool
+    .<span class="fn">query</span>(<span class="str">'SELECT * FROM usuarios WHERE id = $1'</span>, [id])
+    .<span class="fn">then</span>((resultado) => resultado.rows[<span class="num">0</span>])
+    .<span class="fn">catch</span>((erro) => { <span class="kw">throw</span> erro; });
+}
+
+<span class="cm">// Com async/await — mesmo resultado, mais legível</span>
+<span class="kw">async function</span> <span class="fn">buscarUsuario</span>(id: <span class="kw">number</span>) {
+  <span class="kw">const</span> resultado = <span class="kw">await</span> pool.<span class="fn">query</span>(<span class="str">'SELECT * FROM usuarios WHERE id = $1'</span>, [id]);
+  <span class="kw">return</span> resultado.rows[<span class="num">0</span>];
+}</code></pre>
+
+    <div class="callout info">
+      <strong>Regra:</strong> <code>await</code> só pode ser usado dentro de uma função marcada com <code>async</code>. Uma função <code>async</code> sempre retorna uma <code>Promise</code> — mesmo que você retorne um valor direto.
+    </div>
+
+    <h3>Tratamento de erros com try/catch</h3>
+
+    <p>Com <code>async/await</code>, erros de Promises rejeitadas são capturados com o <code>try/catch</code> tradicional — muito mais claro do que encadear <code>.catch()</code>:</p>
+
+    <pre><code><span class="kw">async function</span> <span class="fn">criarUsuario</span>(nome: <span class="kw">string</span>, email: <span class="kw">string</span>) {
+  <span class="kw">try</span> {
+    <span class="kw">const</span> resultado = <span class="kw">await</span> pool.<span class="fn">query</span>(
+      <span class="str">'INSERT INTO usuarios (nome, email) VALUES ($1, $2) RETURNING *'</span>,
+      [nome, email]
+    );
+    <span class="kw">return</span> resultado.rows[<span class="num">0</span>]; <span class="cm">// usuário criado</span>
+
+  } <span class="kw">catch</span> (erro) {
+    <span class="cm">// Se o e-mail já existir (UNIQUE), o banco lança erro aqui</span>
+    <span class="cls">console</span>.<span class="fn">error</span>(<span class="str">'Erro ao criar usuário:'</span>, erro);
+    <span class="kw">throw</span> erro; <span class="cm">// propaga para o handler da rota</span>
+  }
+}</code></pre>
+
+    <h3>Promise.all — executar várias em paralelo</h3>
+
+    <p>Quando você precisa aguardar múltiplas operações independentes, <code>Promise.all</code> as executa <strong>em paralelo</strong> e aguarda todas terminarem — bem mais rápido do que <code>await</code> uma a uma:</p>
+
+    <pre><code><span class="cm">// ❌ Sequencial — lento: espera cada um antes do próximo</span>
+<span class="kw">const</span> usuarios  = <span class="kw">await</span> <span class="fn">buscarUsuarios</span>();   <span class="cm">// 200ms</span>
+<span class="kw">const</span> produtos  = <span class="kw">await</span> <span class="fn">buscarProdutos</span>();   <span class="cm">// + 150ms</span>
+<span class="kw">const</span> pedidos   = <span class="kw">await</span> <span class="fn">buscarPedidos</span>();    <span class="cm">// + 180ms  → total: 530ms</span>
+
+<span class="cm">// ✅ Paralelo — rápido: os três rodam ao mesmo tempo</span>
+<span class="kw">const</span> [usuarios, produtos, pedidos] = <span class="kw">await</span> <span class="cls">Promise</span>.<span class="fn">all</span>([
+  <span class="fn">buscarUsuarios</span>(),
+  <span class="fn">buscarProdutos</span>(),
+  <span class="fn">buscarPedidos</span>(),
+]); <span class="cm">// → total: ~200ms (o mais demorado)</span></code></pre>
+
+    <div class="callout warn">
+      <code>Promise.all</code> falha se <em>qualquer</em> Promise rejeitar. Se quiser que os outros continuem mesmo com falhas, use <code>Promise.allSettled</code>.
+    </div>
+
+    <h3>Promise em rotas Express</h3>
+
+    <pre><code><span class="file-tag">src/users/userController.ts</span>
+<span class="kw">import</span> { Request, Response } <span class="kw">from</span> <span class="str">'express'</span>;
+<span class="kw">import</span> { listarUsuarios, buscarPorId } <span class="kw">from</span> <span class="str">'./userRepository'</span>;
+
+<span class="cm">// async: a função retorna uma Promise&lt;void&gt;</span>
+<span class="kw">export async function</span> <span class="fn">getUsuarios</span>(req: <span class="cls">Request</span>, res: <span class="cls">Response</span>) {
+  <span class="kw">try</span> {
+    <span class="kw">const</span> usuarios = <span class="kw">await</span> <span class="fn">listarUsuarios</span>(); <span class="cm">// aguarda a Promise resolver</span>
+    res.<span class="fn">json</span>(usuarios);
+  } <span class="kw">catch</span> (erro) {
+    res.<span class="fn">status</span>(<span class="num">500</span>).<span class="fn">json</span>({ erro: <span class="str">'Erro ao buscar usuários'</span> });
+  }
+}
+
+<span class="kw">export async function</span> <span class="fn">getUsuarioById</span>(req: <span class="cls">Request</span>, res: <span class="cls">Response</span>) {
+  <span class="kw">try</span> {
+    <span class="kw">const</span> usuario = <span class="kw">await</span> <span class="fn">buscarPorId</span>(<span class="cls">Number</span>(req.params.id));
+    <span class="kw">if</span> (!usuario) <span class="kw">return</span> res.<span class="fn">status</span>(<span class="num">404</span>).<span class="fn">json</span>({ erro: <span class="str">'Não encontrado'</span> });
+    res.<span class="fn">json</span>(usuario);
+  } <span class="kw">catch</span> (erro) {
+    res.<span class="fn">status</span>(<span class="num">500</span>).<span class="fn">json</span>({ erro: <span class="str">'Erro interno'</span> });
+  }
+}</code></pre>
+
+    <h3>Comparativo rápido</h3>
+    <table>
+      <tr><th>Abordagem</th><th>Vantagem</th><th>Quando usar</th></tr>
+      <tr><td>.then()/.catch()</td><td>Encadeamento funcional</td><td>Operações simples e curtas</td></tr>
+      <tr><td>async/await</td><td>Legibilidade — parece síncrono</td><td>Maioria dos casos — preferido</td></tr>
+      <tr><td>Promise.all</td><td>Paralelismo</td><td>Múltiplas operações independentes</td></tr>
+      <tr><td>Promise.allSettled</td><td>Tolera falhas parciais</td><td>Quando algum erro não é fatal</td></tr>
+    </table>
+  </section>
+
+  <!-- ═══ ROWS ═══ -->
+  <section class="section" id="rows">
+    <div class="section-tag">Back-end / Banco de dados</div>
+    <h2>O que é <code>rows</code></h2>
+
+    <p>Quando você executa uma query com a biblioteca <strong>node-postgres</strong> (<code>pg</code>), o banco retorna um objeto <strong>QueryResult</strong>. A propriedade <code>rows</code> é um <strong>array</strong> com os registros que o banco encontrou — cada elemento é um objeto JavaScript correspondendo a uma linha da tabela.</p>
+
+    <pre><code><span class="cm">// pool.query() retorna uma Promise&lt;QueryResult&gt;</span>
+<span class="kw">const</span> resultado = <span class="kw">await</span> pool.<span class="fn">query</span>(<span class="str">'SELECT id, nome, email FROM usuarios'</span>);
+
+<span class="cm">// resultado é um objeto com várias propriedades:</span>
+<span class="cm">//  resultado.rows     → array de linhas retornadas</span>
+<span class="cm">//  resultado.rowCount → quantas linhas vieram</span>
+<span class="cm">//  resultado.fields   → metadados das colunas</span>
+
+<span class="cls">console</span>.<span class="fn">log</span>(resultado.rows);
+<span class="cm">// [</span>
+<span class="cm">//   { id: 1, nome: 'Alexandre', email: 'alex@senai.br' },</span>
+<span class="cm">//   { id: 2, nome: 'Maria',     email: 'maria@senai.br' },</span>
+<span class="cm">// ]</span></code></pre>
+
+    <h3>Desestruturação — o atalho mais comum</h3>
+
+    <p>Na prática, quase sempre você só quer o array <code>rows</code>. O padrão mais usado é desestruturar direto na declaração:</p>
+
+    <pre><code><span class="cm">// Sem desestruturação — verboso</span>
+<span class="kw">const</span> resultado = <span class="kw">await</span> pool.<span class="fn">query</span>(<span class="str">'SELECT * FROM usuarios'</span>);
+<span class="kw">const</span> usuarios  = resultado.rows;
+
+<span class="cm">// Com desestruturação — direto ao ponto ✅</span>
+<span class="kw">const</span> { rows } = <span class="kw">await</span> pool.<span class="fn">query</span>(<span class="str">'SELECT * FROM usuarios'</span>);
+<span class="cm">//     ↑ extrai apenas "rows" do objeto QueryResult</span></code></pre>
+
+    <div class="callout info">
+      <code>const { rows } = await pool.query(...)</code> é a mesma coisa que<br>
+      <code>const resultado = await pool.query(...); const rows = resultado.rows;</code><br>
+      — só mais curto.
+    </div>
+
+    <h3>Cenários práticos</h3>
+
+    <pre><code><span class="cm">// 1. Vários registros — retorna todos como array</span>
+<span class="kw">const</span> { rows } = <span class="kw">await</span> pool.<span class="fn">query</span>(<span class="str">'SELECT * FROM produtos'</span>);
+<span class="cm">// rows → [{ id:1, nome:'Teclado' }, { id:2, nome:'Mouse' }, ...]</span>
+<span class="kw">return</span> rows; <span class="cm">// retorna o array inteiro</span>
+
+<span class="cm">// 2. Um único registro — pega o primeiro elemento</span>
+<span class="kw">const</span> { rows } = <span class="kw">await</span> pool.<span class="fn">query</span>(
+  <span class="str">'SELECT * FROM usuarios WHERE id = $1'</span>, [<span class="num">1</span>]
+);
+<span class="cm">// rows → [{ id:1, nome:'Alexandre', email:'alex@senai.br' }]</span>
+<span class="kw">return</span> rows[<span class="num">0</span>]; <span class="cm">// pega o objeto, não o array</span>
+
+<span class="cm">// 3. INSERT com RETURNING — retorna a linha criada</span>
+<span class="kw">const</span> { rows } = <span class="kw">await</span> pool.<span class="fn">query</span>(
+  <span class="str">'INSERT INTO usuarios (nome, email) VALUES ($1, $2) RETURNING *'</span>,
+  [<span class="str">'Carlos'</span>, <span class="str">'carlos@senai.br'</span>]
+);
+<span class="cm">// rows → [{ id:3, nome:'Carlos', email:'carlos@senai.br' }]</span>
+<span class="kw">return</span> rows[<span class="num">0</span>]; <span class="cm">// o novo registro com o id gerado</span>
+
+<span class="cm">// 4. Nenhum resultado — rows é array vazio</span>
+<span class="kw">const</span> { rows } = <span class="kw">await</span> pool.<span class="fn">query</span>(
+  <span class="str">'SELECT * FROM usuarios WHERE id = $1'</span>, [<span class="num">999</span>]
+);
+<span class="cm">// rows → []</span>
+<span class="kw">if</span> (rows.length === <span class="num">0</span>) <span class="kw">return</span> <span class="kw">null</span>; <span class="cm">// usuário não encontrado</span></code></pre>
+
+    <h3>Tipando rows com TypeScript</h3>
+
+    <p>Por padrão, <code>rows</code> é do tipo <code>any[]</code>. Para ganhar autocomplete e segurança de tipos, passe uma interface como genérico:</p>
+
+    <pre><code><span class="file-tag">src/users/userRepository.ts</span>
+<span class="kw">import</span> { pool } <span class="kw">from</span> <span class="str">'../database/pool'</span>;
+
+<span class="cm">// Define o formato de uma linha da tabela</span>
+<span class="kw">interface</span> <span class="cls">Usuario</span> {
+  id:     <span class="kw">number</span>;
+  nome:   <span class="kw">string</span>;
+  email:  <span class="kw">string</span>;
+}
+
+<span class="kw">export async function</span> <span class="fn">listarUsuarios</span>(): <span class="cls">Promise</span>&lt;<span class="cls">Usuario</span>[]&gt; {
+  <span class="cm">// &lt;Usuario&gt; informa ao TypeScript o tipo de cada elemento em rows</span>
+  <span class="kw">const</span> { rows } = <span class="kw">await</span> pool.<span class="fn">query</span>&lt;<span class="cls">Usuario</span>&gt;(
+    <span class="str">'SELECT id, nome, email FROM usuarios'</span>
+  );
+  <span class="kw">return</span> rows; <span class="cm">// rows: Usuario[]  ← tipado!</span>
+}
+
+<span class="kw">export async function</span> <span class="fn">buscarPorId</span>(id: <span class="kw">number</span>): <span class="cls">Promise</span>&lt;<span class="cls">Usuario</span> | <span class="kw">null</span>&gt; {
+  <span class="kw">const</span> { rows } = <span class="kw">await</span> pool.<span class="fn">query</span>&lt;<span class="cls">Usuario</span>&gt;(
+    <span class="str">'SELECT id, nome, email FROM usuarios WHERE id = $1'</span>,
+    [id]
+  );
+  <span class="kw">return</span> rows[<span class="num">0</span>] ?? <span class="kw">null</span>; <span class="cm">// Usuario | undefined → null se não achar</span>
+}</code></pre>
+
+    <div class="callout tip">
+      O operador <code>??</code> (nullish coalescing) retorna o lado direito quando o esquerdo é <code>null</code> ou <code>undefined</code>. <code>rows[0] ?? null</code> significa: "retorne o primeiro elemento, ou <code>null</code> se não existir".
+    </div>
+
+    <h3>rowCount — quantas linhas foram afetadas</h3>
+
+    <p>Para <code>UPDATE</code> e <code>DELETE</code>, <code>rows</code> fica vazio (a não ser que use <code>RETURNING</code>). Nesses casos, use <code>rowCount</code> para saber se algo foi alterado:</p>
+
+    <pre><code><span class="kw">export async function</span> <span class="fn">deletarUsuario</span>(id: <span class="kw">number</span>): <span class="cls">Promise</span>&lt;<span class="kw">boolean</span>&gt; {
+  <span class="kw">const</span> { rowCount } = <span class="kw">await</span> pool.<span class="fn">query</span>(
+    <span class="str">'DELETE FROM usuarios WHERE id = $1'</span>, [id]
+  );
+  <span class="kw">return</span> (rowCount ?? <span class="num">0</span>) > <span class="num">0</span>; <span class="cm">// true se deletou, false se id não existia</span>
+}
+
+<span class="kw">export async function</span> <span class="fn">atualizarNome</span>(id: <span class="kw">number</span>, nome: <span class="kw">string</span>) {
+  <span class="kw">const</span> { rows, rowCount } = <span class="kw">await</span> pool.<span class="fn">query</span>&lt;<span class="cls">Usuario</span>&gt;(
+    <span class="str">'UPDATE usuarios SET nome = $1 WHERE id = $2 RETURNING *'</span>,
+    [nome, id]
+  );
+  <span class="kw">if</span> ((rowCount ?? <span class="num">0</span>) === <span class="num">0</span>) <span class="kw">throw new</span> <span class="cls">Error</span>(<span class="str">'Usuário não encontrado'</span>);
+  <span class="kw">return</span> rows[<span class="num">0</span>]; <span class="cm">// usuário atualizado</span>
+}</code></pre>
+
+    <h3>Resumo visual</h3>
+    <table>
+      <tr><th>Propriedade</th><th>Tipo</th><th>Quando usar</th></tr>
+      <tr><td>rows</td><td><code>T[]</code> (array)</td><td>SELECT, INSERT/UPDATE/DELETE com RETURNING</td></tr>
+      <tr><td>rows[0]</td><td><code>T | undefined</code></td><td>Busca por id — espera 0 ou 1 resultado</td></tr>
+      <tr><td>rowCount</td><td><code>number | null</code></td><td>DELETE / UPDATE sem RETURNING — confirma se alterou</td></tr>
+      <tr><td>fields</td><td>array de metadados</td><td>Raramente necessário — nomes e tipos das colunas</td></tr>
     </table>
   </section>
 
