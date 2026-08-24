@@ -388,6 +388,11 @@
   </div>
 
   <div class="nav-group">
+    <div class="nav-group-title">Front-end</div>
+    <a class="nav-link" href="#localstorage"><span class="dot"></span>localStorage</a>
+  </div>
+
+  <div class="nav-group">
     <div class="nav-group-title">Back-end</div>
     <a class="nav-link" href="#middleware"><span class="dot"></span>Middleware</a>
     <a class="nav-link" href="#postgres"><span class="dot"></span>PostgreSQL + Node</a>
@@ -761,9 +766,9 @@ app.<span class="fn">use</span>(errorHandler);</code></pre>
     <div class="section-tag">Banco de dados</div>
     <h2>Conectar PostgreSQL com Node.js (TypeScript)</h2>
 
-    <p>A biblioteca mais usada para conectar Node.js ao PostgreSQL é o <strong>node-postgres</strong> (<code>pg</code>). Para TypeScript, é comum também usar um ORM como <strong>Prisma</strong> ou <strong>TypeORM</strong>. Veja as duas abordagens:</p>
+    <p>A biblioteca mais usada para conectar Node.js ao PostgreSQL é o <strong>node-postgres</strong> (<code>pg</code>). Ela fornece um pool de conexões e permite executar queries SQL diretamente, com total controle sobre o banco.</p>
 
-    <h3>Opção A — pg (driver nativo, sem ORM)</h3>
+    <h3>Instalação e configuração</h3>
     <pre><code><span class="cm"># Instalação</span>
 npm install pg
 npm install -D @types/pg</code></pre>
@@ -812,10 +817,6 @@ npm install -D @types/pg</code></pre>
 
     <h3>Arquivo .env</h3>
     <pre><code><span class="file-tag">.env</span>
-<span class="cm"># Formato de conexão Prisma</span>
-DATABASE_URL=<span class="str">"postgresql://usuario:senha@localhost:5432/minha_db?schema=public"</span>
-
-<span class="cm"># Separado (para usar com pg direto)</span>
 DB_HOST=localhost
 DB_PORT=5432
 DB_NAME=minha_db
@@ -825,15 +826,6 @@ DB_PASSWORD=senha
 JWT_SECRET=use-uma-chave-longa-e-aleatoria-aqui</code></pre>
 
     <div class="callout warn"><strong>Nunca</strong> versione o arquivo <code>.env</code> no Git. Adicione ao <code>.gitignore</code>.</div>
-
-    <h3>Comparativo pg vs Prisma</h3>
-    <table>
-      <tr><th></th><th>node-postgres (pg)</th><th>Prisma ORM</th></tr>
-      <tr><td>Curva de aprendizado</td><td>Baixa — SQL puro</td><td>Média — schema declarativo</td></tr>
-      <tr><td>TypeScript</td><td>Manual (interfaces)</td><td>Automático via geração</td></tr>
-      <tr><td>Migrations</td><td>Manual</td><td>Automático (prisma migrate)</td></tr>
-      <tr><td>Indicado para</td><td>Controle total / queries complexas</td><td>Produtividade / projetos novos</td></tr>
-    </table>
   </section>
 
 
@@ -891,9 +883,6 @@ DB_PORT=5432
 DB_NAME=minha_aplicacao
 DB_USER=postgres
 DB_PASSWORD=minha_senha_segura
-
-<span class="cm"># Alternativa: string de conexão completa (Prisma)</span>
-DATABASE_URL=<span class="str">"postgresql://postgres:minha_senha_segura@localhost:5432/minha_aplicacao"</span>
 
 <span class="cm"># ── Autenticação ──────────────────────────</span>
 JWT_SECRET=gere-uma-chave-longa-e-aleatoria-aqui-minimo-32-chars
@@ -1007,8 +996,6 @@ DB_PORT=5432
 DB_NAME=
 DB_USER=
 DB_PASSWORD=
-
-DATABASE_URL=
 
 JWT_SECRET=
 JWT_EXPIRES_IN=8h
@@ -1344,6 +1331,168 @@ promessa
   </section>
 
 </main>
+
+  <!-- ═══ LOCALSTORAGE ═══ -->
+  <section class="section" id="localstorage">
+    <div class="section-tag">Front-end / Browser</div>
+    <h2>O que é localStorage</h2>
+
+    <p>O <strong>localStorage</strong> é um mecanismo de armazenamento do navegador que permite salvar dados como pares <strong>chave → valor</strong> diretamente no dispositivo do usuário, de forma <strong>persistente</strong> — os dados continuam existindo mesmo depois de fechar o navegador ou desligar o computador.</p>
+
+    <p>Ele faz parte da <strong>Web Storage API</strong>, disponível em todos os navegadores modernos via objeto global <code>window.localStorage</code>.</p>
+
+    <div class="card-grid">
+      <div class="card"><div class="card-label">Capacidade</div><div class="card-value">~5 MB por origem (domínio)</div></div>
+      <div class="card"><div class="card-label">Persistência</div><div class="card-value">Permanente — não expira sozinho</div></div>
+      <div class="card"><div class="card-label">Escopo</div><div class="card-value">Por origem — isolado por domínio</div></div>
+      <div class="card"><div class="card-label">Tipo de dado</div><div class="card-value">Somente strings</div></div>
+    </div>
+
+    <div class="callout info">
+      <strong>Origem</strong> = protocolo + domínio + porta. <code>http://localhost:3000</code> e <code>http://localhost:5173</code> são origens diferentes e têm storages separados.
+    </div>
+
+    <h3>API — os 4 métodos principais</h3>
+
+    <pre><code><span class="cm">// Salvar um valor</span>
+localStorage.<span class="fn">setItem</span>(<span class="str">'chave'</span>, <span class="str">'valor'</span>);
+
+<span class="cm">// Ler um valor (retorna null se não existir)</span>
+<span class="kw">const</span> valor = localStorage.<span class="fn">getItem</span>(<span class="str">'chave'</span>); <span class="cm">// 'valor' | null</span>
+
+<span class="cm">// Remover um item</span>
+localStorage.<span class="fn">removeItem</span>(<span class="str">'chave'</span>);
+
+<span class="cm">// Apagar tudo do storage dessa origem</span>
+localStorage.<span class="fn">clear</span>();
+
+<span class="cm">// Quantos itens estão salvos</span>
+<span class="cls">console</span>.<span class="fn">log</span>(localStorage.length);</code></pre>
+
+    <h3>Salvando objetos com JSON</h3>
+
+    <p>O localStorage aceita <strong>apenas strings</strong>. Para salvar objetos ou arrays, serialize com <code>JSON.stringify</code> e recupere com <code>JSON.parse</code>:</p>
+
+    <pre><code><span class="kw">const</span> usuario = { id: <span class="num">1</span>, nome: <span class="str">'Alexandre'</span>, role: <span class="str">'admin'</span> };
+
+<span class="cm">// ❌ Errado — salva "[object Object]"</span>
+localStorage.<span class="fn">setItem</span>(<span class="str">'usuario'</span>, usuario);
+
+<span class="cm">// ✅ Correto — serializa para string JSON</span>
+localStorage.<span class="fn">setItem</span>(<span class="str">'usuario'</span>, <span class="cls">JSON</span>.<span class="fn">stringify</span>(usuario));
+
+<span class="cm">// Recuperando e convertendo de volta para objeto</span>
+<span class="kw">const</span> raw = localStorage.<span class="fn">getItem</span>(<span class="str">'usuario'</span>);
+<span class="kw">const</span> dados = raw ? <span class="cls">JSON</span>.<span class="fn">parse</span>(raw) : <span class="kw">null</span>;</code></pre>
+
+    <h3>Usando com TypeScript — helper tipado</h3>
+
+    <p>Criar um helper evita repetir <code>JSON.stringify</code>/<code>JSON.parse</code> e garante tipagem em todo o projeto:</p>
+
+    <pre><code><span class="file-tag">src/utils/storage.ts</span>
+<span class="kw">export const</span> storage = {
+  <span class="fn">set</span>&lt;T&gt;(chave: <span class="kw">string</span>, valor: T): <span class="kw">void</span> {
+    localStorage.<span class="fn">setItem</span>(chave, <span class="cls">JSON</span>.<span class="fn">stringify</span>(valor));
+  },
+
+  <span class="fn">get</span>&lt;T&gt;(chave: <span class="kw">string</span>): T | <span class="kw">null</span> {
+    <span class="kw">const</span> raw = localStorage.<span class="fn">getItem</span>(chave);
+    <span class="kw">if</span> (!raw) <span class="kw">return null</span>;
+    <span class="kw">try</span> {
+      <span class="kw">return</span> <span class="cls">JSON</span>.<span class="fn">parse</span>(raw) <span class="kw">as</span> T;
+    } <span class="kw">catch</span> {
+      <span class="kw">return null</span>; <span class="cm">// JSON inválido</span>
+    }
+  },
+
+  <span class="fn">remove</span>(chave: <span class="kw">string</span>): <span class="kw">void</span> {
+    localStorage.<span class="fn">removeItem</span>(chave);
+  },
+};
+
+<span class="cm">// Uso</span>
+<span class="kw">interface</span> <span class="cls">Preferencias</span> { tema: <span class="str">'claro'</span> | <span class="str">'escuro'</span>; idioma: <span class="kw">string</span> }
+
+storage.<span class="fn">set</span>&lt;<span class="cls">Preferencias</span>&gt;(<span class="str">'prefs'</span>, { tema: <span class="str">'escuro'</span>, idioma: <span class="str">'pt-BR'</span> });
+<span class="kw">const</span> prefs = storage.<span class="fn">get</span>&lt;<span class="cls">Preferencias</span>&gt;(<span class="str">'prefs'</span>); <span class="cm">// Preferencias | null</span></code></pre>
+
+    <h3>Usando com React — hook personalizado</h3>
+
+    <pre><code><span class="file-tag">src/hooks/useLocalStorage.ts</span>
+<span class="kw">import</span> { useState } <span class="kw">from</span> <span class="str">'react'</span>;
+
+<span class="kw">export function</span> <span class="fn">useLocalStorage</span>&lt;T&gt;(chave: <span class="kw">string</span>, valorInicial: T) {
+  <span class="kw">const</span> [valor, setValor] = <span class="fn">useState</span>&lt;T&gt;(() => {
+    <span class="kw">try</span> {
+      <span class="kw">const</span> raw = localStorage.<span class="fn">getItem</span>(chave);
+      <span class="kw">return</span> raw ? (<span class="cls">JSON</span>.<span class="fn">parse</span>(raw) <span class="kw">as</span> T) : valorInicial;
+    } <span class="kw">catch</span> {
+      <span class="kw">return</span> valorInicial;
+    }
+  });
+
+  <span class="kw">function</span> <span class="fn">salvar</span>(novoValor: T) {
+    <span class="fn">setValor</span>(novoValor);
+    localStorage.<span class="fn">setItem</span>(chave, <span class="cls">JSON</span>.<span class="fn">stringify</span>(novoValor));
+  }
+
+  <span class="kw">function</span> <span class="fn">remover</span>() {
+    <span class="fn">setValor</span>(valorInicial);
+    localStorage.<span class="fn">removeItem</span>(chave);
+  }
+
+  <span class="kw">return</span> [valor, salvar, remover] <span class="kw">as const</span>;
+}
+
+<span class="cm">// Uso em um componente React</span>
+<span class="kw">function</span> <span class="fn">ConfiguracaoTema</span>() {
+  <span class="kw">const</span> [tema, setTema] = <span class="fn">useLocalStorage</span>&lt;<span class="str">'claro'</span> | <span class="str">'escuro'</span>&gt;(<span class="str">'tema'</span>, <span class="str">'claro'</span>);
+
+  <span class="kw">return</span> (
+    &lt;<span class="cls">button</span> onClick={() =&gt; <span class="fn">setTema</span>(tema === <span class="str">'claro'</span> ? <span class="str">'escuro'</span> : <span class="str">'claro'</span>)}&gt;
+      Tema atual: {tema}
+    &lt;/<span class="cls">button</span>&gt;
+  );
+}</code></pre>
+
+    <h3>Quando usar localStorage</h3>
+
+    <table>
+      <tr><th>✅ Bom para</th><th>❌ Evitar para</th></tr>
+      <tr><td>Preferências do usuário (tema, idioma, fonte)</td><td>Senhas ou tokens de autenticação sensíveis</td></tr>
+      <tr><td>Rascunhos de formulários — não perder ao recarregar</td><td>Dados de outros usuários ou dados compartilhados</td></tr>
+      <tr><td>Carrinho de compras não autenticado</td><td>Dados grandes — limite de ~5 MB</td></tr>
+      <tr><td>Última pesquisa ou filtros aplicados</td><td>Informações que precisam sincronizar entre abas em tempo real</td></tr>
+      <tr><td>Estado de UI persistente (menu aberto/fechado)</td><td>Dados críticos sem backup no servidor</td></tr>
+    </table>
+
+    <h3>localStorage vs sessionStorage vs Cookie</h3>
+
+    <table>
+      <tr><th>Característica</th><th>localStorage</th><th>sessionStorage</th><th>Cookie</th></tr>
+      <tr><td>Persistência</td><td>Permanente</td><td>Até fechar a aba</td><td>Configurável (expira)</td></tr>
+      <tr><td>Capacidade</td><td>~5 MB</td><td>~5 MB</td><td>~4 KB</td></tr>
+      <tr><td>Enviado ao servidor</td><td>Não</td><td>Não</td><td>Sim — em todo request</td></tr>
+      <tr><td>Acesso JS</td><td>Sim</td><td>Sim</td><td>Sim (se não httpOnly)</td></tr>
+      <tr><td>Compartilha entre abas</td><td>Sim</td><td>Não</td><td>Sim</td></tr>
+      <tr><td>Uso típico</td><td>Preferências, rascunhos</td><td>Dados temporários da sessão</td><td>Autenticação (httpOnly)</td></tr>
+    </table>
+
+    <div class="callout warn">
+      <strong>Segurança:</strong> o localStorage é acessível por qualquer JavaScript da página — um ataque XSS pode ler tudo. Por isso, <strong>nunca armazene tokens JWT ou senhas no localStorage em produção</strong>. Prefira cookies <code>httpOnly</code> para autenticação.
+    </div>
+
+    <h3>Inspecionando no navegador</h3>
+
+    <p>Você pode ver e editar o localStorage diretamente nas DevTools:</p>
+
+    <ul class="steps">
+      <li><span class="step-n">1</span>Abra o DevTools com <code>F12</code> ou <code>Ctrl+Shift+I</code>.</li>
+      <li><span class="step-n">2</span>Vá na aba <strong>Application</strong> (Chrome) ou <strong>Storage</strong> (Firefox).</li>
+      <li><span class="step-n">3</span>No menu lateral, clique em <strong>Local Storage</strong> e selecione a origem.</li>
+      <li><span class="step-n">4</span>Você verá todas as chaves e valores — pode editar ou deletar diretamente.</li>
+    </ul>
+  </section>
 
 <script>
   // Atualizar link ativo no menu ao scrollar
