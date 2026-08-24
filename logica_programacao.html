@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Guia de Desenvolvimento Web</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Sora:wght@600;700&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:        #0f1117;
+    --surface:   #161b27;
+    --surface2:  #1e2535;
+    --border:    #2a3145;
+    --accent:    #6c8eff;
+    --accent2:   #a78bfa;
+    --green:     #34d399;
+    --yellow:    #fbbf24;
+    --red:       #f87171;
+    --text:      #e2e8f0;
+    --muted:     #8892a4;
+    --sidebar-w: 270px;
+    --font-sans: 'Inter', sans-serif;
+    --font-head: 'Sora', sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.7;
+    display: flex;
+    min-height: 100vh;
+  }
+
+  /* ── SIDEBAR ── */
+  #sidebar {
+    width: var(--sidebar-w);
+    min-width: var(--sidebar-w);
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    overflow-y: auto;
+    padding: 0 0 2rem;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sidebar-logo {
+    padding: 1.5rem 1.25rem 1rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: .5rem;
+  }
+  .sidebar-logo span {
+    font-family: var(--font-head);
+    font-size: 1.05rem;
+    color: var(--accent);
+    letter-spacing: -.01em;
+  }
+  .sidebar-logo small {
+    display: block;
+    color: var(--muted);
+    font-size: .72rem;
+    margin-top: .15rem;
+  }
+
+  .nav-group { margin-bottom: .25rem; }
+
+  .nav-group-title {
+    font-size: .65rem;
+    font-weight: 600;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: .75rem 1.25rem .35rem;
+  }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    padding: .42rem 1.25rem;
+    color: var(--muted);
+    text-decoration: none;
+    font-size: .83rem;
+    border-left: 3px solid transparent;
+    transition: color .15s, background .15s, border-color .15s;
+  }
+  .nav-link:hover { color: var(--text); background: var(--surface2); }
+  .nav-link.active { color: var(--accent); border-left-color: var(--accent); background: rgba(108,142,255,.07); }
+  .nav-link .dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    flex-shrink: 0;
+  }
+
+  /* ── MAIN ── */
+  #main {
+    margin-left: var(--sidebar-w);
+    flex: 1;
+    padding: 3rem 4rem 6rem;
+    max-width: 900px;
+  }
+
+  /* ── SECTIONS ── */
+  .section {
+    padding-top: 3rem;
+    margin-bottom: 1rem;
+    border-top: 1px solid var(--border);
+  }
+  .section:first-of-type { border-top: none; padding-top: 0; }
+
+  .section-tag {
+    font-size: .7rem;
+    font-weight: 600;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: .5rem;
+  }
+
+  h1 {
+    font-family: var(--font-head);
+    font-size: 2rem;
+    color: #fff;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+  }
+
+  h2 {
+    font-family: var(--font-head);
+    font-size: 1.45rem;
+    color: #fff;
+    margin: 2.5rem 0 .75rem;
+    padding-bottom: .4rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  h3 {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text);
+    margin: 1.75rem 0 .5rem;
+  }
+
+  p { color: #b0bcd0; margin-bottom: .9rem; }
+
+  strong { color: var(--text); font-weight: 600; }
+
+  /* ── HERO ── */
+  .hero {
+    background: linear-gradient(135deg, rgba(108,142,255,.12), rgba(167,139,250,.07));
+    border: 1px solid rgba(108,142,255,.25);
+    border-radius: 12px;
+    padding: 2rem 2.25rem;
+    margin-bottom: 3rem;
+  }
+  .hero p { margin: 0; font-size: .95rem; }
+
+  /* ── CARDS ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: .75rem;
+    margin: 1rem 0 1.5rem;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.1rem;
+  }
+  .card-label {
+    font-size: .7rem;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: .3rem;
+  }
+  .card-value { font-size: .9rem; color: var(--text); }
+
+  /* ── STATUS CODES ── */
+  .status-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: .6rem;
+    margin: 1rem 0 1.5rem;
+  }
+  .status-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: .75rem 1rem;
+    border-left: 3px solid var(--border);
+  }
+  .status-item.s2xx { border-left-color: var(--green); }
+  .status-item.s3xx { border-left-color: var(--yellow); }
+  .status-item.s4xx { border-left-color: var(--red); }
+  .status-item.s5xx { border-left-color: #f472b6; }
+  .status-code { font-family: var(--font-mono); font-weight: 600; font-size: .85rem; margin-bottom: .15rem; }
+  .status-item.s2xx .status-code { color: var(--green); }
+  .status-item.s3xx .status-code { color: var(--yellow); }
+  .status-item.s4xx .status-code { color: var(--red); }
+  .status-item.s5xx .status-code { color: #f472b6; }
+  .status-desc { font-size: .78rem; color: var(--muted); }
+
+  /* ── CALLOUT ── */
+  .callout {
+    border-radius: 8px;
+    padding: .9rem 1.1rem;
+    margin: 1rem 0;
+    border-left: 3px solid;
+    font-size: .88rem;
+  }
+  .callout.info  { background: rgba(108,142,255,.08); border-color: var(--accent); color: #a8b8e8; }
+  .callout.warn  { background: rgba(251,191,36,.07);  border-color: var(--yellow); color: #d4b060; }
+  .callout.tip   { background: rgba(52,211,153,.07);  border-color: var(--green);  color: #6dcba8; }
+
+  /* ── CODE ── */
+  pre {
+    background: #0c0f18;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1.1rem 1.25rem;
+    overflow-x: auto;
+    margin: .9rem 0 1.25rem;
+    position: relative;
+  }
+  pre .file-tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: .68rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: .1rem .5rem;
+    color: var(--muted);
+    margin-bottom: .6rem;
+  }
+  code {
+    font-family: var(--font-mono);
+    font-size: .82rem;
+    line-height: 1.65;
+    color: #c9d1e0;
+  }
+  :not(pre) > code {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: .1em .35em;
+    font-size: .82em;
+    color: var(--accent);
+  }
+
+  /* ── SYNTAX COLORS ── */
+  .kw   { color: #c792ea; }
+  .fn   { color: #82aaff; }
+  .str  { color: #c3e88d; }
+  .cm   { color: #546e7a; }
+  .num  { color: #f78c6c; }
+  .cls  { color: #ffcb6b; }
+  .op   { color: #89ddff; }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    overflow-x: auto;
+    margin: 1rem 0 1.5rem;
+    flex-wrap: nowrap;
+  }
+  .flow-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: .6rem .9rem;
+    font-size: .8rem;
+    text-align: center;
+    min-width: 100px;
+    flex-shrink: 0;
+    color: var(--text);
+  }
+  .flow-box.accent { border-color: var(--accent); color: var(--accent); }
+  .flow-box.green  { border-color: var(--green);  color: var(--green); }
+  .flow-box.purple { border-color: var(--accent2); color: var(--accent2); }
+  .flow-arr {
+    color: var(--muted);
+    font-size: 1.1rem;
+    padding: 0 .35rem;
+    flex-shrink: 0;
+  }
+
+  /* ── TABLE ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: .9rem 0 1.5rem;
+    font-size: .85rem;
+  }
+  th {
+    background: var(--surface);
+    color: var(--muted);
+    font-size: .7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    padding: .6rem .9rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  td {
+    padding: .6rem .9rem;
+    border-bottom: 1px solid var(--border);
+    color: #b0bcd0;
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+  td:first-child { font-family: var(--font-mono); font-size: .8rem; color: var(--accent); }
+
+  /* ── STEPS ── */
+  .steps { list-style: none; }
+  .steps li {
+    display: flex;
+    gap: 1rem;
+    padding: .75rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: .88rem;
+    color: #b0bcd0;
+  }
+  .steps li:last-child { border-bottom: none; }
+  .step-n {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: rgba(108,142,255,.15);
+    color: var(--accent);
+    font-size: .75rem;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: .1rem;
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  @media (max-width: 768px) {
+    #sidebar { width: 220px; min-width: 220px; transform: translateX(-100%); }
+    #main { margin-left: 0; padding: 2rem 1.25rem 4rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════ SIDEBAR ═══════════════ -->
+<nav id="sidebar">
+  <div class="sidebar-logo">
+    <span>&#x1F4DA; Web Dev Guide</span>
+    <small>Referência técnica rápida</small>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-title">HTTP & Web</div>
+    <a class="nav-link active" href="#http"><span class="dot"></span>O que é HTTP / HTTPS</a>
+    <a class="nav-link" href="#header"><span class="dot"></span>Header (Cabeçalho)</a>
+    <a class="nav-link" href="#body"><span class="dot"></span>Body (Corpo)</a>
+    <a class="nav-link" href="#status"><span class="dot"></span>Status Codes</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-title">Autenticação</div>
+    <a class="nav-link" href="#jwt-o-que-e"><span class="dot"></span>O que é JWT</a>
+    <a class="nav-link" href="#jwt-como-funciona"><span class="dot"></span>Como funciona</a>
+    <a class="nav-link" href="#jwt-implementacao"><span class="dot"></span>Implementação</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-title">Back-end</div>
+    <a class="nav-link" href="#middleware"><span class="dot"></span>Middleware</a>
+    <a class="nav-link" href="#postgres"><span class="dot"></span>PostgreSQL + Node</a>
+  </div>
+</nav>
+
+<!-- ═══════════════ MAIN ═══════════════ -->
+<main id="main">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="section-tag">Guia Técnico</div>
+    <h1>Desenvolvimento Web</h1>
+    <p>HTTP, JWT, Middleware e PostgreSQL — conceitos explicados do zero com exemplos práticos em <strong>React + TypeScript</strong> e <strong>Node.js + TypeScript</strong>.</p>
+  </div>
+
+  <!-- ═══ HTTP / HTTPS ═══ -->
+  <section class="section" id="http">
+    <div class="section-tag">Protocolo</div>
+    <h2>O que é HTTP e HTTPS</h2>
+
+    <p><strong>HTTP</strong> (HyperText Transfer Protocol) é o protocolo de comunicação usado na web. Ele define como mensagens são formatadas e transmitidas entre um <strong>cliente</strong> (navegador, app) e um <strong>servidor</strong>.</p>
+
+    <p><strong>HTTPS</strong> = HTTP + <strong>TLS/SSL</strong> (criptografia). Todo o tráfego é cifrado, o que impede interceptação de dados ("homem no meio"). Em produção, <em>sempre</em> use HTTPS.</p>
+
+    <div class="card-grid">
+      <div class="card"><div class="card-label">Protocolo</div><div class="card-value">Baseado em texto, stateless</div></div>
+      <div class="card"><div class="card-label">Portas padrão</div><div class="card-value">HTTP → 80 &nbsp;|&nbsp; HTTPS → 443</div></div>
+      <div class="card"><div class="card-label">Modelo</div><div class="card-value">Requisição → Resposta</div></div>
+      <div class="card"><div class="card-label">Segurança HTTPS</div><div class="card-value">Certificado TLS (ex.: Let's Encrypt)</div></div>
+    </div>
+
+    <h3>Métodos HTTP principais</h3>
+    <table>
+      <tr><th>Método</th><th>Uso</th><th>Tem Body?</th></tr>
+      <tr><td>GET</td><td>Buscar dados</td><td>Não</td></tr>
+      <tr><td>POST</td><td>Criar recurso</td><td>Sim</td></tr>
+      <tr><td>PUT</td><td>Substituir recurso inteiro</td><td>Sim</td></tr>
+      <tr><td>PATCH</td><td>Atualizar parcialmente</td><td>Sim</td></tr>
+      <tr><td>DELETE</td><td>Remover recurso</td><td>Opcional</td></tr>
+    </table>
+  </section>
+
+  <!-- ═══ HEADER ═══ -->
+  <section class="section" id="header">
+    <div class="section-tag">Requisição / Resposta</div>
+    <h2>Header (Cabeçalho)</h2>
+
+    <p>Os <strong>headers</strong> são metadados trafegados junto à requisição ou resposta. Eles informam o tipo do conteúdo, autenticação, cache, origem, idioma e muito mais.</p>
+
+    <h3>Headers de requisição comuns</h3>
+    <table>
+      <tr><th>Header</th><th>O que faz</th></tr>
+      <tr><td>Content-Type</td><td>Informa o formato do body enviado (ex.: <code>application/json</code>)</td></tr>
+      <tr><td>Authorization</td><td>Envia credenciais — geralmente <code>Bearer &lt;token&gt;</code></td></tr>
+      <tr><td>Accept</td><td>Informa quais formatos o cliente aceita como resposta</td></tr>
+      <tr><td>Cookie</td><td>Envia cookies armazenados no navegador</td></tr>
+    </table>
+
+    <h3>Headers de resposta comuns</h3>
+    <table>
+      <tr><th>Header</th><th>O que faz</th></tr>
+      <tr><td>Content-Type</td><td>Formato do body da resposta</td></tr>
+      <tr><td>Set-Cookie</td><td>Ordena ao navegador salvar um cookie</td></tr>
+      <tr><td>Cache-Control</td><td>Política de cache (ex.: <code>no-cache</code>, <code>max-age=3600</code>)</td></tr>
+      <tr><td>Access-Control-Allow-Origin</td><td>Política de CORS</td></tr>
+    </table>
+
+    <pre><code><span class="cm">// Exemplo: fetch com headers customizados</span>
+<span class="kw">const</span> response = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">'/api/users'</span>, {
+  method: <span class="str">'GET'</span>,
+  headers: {
+    <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span>,
+    <span class="str">'Authorization'</span>: <span class="str">`Bearer <span class="kw">${</span>token<span class="kw">}</span>`</span>,
+  },
+});</code></pre>
+  </section>
+
+  <!-- ═══ BODY ═══ -->
+  <section class="section" id="body">
+    <div class="section-tag">Requisição / Resposta</div>
+    <h2>Body (Corpo)</h2>
+
+    <p>O <strong>body</strong> é o conteúdo da mensagem — presente em requisições <code>POST</code>, <code>PUT</code>, <code>PATCH</code> e na maioria das respostas. O formato mais comum em APIs modernas é <strong>JSON</strong>.</p>
+
+    <div class="callout info">O header <code>Content-Type: application/json</code> deve ser enviado sempre que o body for JSON.</div>
+
+    <h3>Body de requisição (POST)</h3>
+    <pre><code><span class="cm">// Enviando um body JSON</span>
+<span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">'/api/login'</span>, {
+  method: <span class="str">'POST'</span>,
+  headers: { <span class="str">'Content-Type'</span>: <span class="str">'application/json'</span> },
+  body: <span class="cls">JSON</span>.<span class="fn">stringify</span>({ email: <span class="str">'alex@senai.br'</span>, senha: <span class="str">'1234'</span> }),
+});</code></pre>
+
+    <h3>Body de resposta (servidor)</h3>
+    <pre><code><span class="cm">// Node.js / Express — resposta JSON</span>
+app.<span class="fn">get</span>(<span class="str">'/api/users/:id'</span>, (req, res) => {
+  res.<span class="fn">status</span>(<span class="num">200</span>).<span class="fn">json</span>({
+    id: <span class="num">1</span>,
+    nome: <span class="str">'Alexandre'</span>,
+    cargo: <span class="str">'Instrutor SENAI'</span>,
+  });
+});</code></pre>
+  </section>
+
+  <!-- ═══ STATUS CODES ═══ -->
+  <section class="section" id="status">
+    <div class="section-tag">HTTP</div>
+    <h2>Status Codes</h2>
+
+    <p>Todo response HTTP inclui um <strong>código de status de 3 dígitos</strong> que indica o resultado da operação.</p>
+
+    <div class="status-grid">
+      <div class="status-item s2xx"><div class="status-code">200 OK</div><div class="status-desc">Sucesso genérico</div></div>
+      <div class="status-item s2xx"><div class="status-code">201 Created</div><div class="status-desc">Recurso criado (POST)</div></div>
+      <div class="status-item s2xx"><div class="status-code">204 No Content</div><div class="status-desc">Sucesso sem body</div></div>
+      <div class="status-item s3xx"><div class="status-code">301 Moved</div><div class="status-desc">Redirecionamento permanente</div></div>
+      <div class="status-item s3xx"><div class="status-code">304 Not Modified</div><div class="status-desc">Use o cache</div></div>
+      <div class="status-item s4xx"><div class="status-code">400 Bad Request</div><div class="status-desc">Dados inválidos</div></div>
+      <div class="status-item s4xx"><div class="status-code">401 Unauthorized</div><div class="status-desc">Sem autenticação</div></div>
+      <div class="status-item s4xx"><div class="status-code">403 Forbidden</div><div class="status-desc">Sem permissão</div></div>
+      <div class="status-item s4xx"><div class="status-code">404 Not Found</div><div class="status-desc">Recurso inexistente</div></div>
+      <div class="status-item s4xx"><div class="status-code">422 Unprocessable</div><div class="status-desc">Validação falhou</div></div>
+      <div class="status-item s5xx"><div class="status-code">500 Server Error</div><div class="status-desc">Erro interno</div></div>
+      <div class="status-item s5xx"><div class="status-code">503 Unavailable</div><div class="status-desc">Serviço indisponível</div></div>
+    </div>
+
+    <div class="callout tip"><strong>Dica:</strong> Use sempre o código correto. Retornar 200 em erros confunde clientes e quebra integrations.</div>
+  </section>
+
+  <!-- ═══ JWT — O QUE É ═══ -->
+  <section class="section" id="jwt-o-que-e">
+    <div class="section-tag">Autenticação</div>
+    <h2>O que é JWT</h2>
+
+    <p><strong>JWT</strong> (JSON Web Token) é um padrão aberto (<a href="https://datatracker.ietf.org/doc/html/rfc7519" style="color:var(--accent)">RFC 7519</a>) para transmitir informações de forma segura entre partes como um objeto JSON assinado digitalmente.</p>
+
+    <p>Um JWT é uma string dividida em <strong>3 partes</strong> separadas por ponto (<code>.</code>):</p>
+
+    <pre><code>xxxxx<span class="op">.</span>yyyyy<span class="op">.</span>zzzzz
+<span class="cm">   ↑       ↑       ↑</span>
+Header  Payload Signature</code></pre>
+
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-label">Header</div>
+        <div class="card-value">Tipo do token e algoritmo de assinatura (ex.: HS256)</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Payload</div>
+        <div class="card-value">Dados do usuário (id, role, expiração…) — NÃO cifrados!</div>
+      </div>
+      <div class="card">
+        <div class="card-label">Signature</div>
+        <div class="card-value">Garante que o token não foi adulterado</div>
+      </div>
+    </div>
+
+    <div class="callout warn"><strong>Atenção:</strong> O payload é apenas <em>codificado</em> em Base64 — não cifrado. Nunca coloque senhas ou dados sensíveis no payload.</div>
+  </section>
+
+  <!-- ═══ JWT — COMO FUNCIONA ═══ -->
+  <section class="section" id="jwt-como-funciona">
+    <div class="section-tag">Autenticação</div>
+    <h2>Como o JWT funciona</h2>
+
+    <p>O fluxo de autenticação com JWT segue este ciclo:</p>
+
+    <div class="flow">
+      <div class="flow-box accent">Cliente<br><small>faz login</small></div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">Servidor<br><small>valida credenciais</small></div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box green">Gera JWT<br><small>assina com secret</small></div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">Retorna<br><small>token ao cliente</small></div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box purple">Req. protegida<br><small>envia Bearer token</small></div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box green">Servidor valida<br><small>e responde</small></div>
+    </div>
+
+    <ul class="steps">
+      <li><span class="step-n">1</span> Usuário envia e-mail e senha via POST.</li>
+      <li><span class="step-n">2</span> Servidor verifica as credenciais no banco.</li>
+      <li><span class="step-n">3</span> Se válido, gera um JWT assinado com uma <em>chave secreta</em>.</li>
+      <li><span class="step-n">4</span> Cliente armazena o token (memória, cookie httpOnly).</li>
+      <li><span class="step-n">5</span> Nas próximas requisições, envia o token no header <code>Authorization: Bearer &lt;token&gt;</code>.</li>
+      <li><span class="step-n">6</span> Servidor verifica a assinatura e valida a expiração antes de responder.</li>
+    </ul>
+  </section>
+
+  <!-- ═══ JWT — IMPLEMENTAÇÃO ═══ -->
+  <section class="section" id="jwt-implementacao">
+    <div class="section-tag">Autenticação</div>
+    <h2>Implementando JWT — React + Node (TypeScript)</h2>
+
+    <h3>1. Instalação das dependências</h3>
+    <pre><code><span class="cm"># Back-end</span>
+npm install jsonwebtoken bcryptjs
+npm install -D @types/jsonwebtoken @types/bcryptjs
+
+<span class="cm"># Front-end</span>
+npm install axios</code></pre>
+
+    <h3>2. Back-end — gerar e validar o token</h3>
+    <pre><code><span class="file-tag">src/auth/authController.ts</span>
+<span class="kw">import</span> { Request, Response } <span class="kw">from</span> <span class="str">'express'</span>;
+<span class="kw">import</span> jwt <span class="kw">from</span> <span class="str">'jsonwebtoken'</span>;
+<span class="kw">import</span> bcrypt <span class="kw">from</span> <span class="str">'bcryptjs'</span>;
+
+<span class="kw">const</span> JWT_SECRET = <span class="cls">process</span>.env.<span class="cls">JWT_SECRET</span> ?? <span class="str">'troque-em-producao'</span>;
+
+<span class="cm">// Payload tipado</span>
+<span class="kw">interface</span> <span class="cls">TokenPayload</span> {
+  userId: <span class="kw">number</span>;
+  email: <span class="kw">string</span>;
+}
+
+<span class="kw">export async function</span> <span class="fn">login</span>(req: <span class="cls">Request</span>, res: <span class="cls">Response</span>) {
+  <span class="kw">const</span> { email, senha } = req.body;
+
+  <span class="cm">// Busca usuário no banco (exemplo simplificado)</span>
+  <span class="kw">const</span> usuario = <span class="kw">await</span> <span class="fn">buscarUsuarioPorEmail</span>(email);
+  <span class="kw">if</span> (!usuario) <span class="kw">return</span> res.<span class="fn">status</span>(<span class="num">401</span>).<span class="fn">json</span>({ erro: <span class="str">'Credenciais inválidas'</span> });
+
+  <span class="kw">const</span> senhaCorreta = <span class="kw">await</span> bcrypt.<span class="fn">compare</span>(senha, usuario.senhaHash);
+  <span class="kw">if</span> (!senhaCorreta) <span class="kw">return</span> res.<span class="fn">status</span>(<span class="num">401</span>).<span class="fn">json</span>({ erro: <span class="str">'Credenciais inválidas'</span> });
+
+  <span class="kw">const</span> payload: <span class="cls">TokenPayload</span> = { userId: usuario.id, email: usuario.email };
+
+  <span class="kw">const</span> token = jwt.<span class="fn">sign</span>(payload, <span class="cls">JWT_SECRET</span>, { expiresIn: <span class="str">'8h'</span> });
+
+  res.<span class="fn">json</span>({ token });
+}</code></pre>
+
+    <pre><code><span class="file-tag">src/auth/authMiddleware.ts</span>
+<span class="kw">import</span> { Request, Response, NextFunction } <span class="kw">from</span> <span class="str">'express'</span>;
+<span class="kw">import</span> jwt <span class="kw">from</span> <span class="str">'jsonwebtoken'</span>;
+
+<span class="kw">const</span> JWT_SECRET = <span class="cls">process</span>.env.<span class="cls">JWT_SECRET</span> ?? <span class="str">'troque-em-producao'</span>;
+
+<span class="kw">export function</span> <span class="fn">autenticar</span>(req: <span class="cls">Request</span>, res: <span class="cls">Response</span>, next: <span class="cls">NextFunction</span>) {
+  <span class="kw">const</span> authHeader = req.headers.authorization;
+
+  <span class="kw">if</span> (!authHeader?.startsWith(<span class="str">'Bearer '</span>)) {
+    <span class="kw">return</span> res.<span class="fn">status</span>(<span class="num">401</span>).<span class="fn">json</span>({ erro: <span class="str">'Token ausente'</span> });
+  }
+
+  <span class="kw">const</span> token = authHeader.<span class="fn">split</span>(<span class="str">' '</span>)[<span class="num">1</span>];
+
+  <span class="kw">try</span> {
+    <span class="kw">const</span> decoded = jwt.<span class="fn">verify</span>(token, <span class="cls">JWT_SECRET</span>);
+    (req <span class="kw">as</span> <span class="kw">any</span>).usuario = decoded;
+    <span class="fn">next</span>();
+  } <span class="kw">catch</span> {
+    res.<span class="fn">status</span>(<span class="num">401</span>).<span class="fn">json</span>({ erro: <span class="str">'Token inválido ou expirado'</span> });
+  }
+}</code></pre>
+
+    <h3>3. Front-end React — login e requisições autenticadas</h3>
+    <pre><code><span class="file-tag">src/hooks/useAuth.ts</span>
+<span class="kw">import</span> { useState } <span class="kw">from</span> <span class="str">'react'</span>;
+<span class="kw">import</span> axios <span class="kw">from</span> <span class="str">'axios'</span>;
+
+<span class="kw">export function</span> <span class="fn">useAuth</span>() {
+  <span class="kw">const</span> [token, setToken] = <span class="fn">useState</span>&lt;<span class="kw">string</span> | <span class="kw">null</span>&gt;(<span class="kw">null</span>);
+
+  <span class="kw">async function</span> <span class="fn">login</span>(email: <span class="kw">string</span>, senha: <span class="kw">string</span>) {
+    <span class="kw">const</span> { data } = <span class="kw">await</span> axios.<span class="fn">post</span>(<span class="str">'/api/auth/login'</span>, { email, senha });
+    <span class="fn">setToken</span>(data.token);
+    <span class="cm">// Opção: salvar em cookie httpOnly pelo servidor</span>
+  }
+
+  <span class="kw">function</span> <span class="fn">logout</span>() { <span class="fn">setToken</span>(<span class="kw">null</span>); }
+
+  <span class="kw">const</span> api = axios.<span class="fn">create</span>({
+    baseURL: <span class="str">'/api'</span>,
+    headers: token ? { Authorization: <span class="str">`Bearer <span class="kw">${</span>token<span class="kw">}</span>`</span> } : {},
+  });
+
+  <span class="kw">return</span> { token, login, logout, api };
+}</code></pre>
+
+    <div class="callout tip"><strong>Boas práticas:</strong> Prefira cookies <code>httpOnly; Secure; SameSite=Strict</code> ao <code>localStorage</code> para guardar JWTs em produção — protege contra ataques XSS.</div>
+  </section>
+
+  <!-- ═══ MIDDLEWARE ═══ -->
+  <section class="section" id="middleware">
+    <div class="section-tag">Back-end</div>
+    <h2>O que é Middleware</h2>
+
+    <p><strong>Middleware</strong> é uma função que fica no meio do ciclo de vida de uma requisição HTTP — entre o cliente e o handler final. Ela recebe o objeto <code>request</code> e <code>response</code> e decide se processa a requisição, modifica algo, ou passa adiante com <code>next()</code>.</p>
+
+    <div class="flow">
+      <div class="flow-box accent">Requisição</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">Middleware 1<br><small>Logger</small></div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">Middleware 2<br><small>Autenticação</small></div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">Middleware 3<br><small>Validação</small></div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box green">Handler<br><small>Resposta</small></div>
+    </div>
+
+    <h3>Usos comuns de middlewares</h3>
+    <table>
+      <tr><th>Tipo</th><th>O que faz</th></tr>
+      <tr><td>Logger</td><td>Registra método, URL e tempo de resposta de cada requisição</td></tr>
+      <tr><td>Autenticação</td><td>Verifica se o token JWT é válido antes de continuar</td></tr>
+      <tr><td>Autorização</td><td>Checa se o usuário tem permissão para acessar o recurso</td></tr>
+      <tr><td>Validação</td><td>Valida o body da requisição (ex.: zod, joi)</td></tr>
+      <tr><td>CORS</td><td>Adiciona headers de Cross-Origin Resource Sharing</td></tr>
+      <tr><td>Rate Limiting</td><td>Limita número de requisições por IP/período</td></tr>
+      <tr><td>Error Handler</td><td>Captura erros não tratados e retorna resposta padronizada</td></tr>
+    </table>
+
+    <h3>Criando middlewares em Express + TypeScript</h3>
+    <pre><code><span class="file-tag">src/middlewares/logger.ts</span>
+<span class="kw">import</span> { Request, Response, NextFunction } <span class="kw">from</span> <span class="str">'express'</span>;
+
+<span class="kw">export function</span> <span class="fn">logger</span>(req: <span class="cls">Request</span>, res: <span class="cls">Response</span>, next: <span class="cls">NextFunction</span>) {
+  <span class="kw">const</span> inicio = <span class="cls">Date</span>.<span class="fn">now</span>();
+  res.<span class="fn">on</span>(<span class="str">'finish'</span>, () => {
+    <span class="cls">console</span>.<span class="fn">log</span>(<span class="str">`[<span class="kw">${</span>req.method<span class="kw">}</span>] <span class="kw">${</span>req.url<span class="kw">}</span> → <span class="kw">${</span>res.statusCode<span class="kw">}</span> (<span class="kw">${</span><span class="cls">Date</span>.<span class="fn">now</span>() - inicio<span class="kw">}</span>ms)`</span>);
+  });
+  <span class="fn">next</span>(); <span class="cm">// passa para o próximo middleware</span>
+}</code></pre>
+
+    <pre><code><span class="file-tag">src/middlewares/errorHandler.ts</span>
+<span class="kw">import</span> { Request, Response, NextFunction } <span class="kw">from</span> <span class="str">'express'</span>;
+
+<span class="kw">export function</span> <span class="fn">errorHandler</span>(
+  err: <span class="cls">Error</span>, req: <span class="cls">Request</span>, res: <span class="cls">Response</span>, next: <span class="cls">NextFunction</span>
+) {
+  <span class="cls">console</span>.<span class="fn">error</span>(err.stack);
+  res.<span class="fn">status</span>(<span class="num">500</span>).<span class="fn">json</span>({ erro: <span class="str">'Erro interno do servidor'</span> });
+}</code></pre>
+
+    <pre><code><span class="file-tag">src/app.ts</span>
+<span class="kw">import</span> express <span class="kw">from</span> <span class="str">'express'</span>;
+<span class="kw">import</span> { logger }       <span class="kw">from</span> <span class="str">'./middlewares/logger'</span>;
+<span class="kw">import</span> { autenticar }   <span class="kw">from</span> <span class="str">'./auth/authMiddleware'</span>;
+<span class="kw">import</span> { errorHandler } <span class="kw">from</span> <span class="str">'./middlewares/errorHandler'</span>;
+
+<span class="kw">const</span> app = <span class="fn">express</span>();
+
+<span class="cm">// Middlewares globais</span>
+app.<span class="fn">use</span>(express.<span class="fn">json</span>());
+app.<span class="fn">use</span>(logger);
+
+<span class="cm">// Rota pública</span>
+app.<span class="fn">post</span>(<span class="str">'/api/auth/login'</span>, login);
+
+<span class="cm">// Rotas protegidas — autenticar é o middleware</span>
+app.<span class="fn">get</span>(<span class="str">'/api/users'</span>, autenticar, listarUsuarios);
+
+<span class="cm">// Sempre por último — captura erros</span>
+app.<span class="fn">use</span>(errorHandler);</code></pre>
+
+    <div class="callout info">A ordem importa: middlewares de erro precisam de <strong>4 parâmetros</strong> (<code>err, req, res, next</code>) e devem ser registrados <em>após</em> todas as rotas.</div>
+  </section>
+
+  <!-- ═══ POSTGRESQL ═══ -->
+  <section class="section" id="postgres">
+    <div class="section-tag">Banco de dados</div>
+    <h2>Conectar PostgreSQL com Node.js (TypeScript)</h2>
+
+    <p>A biblioteca mais usada para conectar Node.js ao PostgreSQL é o <strong>node-postgres</strong> (<code>pg</code>). Para TypeScript, é comum também usar um ORM como <strong>Prisma</strong> ou <strong>TypeORM</strong>. Veja as duas abordagens:</p>
+
+    <h3>Opção A — pg (driver nativo, sem ORM)</h3>
+    <pre><code><span class="cm"># Instalação</span>
+npm install pg
+npm install -D @types/pg</code></pre>
+
+    <pre><code><span class="file-tag">src/database/pool.ts</span>
+<span class="kw">import</span> { Pool } <span class="kw">from</span> <span class="str">'pg'</span>;
+
+<span class="kw">export const</span> pool = <span class="kw">new</span> <span class="cls">Pool</span>({
+  host:     <span class="cls">process</span>.env.<span class="cls">DB_HOST</span>     ?? <span class="str">'localhost'</span>,
+  port:     <span class="cls">Number</span>(<span class="cls">process</span>.env.<span class="cls">DB_PORT</span>)  || <span class="num">5432</span>,
+  database: <span class="cls">process</span>.env.<span class="cls">DB_NAME</span>     ?? <span class="str">'minha_db'</span>,
+  user:     <span class="cls">process</span>.env.<span class="cls">DB_USER</span>     ?? <span class="str">'postgres'</span>,
+  password: <span class="cls">process</span>.env.<span class="cls">DB_PASSWORD</span> ?? <span class="str">'senha'</span>,
+  max: <span class="num">10</span>, <span class="cm">// máximo de conexões no pool</span>
+});</code></pre>
+
+    <pre><code><span class="file-tag">src/users/userRepository.ts</span>
+<span class="kw">import</span> { pool } <span class="kw">from</span> <span class="str">'../database/pool'</span>;
+
+<span class="kw">interface</span> <span class="cls">Usuario</span> {
+  id: <span class="kw">number</span>;
+  nome: <span class="kw">string</span>;
+  email: <span class="kw">string</span>;
+}
+
+<span class="kw">export async function</span> <span class="fn">listarUsuarios</span>(): <span class="cls">Promise</span>&lt;<span class="cls">Usuario</span>[]&gt; {
+  <span class="kw">const</span> { rows } = <span class="kw">await</span> pool.<span class="fn">query</span>(<span class="str">'SELECT id, nome, email FROM usuarios'</span>);
+  <span class="kw">return</span> rows;
+}
+
+<span class="kw">export async function</span> <span class="fn">buscarPorId</span>(id: <span class="kw">number</span>): <span class="cls">Promise</span>&lt;<span class="cls">Usuario</span> | <span class="kw">null</span>&gt; {
+  <span class="kw">const</span> { rows } = <span class="kw">await</span> pool.<span class="fn">query</span>(
+    <span class="str">'SELECT id, nome, email FROM usuarios WHERE id = $1'</span>,
+    [id] <span class="cm">// parameterizado — previne SQL injection</span>
+  );
+  <span class="kw">return</span> rows[<span class="num">0</span>] ?? <span class="kw">null</span>;
+}
+
+<span class="kw">export async function</span> <span class="fn">criarUsuario</span>(nome: <span class="kw">string</span>, email: <span class="kw">string</span>, senhaHash: <span class="kw">string</span>) {
+  <span class="kw">const</span> { rows } = <span class="kw">await</span> pool.<span class="fn">query</span>(
+    <span class="str">'INSERT INTO usuarios (nome, email, senha_hash) VALUES ($1, $2, $3) RETURNING *'</span>,
+    [nome, email, senhaHash]
+  );
+  <span class="kw">return</span> rows[<span class="num">0</span>];
+}</code></pre>
+
+    <h3>Opção B — Prisma ORM (recomendado para novos projetos)</h3>
+    <pre><code><span class="cm"># Instalação</span>
+npm install prisma @prisma/client
+npx prisma init <span class="cm"># cria prisma/schema.prisma e .env</span></code></pre>
+
+    <pre><code><span class="file-tag">prisma/schema.prisma</span>
+datasource db {
+  provider = <span class="str">"postgresql"</span>
+  url      = env(<span class="str">"DATABASE_URL"</span>)
+}
+
+generator client {
+  provider = <span class="str">"prisma-client-js"</span>
+}
+
+model Usuario {
+  id        Int      @id @default(autoincrement())
+  nome      String
+  email     String   @unique
+  senhaHash String   @map(<span class="str">"senha_hash"</span>)
+  criadoEm  DateTime @default(now()) @map(<span class="str">"criado_em"</span>)
+}</code></pre>
+
+    <pre><code><span class="cm"># Gerar o cliente e aplicar migrations</span>
+npx prisma migrate dev --name init
+npx prisma generate</code></pre>
+
+    <pre><code><span class="file-tag">src/database/prisma.ts</span>
+<span class="kw">import</span> { PrismaClient } <span class="kw">from</span> <span class="str">'@prisma/client'</span>;
+
+<span class="cm">// Instância única (singleton)</span>
+<span class="kw">const</span> prisma = <span class="kw">new</span> <span class="cls">PrismaClient</span>();
+<span class="kw">export default</span> prisma;</code></pre>
+
+    <pre><code><span class="file-tag">src/users/userService.ts</span>
+<span class="kw">import</span> prisma <span class="kw">from</span> <span class="str">'../database/prisma'</span>;
+
+<span class="kw">export async function</span> <span class="fn">listarUsuarios</span>() {
+  <span class="kw">return</span> prisma.usuario.<span class="fn">findMany</span>({
+    select: { id: <span class="kw">true</span>, nome: <span class="kw">true</span>, email: <span class="kw">true</span> },
+  });
+}
+
+<span class="kw">export async function</span> <span class="fn">criarUsuario</span>(nome: <span class="kw">string</span>, email: <span class="kw">string</span>, senhaHash: <span class="kw">string</span>) {
+  <span class="kw">return</span> prisma.usuario.<span class="fn">create</span>({
+    data: { nome, email, senhaHash },
+  });
+}</code></pre>
+
+    <h3>Arquivo .env</h3>
+    <pre><code><span class="file-tag">.env</span>
+<span class="cm"># Formato de conexão Prisma</span>
+DATABASE_URL=<span class="str">"postgresql://usuario:senha@localhost:5432/minha_db?schema=public"</span>
+
+<span class="cm"># Separado (para usar com pg direto)</span>
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=minha_db
+DB_USER=postgres
+DB_PASSWORD=senha
+
+JWT_SECRET=use-uma-chave-longa-e-aleatoria-aqui</code></pre>
+
+    <div class="callout warn"><strong>Nunca</strong> versione o arquivo <code>.env</code> no Git. Adicione ao <code>.gitignore</code>.</div>
+
+    <h3>Comparativo pg vs Prisma</h3>
+    <table>
+      <tr><th></th><th>node-postgres (pg)</th><th>Prisma ORM</th></tr>
+      <tr><td>Curva de aprendizado</td><td>Baixa — SQL puro</td><td>Média — schema declarativo</td></tr>
+      <tr><td>TypeScript</td><td>Manual (interfaces)</td><td>Automático via geração</td></tr>
+      <tr><td>Migrations</td><td>Manual</td><td>Automático (prisma migrate)</td></tr>
+      <tr><td>Indicado para</td><td>Controle total / queries complexas</td><td>Produtividade / projetos novos</td></tr>
+    </table>
+  </section>
+
+</main>
+
+<script>
+  // Atualizar link ativo no menu ao scrollar
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-link');
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(l => l.classList.remove('active'));
+        const link = document.querySelector(`.nav-link[href="#${entry.target.id}"]`);
+        if (link) link.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-30% 0px -60% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+
+  navLinks.forEach(link => {
+    link.addEventListener('click', e => {
+      navLinks.forEach(l => l.classList.remove('active'));
+      link.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>
