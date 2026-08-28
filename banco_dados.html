@@ -910,6 +910,10 @@ footer .dot { color: var(--amber); }
           <div class="clause-keyword kw-groupby">GROUP BY</div>
           <div class="clause-body">departamento</div>
         </div>
+            <div class="clause-row" data-sqlkey="having">
+          <div class="clause-keyword kw-having">HAVING</div>
+          <div class="clause-body">HAVING COUNT(v.id_venda) > 3</div>
+        </div>
         <div class="clause-row" data-sqlkey="orderby">
           <div class="clause-keyword kw-orderby">ORDER BY</div>
           <div class="clause-body">salario DESC</div>
@@ -936,6 +940,7 @@ footer .dot { color: var(--amber); }
           left:    { title: "LEFT JOIN — tudo da esquerda", desc: "Traz todas as linhas da tabela à esquerda (FROM) mesmo sem correspondência à direita. Onde não houver match, as colunas da direita ficam NULL.", tip: "LEFT JOIN projetos p ON f.id = p.responsavel_id\n-- funcionários sem projeto aparecem com p.* = NULL" },
           where:   { title: "WHERE — filtra as linhas",     desc: "Aplica condições linha a linha antes de qualquer agrupamento. Só as linhas que satisfazem a condição passam para as cláusulas seguintes.", tip: "WHERE salario > 3000 AND ativo = true AND criado_em >= '2023-01-01'" },
           groupby: { title: "GROUP BY — agrupa por valor",  desc: "Agrupa linhas com o mesmo valor na(s) coluna(s) indicada(s). Após o agrupamento só é possível selecionar colunas do grupo ou funções de agregação (COUNT, SUM, AVG…).", tip: "GROUP BY departamento, cargo\n-- permite usar COUNT(*), SUM(salario) no SELECT" },
+          having: { title: "HAVING —  elimina ou filtra grupos",  desc: "Agrupa linhas com o mesmo valor na(s) coluna(s) indicada(s). Após o agrupamento só é possível selecionar colunas do grupo ou funções de agregação (COUNT, SUM, AVG…).", tip: "HAVING COUNT(v.id_venda) > 3\n-- permite filtrar os grupos depois do GROUP BY " },
           orderby: { title: "ORDER BY — define a ordem",    desc: "Ordena o resultado final. ASC (crescente) é o padrão; use DESC para decrescente. Pode ordenar por várias colunas ou aliases do SELECT.", tip: "ORDER BY salario DESC, nome ASC\n-- do maior salário ao menor; empates em ordem alfabética" },
           limit:   { title: "LIMIT — quantidade de linhas", desc: "Restringe o número máximo de linhas retornadas. Combine com OFFSET para paginação.", tip: "LIMIT 10 OFFSET 20  -- página 3 (itens 21 a 30)" }
         };
