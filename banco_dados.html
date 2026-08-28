@@ -825,6 +825,140 @@ footer .dot { color: var(--amber); }
         <div class="card"><h3>6 · ORDER BY + LIMIT</h3><p>Ordena e limita o conjunto final.</p></div>
       </div>
       <div class="note"><span>💡</span><div>O <b>SELECT</b> aparece primeiro quando você escreve a query, mas é executado depois do WHERE e do GROUP BY. Por isso você não pode usar um alias do SELECT dentro do WHERE — o alias ainda não existe naquele momento de execução.</div></div>
+
+      <!-- COMPONENTE: estrutura de escrita de query -->
+      <style>
+        .sql-struct { margin-top: 28px; }
+        .sql-struct .clause-row {
+          display: flex; align-items: stretch;
+          margin-bottom: 6px; border-radius: 8px; overflow: hidden;
+          border: 1px solid var(--border-mid); cursor: default;
+          transition: box-shadow .15s, border-color .15s;
+        }
+        .sql-struct .clause-row:hover {
+          box-shadow: 0 0 0 2px var(--cyan);
+          border-color: var(--cyan);
+        }
+        .sql-struct .clause-keyword {
+          min-width: 130px; display: flex; align-items: center;
+          justify-content: flex-end; padding: .6rem 1rem;
+          font-family: var(--font-mono); font-size: 13px; font-weight: 600;
+          border-right: 1px solid var(--border-mid);
+          user-select: none; white-space: nowrap;
+        }
+        .sql-struct .clause-body {
+          flex: 1; padding: .6rem 1rem;
+          font-family: var(--font-mono); font-size: 13px;
+          color: var(--text-muted); display: flex; align-items: center;
+          background: var(--bg-panel);
+        }
+        .sql-struct .kw-select  { background: rgba(99,179,237,.18);  color: #90cdf4; }
+        .sql-struct .kw-from    { background: rgba(104,211,145,.18); color: #9ae6b4; }
+        .sql-struct .kw-inner   { background: rgba(104,211,145,.18); color: #9ae6b4; }
+        .sql-struct .kw-left    { background: rgba(104,211,145,.18); color: #9ae6b4; }
+        .sql-struct .kw-where   { background: rgba(246,173,85,.18);  color: #fbd38d; }
+        .sql-struct .kw-groupby { background: rgba(183,148,244,.18); color: #d6bcfa; }
+        .sql-struct .kw-orderby { background: rgba(183,148,244,.18); color: #d6bcfa; }
+        .sql-struct .kw-limit   { background: rgba(252,129,129,.18); color: #feb2b2; }
+        .sql-struct .sql-panel {
+          margin-top: 12px; padding: 1rem 1.25rem;
+          background: var(--bg-panel-alt); border-radius: 10px;
+          border: 1px solid var(--border-mid); min-height: 100px;
+        }
+        .sql-struct .sql-panel-placeholder {
+          font-size: 13px; color: var(--text-subtle);
+          font-style: italic; text-align: center; padding: 1.5rem 0;
+        }
+        .sql-struct .sql-panel-title {
+          font-size: 13px; font-weight: 600; color: var(--text);
+          margin-bottom: 4px; display: none;
+        }
+        .sql-struct .sql-panel-desc {
+          font-size: 13px; color: var(--text-muted);
+          line-height: 1.65; margin-bottom: 8px; display: none;
+        }
+        .sql-struct .sql-panel-tip {
+          font-family: var(--font-mono); font-size: 12px;
+          color: var(--cyan); background: var(--bg-panel);
+          border-left: 2px solid var(--cyan); border-radius: 4px;
+          padding: 8px 12px; white-space: pre; display: none;
+        }
+      </style>
+
+      <div class="sql-struct">
+        <div class="clause-row" data-sqlkey="select">
+          <div class="clause-keyword kw-select">SELECT</div>
+          <div class="clause-body">nome, salario, departamento</div>
+        </div>
+        <div class="clause-row" data-sqlkey="from">
+          <div class="clause-keyword kw-from">FROM</div>
+          <div class="clause-body">funcionarios f</div>
+        </div>
+        <div class="clause-row" data-sqlkey="inner">
+          <div class="clause-keyword kw-inner">INNER JOIN</div>
+          <div class="clause-body">departamentos d ON f.depto_id = d.id</div>
+        </div>
+        <div class="clause-row" data-sqlkey="left">
+          <div class="clause-keyword kw-left">LEFT JOIN</div>
+          <div class="clause-body">projetos p ON f.id = p.responsavel_id</div>
+        </div>
+        <div class="clause-row" data-sqlkey="where">
+          <div class="clause-keyword kw-where">WHERE</div>
+          <div class="clause-body">f.salario &gt; 3000 AND d.nome = 'TI'</div>
+        </div>
+        <div class="clause-row" data-sqlkey="groupby">
+          <div class="clause-keyword kw-groupby">GROUP BY</div>
+          <div class="clause-body">departamento</div>
+        </div>
+        <div class="clause-row" data-sqlkey="orderby">
+          <div class="clause-keyword kw-orderby">ORDER BY</div>
+          <div class="clause-body">salario DESC</div>
+        </div>
+        <div class="clause-row" data-sqlkey="limit">
+          <div class="clause-keyword kw-limit">LIMIT</div>
+          <div class="clause-body">10</div>
+        </div>
+
+        <div class="sql-panel" id="sqlPanel">
+          <p class="sql-panel-placeholder" id="sqlPlaceholder">Passe o mouse sobre uma cláusula para ver a explicação</p>
+          <p class="sql-panel-title" id="sqlPanelTitle"></p>
+          <p class="sql-panel-desc"  id="sqlPanelDesc"></p>
+          <pre class="sql-panel-tip"  id="sqlPanelTip"></pre>
+        </div>
+      </div>
+
+      <script>
+      (function(){
+        var sqlInfo = {
+          select:  { title: "SELECT — o que trazer",        desc: "Define quais colunas ou expressões aparecerão no resultado. É a primeira cláusula escrita, mas executada depois do FROM, WHERE e GROUP BY.", tip: "SELECT nome, COUNT(*) AS total, AVG(salario) AS media" },
+          from:    { title: "FROM — de onde vem",           desc: "Indica a tabela principal da consulta. O banco monta aqui o conjunto de linhas disponível para as demais cláusulas.", tip: "FROM funcionarios f  -- 'f' é um alias para referenciar a tabela" },
+          inner:   { title: "INNER JOIN — interseção",      desc: "Combina linhas de duas tabelas onde a condição ON é verdadeira. Registros sem correspondência em qualquer lado são descartados.", tip: "INNER JOIN departamentos d ON f.depto_id = d.id\n-- só traz funcionários que têm departamento" },
+          left:    { title: "LEFT JOIN — tudo da esquerda", desc: "Traz todas as linhas da tabela à esquerda (FROM) mesmo sem correspondência à direita. Onde não houver match, as colunas da direita ficam NULL.", tip: "LEFT JOIN projetos p ON f.id = p.responsavel_id\n-- funcionários sem projeto aparecem com p.* = NULL" },
+          where:   { title: "WHERE — filtra as linhas",     desc: "Aplica condições linha a linha antes de qualquer agrupamento. Só as linhas que satisfazem a condição passam para as cláusulas seguintes.", tip: "WHERE salario > 3000 AND ativo = true AND criado_em >= '2023-01-01'" },
+          groupby: { title: "GROUP BY — agrupa por valor",  desc: "Agrupa linhas com o mesmo valor na(s) coluna(s) indicada(s). Após o agrupamento só é possível selecionar colunas do grupo ou funções de agregação (COUNT, SUM, AVG…).", tip: "GROUP BY departamento, cargo\n-- permite usar COUNT(*), SUM(salario) no SELECT" },
+          orderby: { title: "ORDER BY — define a ordem",    desc: "Ordena o resultado final. ASC (crescente) é o padrão; use DESC para decrescente. Pode ordenar por várias colunas ou aliases do SELECT.", tip: "ORDER BY salario DESC, nome ASC\n-- do maior salário ao menor; empates em ordem alfabética" },
+          limit:   { title: "LIMIT — quantidade de linhas", desc: "Restringe o número máximo de linhas retornadas. Combine com OFFSET para paginação.", tip: "LIMIT 10 OFFSET 20  -- página 3 (itens 21 a 30)" }
+        };
+        var rows   = document.querySelectorAll('.sql-struct .clause-row');
+        var ph     = document.getElementById('sqlPlaceholder');
+        var ptitle = document.getElementById('sqlPanelTitle');
+        var pdesc  = document.getElementById('sqlPanelDesc');
+        var ptip   = document.getElementById('sqlPanelTip');
+        rows.forEach(function(row){
+          row.addEventListener('mouseenter', function(){
+            var d = sqlInfo[row.dataset.sqlkey];
+            ph.style.display = 'none';
+            ptitle.style.display = 'block'; ptitle.textContent = d.title;
+            pdesc.style.display  = 'block'; pdesc.textContent  = d.desc;
+            ptip.style.display   = 'block'; ptip.textContent   = d.tip;
+          });
+          row.addEventListener('mouseleave', function(){
+            ph.style.display = '';
+            ptitle.style.display = pdesc.style.display = ptip.style.display = 'none';
+          });
+        });
+      })();
+      </script>
     </section>
 
     <!-- CAP UPDATE -->
