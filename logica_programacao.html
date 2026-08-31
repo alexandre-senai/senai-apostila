@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -357,19 +358,153 @@
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
+  /* ── PROGRESS BAR ── */
+  #progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 2px;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    z-index: 200;
+    transition: width .1s linear;
+  }
+
+  /* ── COPY BUTTON ── */
+  pre { position: relative; }
+  .copy-btn {
+    position: absolute;
+    top: .6rem; right: .6rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    color: var(--muted);
+    font-family: var(--font-sans);
+    font-size: .7rem;
+    padding: .2rem .55rem;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity .15s, color .15s, background .15s;
+    line-height: 1.6;
+  }
+  pre:hover .copy-btn { opacity: 1; }
+  .copy-btn:hover { color: var(--text); background: var(--border); }
+  .copy-btn.copied { color: var(--green); border-color: var(--green); opacity: 1; }
+
+  /* ── MOBILE TOGGLE ── */
+  #menu-toggle {
+    display: none;
+    position: fixed;
+    top: .85rem; left: .85rem;
+    z-index: 300;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    width: 38px; height: 38px;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 5px;
+    padding: 0;
+  }
+  #menu-toggle span {
+    display: block;
+    width: 18px; height: 2px;
+    background: var(--text);
+    border-radius: 2px;
+    transition: transform .2s, opacity .2s;
+  }
+  #sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.5);
+    z-index: 90;
+    backdrop-filter: blur(2px);
+  }
+
+  /* ── BACK TO TOP ── */
+  #back-top {
+    position: fixed;
+    bottom: 1.5rem; right: 1.5rem;
+    width: 38px; height: 38px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 1rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s, color .15s, background .15s;
+    z-index: 150;
+  }
+  #back-top.visible { opacity: 1; pointer-events: all; }
+  #back-top:hover { color: var(--text); background: var(--border); }
+
+  /* ── SIDEBAR SEARCH ── */
+  .sidebar-search {
+    padding: .6rem 1rem .4rem;
+    position: relative;
+  }
+  .sidebar-search input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: .78rem;
+    padding: .38rem .75rem .38rem 2rem;
+    outline: none;
+    transition: border-color .15s;
+  }
+  .sidebar-search input::placeholder { color: var(--muted); }
+  .sidebar-search input:focus { border-color: var(--accent); }
+  .sidebar-search svg {
+    position: absolute;
+    left: 1.55rem; top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    pointer-events: none;
+  }
+  .nav-link.hidden { display: none; }
+
   @media (max-width: 768px) {
-    #sidebar { width: 220px; min-width: 220px; transform: translateX(-100%); }
+    #sidebar {
+      width: 260px; min-width: 260px;
+      transform: translateX(-100%);
+      transition: transform .25s ease;
+      z-index: 100;
+    }
+    #sidebar.open { transform: translateX(0); }
+    #sidebar-overlay.open { display: block; }
     #main { margin-left: 0; padding: 2rem 1.25rem 4rem; }
+    #menu-toggle { display: flex; }
+    #back-top { bottom: 1rem; right: 1rem; }
   }
 </style>
 </head>
 <body>
+
+<div id="progress-bar"></div>
+<button id="menu-toggle" aria-label="Abrir menu">
+  <span></span><span></span><span></span>
+</button>
+<div id="sidebar-overlay"></div>
+<button id="back-top" aria-label="Voltar ao topo">↑</button>
 
 <!-- ═══════════════ SIDEBAR ═══════════════ -->
 <nav id="sidebar">
   <div class="sidebar-logo">
     <span>&#x1F4DA; Web Dev Guide</span>
     <small>Referência técnica rápida</small>
+  </div>
+
+  <div class="sidebar-search">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input type="text" id="nav-search" placeholder="Buscar tópico…" autocomplete="off" />
   </div>
 
   <div class="nav-group">
@@ -399,6 +534,17 @@
     <a class="nav-link" href="#dotenv"><span class="dot"></span>Variáveis de Ambiente (.env)</a>
     <a class="nav-link" href="#promise"><span class="dot"></span>Promise e async/await</a>
     <a class="nav-link" href="#rows"><span class="dot"></span>O que é rows</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-title">TypeScript Avançado</div>
+    <a class="nav-link" href="#ts-heranca"><span class="dot"></span>Herança</a>
+    <a class="nav-link" href="#ts-polimorfismo"><span class="dot"></span>Polimorfismo</a>
+    <a class="nav-link" href="#ts-interface"><span class="dot"></span>Interface</a>
+    <a class="nav-link" href="#ts-enum"><span class="dot"></span>Enum</a>
+    <a class="nav-link" href="#ts-promise"><span class="dot"></span>Promise&lt;T&gt;</a>
+    <a class="nav-link" href="#ts-trycatch"><span class="dot"></span>try / catch</a>
+    <a class="nav-link" href="#ts-generics"><span class="dot"></span>Generics &lt;T&gt;</a>
   </div>
 </nav>
 
@@ -709,7 +855,7 @@ npm install axios</code></pre>
       <tr><td>Logger</td><td>Registra método, URL e tempo de resposta de cada requisição</td></tr>
       <tr><td>Autenticação</td><td>Verifica se o token JWT é válido antes de continuar</td></tr>
       <tr><td>Autorização</td><td>Checa se o usuário tem permissão para acessar o recurso</td></tr>
-      <tr><td>Validação</td><td>Valida o body da requisição (ex.: zod, joi)</td></tr>
+      <tr><td>Validação</td><td>Valida o body da requisição antes de processar</td></tr>
       <tr><td>CORS</td><td>Adiciona headers de Cross-Origin Resource Sharing</td></tr>
       <tr><td>Rate Limiting</td><td>Limita número de requisições por IP/período</td></tr>
       <tr><td>Error Handler</td><td>Captura erros não tratados e retorna resposta padronizada</td></tr>
@@ -1022,39 +1168,6 @@ dist/</code></pre>
     <div class="callout warn">
       <strong>Atenção:</strong> Se você acidentalmente publicar um <code>.env</code> com segredos no GitHub, considere as credenciais comprometidas — troque todas imediatamente. O histórico do Git guarda o arquivo mesmo após deletá-lo.
     </div>
-
-    <h3>Validação avançada com Zod</h3>
-
-    <p>Para projetos maiores, a biblioteca <strong>Zod</strong> permite validar e tipar variáveis de ambiente de forma robusta:</p>
-
-    <pre><code><span class="cm"># Instalação</span>
-npm install zod</code></pre>
-
-    <pre><code><span class="file-tag">src/config/env.ts  ← versão com Zod</span>
-<span class="kw">import</span> <span class="str">'dotenv/config'</span>;
-<span class="kw">import</span> { z } <span class="kw">from</span> <span class="str">'zod'</span>;
-
-<span class="kw">const</span> schema = z.<span class="fn">object</span>({
-  NODE_ENV:    z.<span class="fn">enum</span>([<span class="str">'development'</span>, <span class="str">'test'</span>, <span class="str">'production'</span>]).<span class="fn">default</span>(<span class="str">'development'</span>),
-  PORT:        z.<span class="fn">coerce</span>.number().<span class="fn">default</span>(<span class="num">3000</span>),
-  DB_HOST:     z.<span class="fn">string</span>().<span class="fn">min</span>(<span class="num">1</span>),
-  DB_PORT:     z.<span class="fn">coerce</span>.number().<span class="fn">default</span>(<span class="num">5432</span>),
-  DB_NAME:     z.<span class="fn">string</span>().<span class="fn">min</span>(<span class="num">1</span>),
-  DB_USER:     z.<span class="fn">string</span>().<span class="fn">min</span>(<span class="num">1</span>),
-  DB_PASSWORD: z.<span class="fn">string</span>().<span class="fn">min</span>(<span class="num">1</span>),
-  JWT_SECRET:  z.<span class="fn">string</span>().<span class="fn">min</span>(<span class="num">32</span>, <span class="str">'JWT_SECRET deve ter ao menos 32 caracteres'</span>),
-  JWT_EXPIRES_IN: z.<span class="fn">string</span>().<span class="fn">default</span>(<span class="str">'8h'</span>),
-});
-
-<span class="kw">const</span> parsed = schema.<span class="fn">safeParse</span>(<span class="cls">process</span>.env);
-
-<span class="kw">if</span> (!parsed.success) {
-  <span class="cls">console</span>.<span class="fn">error</span>(<span class="str">'❌ Variáveis de ambiente inválidas:'</span>);
-  <span class="cls">console</span>.<span class="fn">error</span>(parsed.error.<span class="fn">flatten</span>().fieldErrors);
-  <span class="cls">process</span>.<span class="fn">exit</span>(<span class="num">1</span>); <span class="cm">// para o servidor antes de iniciar</span>
-}
-
-<span class="kw">export const</span> env = parsed.data;</code></pre>
 
     <h3>Fluxo completo resumido</h3>
 
@@ -1492,12 +1605,542 @@ storage.<span class="fn">set</span>&lt;<span class="cls">Preferencias</span>&gt;
     </ul>
   </section>
 
+
+  <!-- ═══ HERANÇA ═══ -->
+  <section class="section" id="ts-heranca">
+    <div class="section-tag">TypeScript · POO</div>
+    <h2>Herança</h2>
+
+    <p>Herança permite que uma classe <strong>filha</strong> reutilize e estenda o comportamento de uma classe <strong>pai</strong>. Em TypeScript usamos a palavra-chave <code>extends</code>.</p>
+
+    <div class="callout info">
+      <strong>Regra de ouro:</strong> use herança quando existe uma relação clara de <em>"é um"</em> — um <code>Aluno</code> <em>é uma</em> <code>Pessoa</code>. Se a relação for <em>"tem um"</em>, prefira composição.
+    </div>
+
+    <pre><code><span class="file-tag">heranca.ts</span>
+<span class="cm">// ── Classe PAI ──────────────────────────────────────</span>
+<span class="kw">class</span> <span class="cls">Pessoa</span> {
+  <span class="fn">constructor</span>(
+    <span class="kw">protected</span> nome: <span class="kw">string</span>,
+    <span class="kw">protected</span> idade: <span class="kw">number</span>
+  ) {}
+
+  <span class="fn">apresentar</span>(): <span class="kw">string</span> {
+    <span class="kw">return</span> <span class="str">`Olá, sou <span class="kw">${this.nome}</span>, tenho <span class="kw">${this.idade}</span> anos.`</span>;
+  }
+}
+
+<span class="cm">// ── Classe FILHA — herda de Pessoa ──────────────────</span>
+<span class="kw">class</span> <span class="cls">Aluno</span> <span class="kw">extends</span> <span class="cls">Pessoa</span> {
+  <span class="fn">constructor</span>(
+    nome: <span class="kw">string</span>,
+    idade: <span class="kw">number</span>,
+    <span class="kw">private</span> matricula: <span class="kw">string</span>
+  ) {
+    <span class="kw">super</span>(nome, idade); <span class="cm">// 👈 obrigatório — chama o construtor do pai</span>
+  }
+
+  <span class="fn">apresentar</span>(): <span class="kw">string</span> {                       <span class="cm">// sobrescreve o método pai</span>
+    <span class="kw">return</span> <span class="str">`<span class="kw">${super.apresentar()}</span> Matrícula: <span class="kw">${this.matricula}</span>.`</span>;
+  }
+}
+
+<span class="kw">class</span> <span class="cls">Instrutor</span> <span class="kw">extends</span> <span class="cls">Pessoa</span> {
+  <span class="fn">constructor</span>(nome: <span class="kw">string</span>, idade: <span class="kw">number</span>, <span class="kw">private</span> disciplina: <span class="kw">string</span>) {
+    <span class="kw">super</span>(nome, idade);
+  }
+
+  <span class="fn">apresentar</span>(): <span class="kw">string</span> {
+    <span class="kw">return</span> <span class="str">`<span class="kw">${super.apresentar()}</span> Ensino <span class="kw">${this.disciplina}</span>.`</span>;
+  }
+}
+
+<span class="cm">// ── Uso ─────────────────────────────────────────────</span>
+<span class="kw">const</span> aluno     = <span class="kw">new</span> <span class="cls">Aluno</span>(<span class="str">'João'</span>,    <span class="num">19</span>, <span class="str">'2024001'</span>);
+<span class="kw">const</span> instrutor = <span class="kw">new</span> <span class="cls">Instrutor</span>(<span class="str">'Alexandre'</span>, <span class="num">35</span>, <span class="str">'TypeScript'</span>);
+
+<span class="cls">console</span>.<span class="fn">log</span>(aluno.<span class="fn">apresentar</span>());
+<span class="cm">// → "Olá, sou João, tenho 19 anos. Matrícula: 2024001."</span>
+<span class="cls">console</span>.<span class="fn">log</span>(instrutor.<span class="fn">apresentar</span>());
+<span class="cm">// → "Olá, sou Alexandre, tenho 35 anos. Ensino TypeScript."</span></code></pre>
+
+    <h3>Modificadores de acesso</h3>
+    <table>
+      <tr><th>Modificador</th><th>Quem acessa</th></tr>
+      <tr><td><code>public</code></td><td>Qualquer lugar (padrão)</td></tr>
+      <tr><td><code>private</code></td><td>Somente a própria classe</td></tr>
+      <tr><td><code>protected</code></td><td>A própria classe e suas filhas</td></tr>
+    </table>
+
+    <div class="callout tip">
+      Use <code>protected</code> quando quiser que as classes filhas acessem um atributo, mas sem expô-lo para o mundo externo.
+    </div>
+  </section>
+
+  <!-- ═══ POLIMORFISMO ═══ -->
+  <section class="section" id="ts-polimorfismo">
+    <div class="section-tag">TypeScript · POO</div>
+    <h2>Polimorfismo</h2>
+
+    <p>Polimorfismo significa que objetos de <strong>classes diferentes</strong> podem ser tratados pelo <strong>mesmo tipo base</strong> e responder a chamadas de método de formas distintas. O código que chama o método não precisa saber qual classe concreta está usando.</p>
+
+    <div class="flow">
+      <div class="flow-box accent">Pessoa (pai)</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box">apresentar()</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box green">Aluno responde A</div>
+      <div class="flow-arr">/</div>
+      <div class="flow-box purple">Instrutor responde B</div>
+    </div>
+
+    <pre><code><span class="file-tag">polimorfismo.ts</span>
+<span class="kw">abstract class</span> <span class="cls">Forma</span> {
+  <span class="cm">// Método abstrato — cada filha DEVE implementar</span>
+  <span class="kw">abstract</span> <span class="fn">calcularArea</span>(): <span class="kw">number</span>;
+
+  <span class="fn">descricao</span>(): <span class="kw">string</span> {
+    <span class="kw">return</span> <span class="str">`Área: <span class="kw">${this.calcularArea().toFixed(2)}</span> m²`</span>;
+  }
+}
+
+<span class="kw">class</span> <span class="cls">Circulo</span> <span class="kw">extends</span> <span class="cls">Forma</span> {
+  <span class="fn">constructor</span>(<span class="kw">private</span> raio: <span class="kw">number</span>) { <span class="kw">super</span>(); }
+
+  <span class="fn">calcularArea</span>(): <span class="kw">number</span> {
+    <span class="kw">return</span> <span class="cls">Math</span>.PI * <span class="kw">this</span>.raio ** <span class="num">2</span>;
+  }
+}
+
+<span class="kw">class</span> <span class="cls">Retangulo</span> <span class="kw">extends</span> <span class="cls">Forma</span> {
+  <span class="fn">constructor</span>(<span class="kw">private</span> largura: <span class="kw">number</span>, <span class="kw">private</span> altura: <span class="kw">number</span>) { <span class="kw">super</span>(); }
+
+  <span class="fn">calcularArea</span>(): <span class="kw">number</span> {
+    <span class="kw">return</span> <span class="kw">this</span>.largura * <span class="kw">this</span>.altura;
+  }
+}
+
+<span class="cm">// ── Polimorfismo em ação ─────────────────────────────</span>
+<span class="cm">// A variável é do tipo Forma[], mas guarda objetos de classes diferentes</span>
+<span class="kw">const</span> formas: <span class="cls">Forma</span>[] = [
+  <span class="kw">new</span> <span class="cls">Circulo</span>(<span class="num">5</span>),
+  <span class="kw">new</span> <span class="cls">Retangulo</span>(<span class="num">4</span>, <span class="num">6</span>),
+  <span class="kw">new</span> <span class="cls">Circulo</span>(<span class="num">3</span>),
+];
+
+formas.<span class="fn">forEach</span>(f => <span class="cls">console</span>.<span class="fn">log</span>(f.<span class="fn">descricao</span>()));
+<span class="cm">// → "Área: 78.54 m²"</span>
+<span class="cm">// → "Área: 24.00 m²"</span>
+<span class="cm">// → "Área: 28.27 m²"</span></code></pre>
+
+    <div class="callout info">
+      <strong>Classe abstrata</strong> (<code>abstract class</code>) não pode ser instanciada diretamente — existe só para ser herdada. Métodos marcados com <code>abstract</code> obrigam as filhas a implementá-los.
+    </div>
+  </section>
+
+  <!-- ═══ INTERFACE ═══ -->
+  <section class="section" id="ts-interface">
+    <div class="section-tag">TypeScript · Tipos</div>
+    <h2>Interface</h2>
+
+    <p>Uma <strong>interface</strong> é um contrato que define a forma de um objeto — quais propriedades e métodos ele deve ter. Ela não gera código JavaScript; existe apenas em tempo de compilação para garantir que o código está correto.</p>
+
+    <div class="callout tip">
+      Diferença principal de <code>class</code>: interfaces <strong>não têm implementação</strong> e não criam objetos. São só a "forma" que algo deve ter.
+    </div>
+
+    <pre><code><span class="file-tag">interfaces.ts</span>
+<span class="cm">// ── Definindo uma interface ──────────────────────────</span>
+<span class="kw">interface</span> <span class="cls">IUsuario</span> {
+  id:    <span class="kw">number</span>;
+  nome:  <span class="kw">string</span>;
+  email: <span class="kw">string</span>;
+  ativo?: <span class="kw">boolean</span>;            <span class="cm">// "?" = propriedade opcional</span>
+}
+
+<span class="cm">// ── Usando a interface para tipar um objeto ──────────</span>
+<span class="kw">const</span> usuario: <span class="cls">IUsuario</span> = {
+  id:    <span class="num">1</span>,
+  nome:  <span class="str">'Ana'</span>,
+  email: <span class="str">'ana@senai.br'</span>,
+<span class="cm">  // ativo é opcional — pode omitir</span>
+};
+
+<span class="cm">// ── Interface com método ─────────────────────────────</span>
+<span class="kw">interface</span> <span class="cls">IRepositorio</span>&lt;T&gt; {
+  <span class="fn">buscarPorId</span>(id: <span class="kw">number</span>): <span class="cls">Promise</span>&lt;T | <span class="kw">null</span>&gt;;
+  <span class="fn">listarTodos</span>(): <span class="cls">Promise</span>&lt;T[]&gt;;
+  <span class="fn">salvar</span>(entidade: T): <span class="cls">Promise</span>&lt;T&gt;;
+  <span class="fn">deletar</span>(id: <span class="kw">number</span>): <span class="cls">Promise</span>&lt;<span class="kw">void</span>&gt;;
+}
+
+<span class="cm">// ── Classe que "implementa" a interface ──────────────</span>
+<span class="kw">class</span> <span class="cls">UsuarioRepositorio</span> <span class="kw">implements</span> <span class="cls">IRepositorio</span>&lt;<span class="cls">IUsuario</span>&gt; {
+  <span class="kw">async</span> <span class="fn">buscarPorId</span>(id: <span class="kw">number</span>): <span class="cls">Promise</span>&lt;<span class="cls">IUsuario</span> | <span class="kw">null</span>&gt; {
+    <span class="cm">// busca no banco...</span>
+    <span class="kw">return null</span>;
+  }
+
+  <span class="kw">async</span> <span class="fn">listarTodos</span>(): <span class="cls">Promise</span>&lt;<span class="cls">IUsuario</span>[]&gt; { <span class="kw">return</span> []; }
+  <span class="kw">async</span> <span class="fn">salvar</span>(u: <span class="cls">IUsuario</span>): <span class="cls">Promise</span>&lt;<span class="cls">IUsuario</span>&gt; { <span class="kw">return</span> u; }
+  <span class="kw">async</span> <span class="fn">deletar</span>(id: <span class="kw">number</span>): <span class="cls">Promise</span>&lt;<span class="kw">void</span>&gt; {}
+}</code></pre>
+
+    <h3>Interface vs Type</h3>
+    <table>
+      <tr><th>Característica</th><th>interface</th><th>type</th></tr>
+      <tr><td>Extensão</td><td><code>extends</code> (legível)</td><td><code>&amp;</code> (intersecção)</td></tr>
+      <tr><td>Mesclagem automática</td><td>Sim — declarar duas vezes une as propriedades</td><td>Não — erro de duplicata</td></tr>
+      <tr><td>Tipos complexos</td><td>Só objetos e funções</td><td>Union, tupla, literal, etc.</td></tr>
+      <tr><td>Convensão</td><td>Para objetos e contratos de classe</td><td>Para union types e aliases simples</td></tr>
+    </table>
+  </section>
+
+  <!-- ═══ ENUM ═══ -->
+  <section class="section" id="ts-enum">
+    <div class="section-tag">TypeScript · Tipos</div>
+    <h2>Enum</h2>
+
+    <p>Um <strong>enum</strong> (enumeração) é um conjunto nomeado de valores constantes. Ele evita "números mágicos" e strings soltas espalhados pelo código, tornando a intenção explícita e o TypeScript capaz de checar os valores.</p>
+
+    <pre><code><span class="file-tag">enums.ts</span>
+<span class="cm">// ── Enum numérico (padrão) ───────────────────────────</span>
+<span class="kw">enum</span> <span class="cls">StatusPedido</span> {
+  Pendente,     <span class="cm">// = 0</span>
+  Processando,  <span class="cm">// = 1</span>
+  Enviado,      <span class="cm">// = 2</span>
+  Entregue,     <span class="cm">// = 3</span>
+  Cancelado,    <span class="cm">// = 4</span>
+}
+
+<span class="cm">// ── Enum de string — preferido em APIs e banco ───────</span>
+<span class="kw">enum</span> <span class="cls">Role</span> {
+  Admin     = <span class="str">'ADMIN'</span>,
+  Instrutor = <span class="str">'INSTRUTOR'</span>,
+  Aluno     = <span class="str">'ALUNO'</span>,
+}
+
+<span class="cm">// ── Usando o enum ────────────────────────────────────</span>
+<span class="kw">interface</span> <span class="cls">IUsuario</span> {
+  nome:  <span class="kw">string</span>;
+  role:  <span class="cls">Role</span>;
+}
+
+<span class="kw">function</span> <span class="fn">verificarAcesso</span>(usuario: <span class="cls">IUsuario</span>): <span class="kw">string</span> {
+  <span class="kw">if</span> (usuario.role === <span class="cls">Role</span>.Admin) {
+    <span class="kw">return</span> <span class="str">'Acesso total liberado.'</span>;
+  }
+  <span class="kw">if</span> (usuario.role === <span class="cls">Role</span>.Instrutor) {
+    <span class="kw">return</span> <span class="str">'Acesso ao painel de turmas.'</span>;
+  }
+  <span class="kw">return</span> <span class="str">'Acesso somente leitura.'</span>;
+}
+
+<span class="kw">const</span> prof: <span class="cls">IUsuario</span> = { nome: <span class="str">'Alexandre'</span>, role: <span class="cls">Role</span>.Instrutor };
+<span class="cls">console</span>.<span class="fn">log</span>(<span class="fn">verificarAcesso</span>(prof)); <span class="cm">// "Acesso ao painel de turmas."</span>
+
+<span class="cm">// ── Enum no switch — cobre todos os casos ────────────</span>
+<span class="kw">function</span> <span class="fn">labelStatus</span>(status: <span class="cls">StatusPedido</span>): <span class="kw">string</span> {
+  <span class="kw">switch</span> (status) {
+    <span class="kw">case</span> <span class="cls">StatusPedido</span>.Pendente:    <span class="kw">return</span> <span class="str">'⏳ Aguardando'</span>;
+    <span class="kw">case</span> <span class="cls">StatusPedido</span>.Processando: <span class="kw">return</span> <span class="str">'🔄 Em processamento'</span>;
+    <span class="kw">case</span> <span class="cls">StatusPedido</span>.Enviado:     <span class="kw">return</span> <span class="str">'🚚 A caminho'</span>;
+    <span class="kw">case</span> <span class="cls">StatusPedido</span>.Entregue:    <span class="kw">return</span> <span class="str">'✅ Entregue'</span>;
+    <span class="kw">case</span> <span class="cls">StatusPedido</span>.Cancelado:   <span class="kw">return</span> <span class="str">'❌ Cancelado'</span>;
+  }
+}</code></pre>
+
+    <div class="callout warn">
+      <strong>Prefira enum de string em APIs e banco de dados.</strong> O valor numérico <code>0</code> é difícil de depurar; já <code>'ADMIN'</code> é autoexplicativo em logs, no JSON retornado e nas colunas do banco.
+    </div>
+  </section>
+
+  <!-- ═══ PROMISE<T> ═══ -->
+  <section class="section" id="ts-promise">
+    <div class="section-tag">TypeScript · Assíncrono</div>
+    <h2>Promise&lt;T&gt;</h2>
+
+    <p>Uma <strong>Promise</strong> representa o resultado futuro de uma operação assíncrona. O <code>&lt;T&gt;</code> indica o <strong>tipo do valor</strong> que será resolvido quando a operação terminar.</p>
+
+    <div class="card-grid">
+      <div class="card"><div class="card-label">Promise&lt;string&gt;</div><div class="card-value">Resolverá com uma string</div></div>
+      <div class="card"><div class="card-label">Promise&lt;IUsuario[]&gt;</div><div class="card-value">Resolverá com um array de usuários</div></div>
+      <div class="card"><div class="card-label">Promise&lt;void&gt;</div><div class="card-value">Resolverá sem retornar valor</div></div>
+      <div class="card"><div class="card-label">Promise&lt;number | null&gt;</div><div class="card-value">Resolverá com número ou null</div></div>
+    </div>
+
+    <pre><code><span class="file-tag">promises.ts</span>
+<span class="cm">// ── Criando uma Promise manualmente ─────────────────</span>
+<span class="kw">function</span> <span class="fn">aguardar</span>(ms: <span class="kw">number</span>): <span class="cls">Promise</span>&lt;<span class="kw">string</span>&gt; {
+  <span class="kw">return new</span> <span class="cls">Promise</span>((resolve, reject) => {
+    <span class="kw">if</span> (ms &lt; <span class="num">0</span>) {
+      <span class="fn">reject</span>(<span class="kw">new</span> <span class="cls">Error</span>(<span class="str">'Tempo não pode ser negativo'</span>));
+      <span class="kw">return</span>;
+    }
+    <span class="fn">setTimeout</span>(() => <span class="fn">resolve</span>(<span class="str">`Pronto após <span class="kw">${ms}</span>ms`</span>), ms);
+  });
+}
+
+<span class="cm">// ── Consumindo com async/await ───────────────────────</span>
+<span class="kw">async function</span> <span class="fn">executar</span>(): <span class="cls">Promise</span>&lt;<span class="kw">void</span>&gt; {
+  <span class="kw">const</span> resultado = <span class="kw">await</span> <span class="fn">aguardar</span>(<span class="num">1000</span>);
+  <span class="cls">console</span>.<span class="fn">log</span>(resultado); <span class="cm">// "Pronto após 1000ms"</span>
+}
+
+<span class="cm">// ── Tipando funções que buscam no banco ─────────────</span>
+<span class="kw">interface</span> <span class="cls">IProduto</span> { id: <span class="kw">number</span>; nome: <span class="kw">string</span>; preco: <span class="kw">number</span>; }
+
+<span class="kw">async function</span> <span class="fn">buscarProduto</span>(id: <span class="kw">number</span>): <span class="cls">Promise</span>&lt;<span class="cls">IProduto</span> | <span class="kw">null</span>&gt; {
+  <span class="kw">const</span> resultado = <span class="kw">await</span> pool.<span class="fn">query</span>&lt;<span class="cls">IProduto</span>&gt;(
+    <span class="str">'SELECT * FROM produtos WHERE id = $1'</span>, [id]
+  );
+  <span class="kw">return</span> resultado.rows[<span class="num">0</span>] ?? <span class="kw">null</span>; <span class="cm">// ?? = "se undefined/null, retorna null"</span>
+}
+
+<span class="cm">// ── Promise.all — executar várias em paralelo ────────</span>
+<span class="kw">async function</span> <span class="fn">carregarDados</span>() {
+  <span class="cm">// Dispara as duas buscas ao mesmo tempo</span>
+  <span class="kw">const</span> [usuarios, produtos] = <span class="kw">await</span> <span class="cls">Promise</span>.<span class="fn">all</span>([
+    <span class="fn">buscarUsuarios</span>(),
+    <span class="fn">buscarProdutos</span>(),
+  ]);
+
+  <span class="cm">// Só chega aqui quando AMBAS terminarem</span>
+  <span class="cls">console</span>.<span class="fn">log</span>(usuarios, produtos);
+}</code></pre>
+
+    <div class="callout info">
+      Uma função marcada com <code>async</code> sempre retorna uma <code>Promise</code> — mesmo que você esqueça de colocar no tipo de retorno. O TypeScript infere automaticamente.
+    </div>
+  </section>
+
+  <!-- ═══ TRY / CATCH ═══ -->
+  <section class="section" id="ts-trycatch">
+    <div class="section-tag">TypeScript · Erros</div>
+    <h2>try / catch</h2>
+
+    <p>O <strong>try/catch</strong> é o mecanismo para tratar erros em tempo de execução. Qualquer código que pode lançar uma exceção deve ser envolto em um bloco <code>try</code>; se falhar, o controle vai para o <code>catch</code>.</p>
+
+    <div class="flow">
+      <div class="flow-box accent">try { código }</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box green">sucesso → continua</div>
+      <div class="flow-arr">/</div>
+      <div class="flow-box" style="border-color:var(--red);color:var(--red)">erro → catch</div>
+      <div class="flow-arr">→</div>
+      <div class="flow-box purple">finally (sempre)</div>
+    </div>
+
+    <pre><code><span class="file-tag">trycatch.ts</span>
+<span class="cm">// ── Estrutura básica ─────────────────────────────────</span>
+<span class="kw">try</span> {
+  <span class="kw">const</span> dados = <span class="cls">JSON</span>.<span class="fn">parse</span>(<span class="str">'{ json inválido }'</span>); <span class="cm">// lança SyntaxError</span>
+} <span class="kw">catch</span> (erro) {
+  <span class="cm">// "erro" é do tipo "unknown" no TypeScript 4+</span>
+  <span class="kw">if</span> (erro <span class="kw">instanceof</span> <span class="cls">Error</span>) {
+    <span class="cls">console</span>.<span class="fn">error</span>(<span class="str">'Falhou:'</span>, erro.message);
+  }
+} <span class="kw">finally</span> {
+  <span class="cm">// Executa SEMPRE — com ou sem erro (bom para fechar conexões)</span>
+  <span class="cls">console</span>.<span class="fn">log</span>(<span class="str">'Bloco finally executado.'</span>);
+}
+
+<span class="cm">// ── Em funções async (erros de banco/API) ────────────</span>
+<span class="kw">async function</span> <span class="fn">criarUsuario</span>(dados: <span class="cls">IUsuario</span>): <span class="cls">Promise</span>&lt;<span class="cls">IUsuario</span>&gt; {
+  <span class="kw">try</span> {
+    <span class="kw">const</span> resultado = <span class="kw">await</span> pool.<span class="fn">query</span>(
+      <span class="str">'INSERT INTO usuarios (nome, email) VALUES ($1, $2) RETURNING *'</span>,
+      [dados.nome, dados.email]
+    );
+    <span class="kw">return</span> resultado.rows[<span class="num">0</span>];
+  } <span class="kw">catch</span> (erro) {
+    <span class="kw">if</span> (erro <span class="kw">instanceof</span> <span class="cls">Error</span>) {
+      <span class="cm">// Erro de e-mail duplicado no PostgreSQL</span>
+      <span class="kw">if</span> (erro.message.<span class="fn">includes</span>(<span class="str">'duplicate key'</span>)) {
+        <span class="kw">throw new</span> <span class="cls">Error</span>(<span class="str">'E-mail já cadastrado.'</span>);
+      }
+    }
+    <span class="kw">throw</span> erro; <span class="cm">// relança erros que não sei tratar</span>
+  }
+}
+
+<span class="cm">// ── Erro personalizado ───────────────────────────────</span>
+<span class="kw">class</span> <span class="cls">NaoEncontradoError</span> <span class="kw">extends</span> <span class="cls">Error</span> {
+  <span class="kw">constructor</span>(<span class="kw">public</span> recurso: <span class="kw">string</span>) {
+    <span class="kw">super</span>(<span class="str">`<span class="kw">${recurso}</span> não encontrado.`</span>);
+    <span class="kw">this</span>.name = <span class="str">'NaoEncontradoError'</span>;
+  }
+}
+
+<span class="kw">async function</span> <span class="fn">buscarOuFalhar</span>(id: <span class="kw">number</span>): <span class="cls">Promise</span>&lt;<span class="cls">IUsuario</span>&gt; {
+  <span class="kw">const</span> usuario = <span class="kw">await</span> <span class="fn">buscarUsuarioPorId</span>(id);
+  <span class="kw">if</span> (!usuario) {
+    <span class="kw">throw new</span> <span class="cls">NaoEncontradoError</span>(<span class="str">'Usuário'</span>);
+  }
+  <span class="kw">return</span> usuario;
+}
+
+<span class="cm">// ── No controller Express ────────────────────────────</span>
+app.<span class="fn">get</span>(<span class="str">'/usuarios/:id'</span>, <span class="kw">async</span> (req, res) => {
+  <span class="kw">try</span> {
+    <span class="kw">const</span> usuario = <span class="kw">await</span> <span class="fn">buscarOuFalhar</span>(<span class="cls">Number</span>(req.params.id));
+    res.<span class="fn">json</span>(usuario);
+  } <span class="kw">catch</span> (erro) {
+    <span class="kw">if</span> (erro <span class="kw">instanceof</span> <span class="cls">NaoEncontradoError</span>) {
+      res.<span class="fn">status</span>(<span class="num">404</span>).<span class="fn">json</span>({ erro: erro.message });
+    } <span class="kw">else</span> {
+      res.<span class="fn">status</span>(<span class="num">500</span>).<span class="fn">json</span>({ erro: <span class="str">'Erro interno'</span> });
+    }
+  }
+});</code></pre>
+
+    <div class="callout warn">
+      <strong>Nunca ignore o catch silenciosamente.</strong> Um <code>catch (e) {}</code> vazio engole o erro e torna depuração impossível. Sempre logue ou relance.
+    </div>
+  </section>
+
+  <!-- ═══ GENERICS <T> ═══ -->
+  <section class="section" id="ts-generics">
+    <div class="section-tag">TypeScript · Generics</div>
+    <h2>O que é uma classe &lt;T&gt; — Generics</h2>
+
+    <p>Um <strong>Generic</strong> é um "espaço reservado" para um tipo que só será definido no momento do uso. Pense nisso como uma caixa que pode guardar qualquer coisa, mas quando você coloca algo nela, a caixa passa a saber exatamente o que tem dentro.</p>
+
+    <div class="callout info">
+      <strong>Por que usar?</strong> Sem Generics, você precisaria duplicar a mesma lógica para cada tipo (<code>RepositorioDeUsuario</code>, <code>RepositorioDeProduto</code>…). Com <code>&lt;T&gt;</code>, você escreve uma vez e o TypeScript adapta para cada tipo com segurança total.
+    </div>
+
+    <h3>1. Generic simples — entendendo a ideia</h3>
+
+    <pre><code><span class="file-tag">generics-basico.ts</span>
+<span class="cm">// Sem Generic — funciona só para number</span>
+<span class="kw">function</span> <span class="fn">primeiroNumero</span>(lista: <span class="kw">number</span>[]): <span class="kw">number</span> | <span class="kw">undefined</span> {
+  <span class="kw">return</span> lista[<span class="num">0</span>];
+}
+
+<span class="cm">// Com Generic — funciona para QUALQUER tipo</span>
+<span class="kw">function</span> <span class="fn">primeiro</span>&lt;T&gt;(lista: T[]): T | <span class="kw">undefined</span> {
+  <span class="kw">return</span> lista[<span class="num">0</span>];
+}
+
+<span class="kw">const</span> n = <span class="fn">primeiro</span>([<span class="num">10</span>, <span class="num">20</span>, <span class="num">30</span>]);       <span class="cm">// T = number  → retorno: number</span>
+<span class="kw">const</span> s = <span class="fn">primeiro</span>([<span class="str">'a'</span>, <span class="str">'b'</span>, <span class="str">'c'</span>]);   <span class="cm">// T = string  → retorno: string</span>
+<span class="kw">const</span> b = <span class="fn">primeiro</span>([<span class="kw">true</span>, <span class="kw">false</span>]);     <span class="cm">// T = boolean → retorno: boolean</span>
+
+<span class="cm">// O TypeScript infere T automaticamente — você raramente precisa</span>
+<span class="cm">// escrever primeiro&lt;number&gt;([10, 20, 30])</span></code></pre>
+
+    <h3>2. Constraint — <code>T extends IEntidade</code></h3>
+
+    <p>Às vezes queremos que <code>T</code> seja qualquer tipo, mas que <strong>obrigatoriamente tenha certas propriedades</strong>. Usamos <code>extends</code> para impor essa restrição (constraint).</p>
+
+    <pre><code><span class="file-tag">repositorio-base.ts</span>
+<span class="cm">// ── Contrato mínimo de uma entidade do banco ─────────</span>
+<span class="kw">interface</span> <span class="cls">IEntidade</span> {
+  id: <span class="kw">number</span>;
+}
+
+<span class="cm">// ── Classe genérica com constraint ──────────────────</span>
+<span class="cm">// "T extends IEntidade" = T pode ser qualquer tipo,</span>
+<span class="cm">// desde que tenha pelo menos a propriedade "id: number"</span>
+<span class="kw">class</span> <span class="cls">RepositorioBase</span>&lt;T <span class="kw">extends</span> <span class="cls">IEntidade</span>&gt; {
+  <span class="kw">private</span> tabela: <span class="kw">string</span>;
+
+  <span class="fn">constructor</span>(tabela: <span class="kw">string</span>) {
+    <span class="kw">this</span>.tabela = tabela;
+  }
+
+  <span class="kw">async</span> <span class="fn">buscarPorId</span>(id: <span class="kw">number</span>): <span class="cls">Promise</span>&lt;T | <span class="kw">null</span>&gt; {
+    <span class="kw">const</span> res = <span class="kw">await</span> pool.<span class="fn">query</span>&lt;T&gt;(
+      <span class="str">`SELECT * FROM <span class="kw">${this.tabela}</span> WHERE id = $1`</span>,
+      [id]
+    );
+    <span class="kw">return</span> res.rows[<span class="num">0</span>] ?? <span class="kw">null</span>;
+  }
+
+  <span class="kw">async</span> <span class="fn">listarTodos</span>(): <span class="cls">Promise</span>&lt;T[]&gt; {
+    <span class="kw">const</span> res = <span class="kw">await</span> pool.<span class="fn">query</span>&lt;T&gt;(<span class="str">`SELECT * FROM <span class="kw">${this.tabela}</span>`</span>);
+    <span class="kw">return</span> res.rows;
+  }
+
+  <span class="kw">async</span> <span class="fn">deletar</span>(id: <span class="kw">number</span>): <span class="cls">Promise</span>&lt;<span class="kw">boolean</span>&gt; {
+    <span class="kw">const</span> res = <span class="kw">await</span> pool.<span class="fn">query</span>(
+      <span class="str">`DELETE FROM <span class="kw">${this.tabela}</span> WHERE id = $1`</span>, [id]
+    );
+    <span class="kw">return</span> (res.rowCount ?? <span class="num">0</span>) &gt; <span class="num">0</span>; <span class="cm">// true se deletou algo</span>
+  }
+}
+
+<span class="cm">// ── Definindo as entidades reais ─────────────────────</span>
+<span class="kw">interface</span> <span class="cls">IUsuario</span> <span class="kw">extends</span> <span class="cls">IEntidade</span> {
+  nome:  <span class="kw">string</span>;
+  email: <span class="kw">string</span>;
+  role:  <span class="cls">Role</span>;
+}
+
+<span class="kw">interface</span> <span class="cls">IProduto</span> <span class="kw">extends</span> <span class="cls">IEntidade</span> {
+  nome:  <span class="kw">string</span>;
+  preco: <span class="kw">number</span>;
+  estoque: <span class="kw">number</span>;
+}
+
+<span class="cm">// ── Repositórios específicos — herdam tudo de Base ───</span>
+<span class="kw">class</span> <span class="cls">UsuarioRepositorio</span> <span class="kw">extends</span> <span class="cls">RepositorioBase</span>&lt;<span class="cls">IUsuario</span>&gt; {
+  <span class="fn">constructor</span>() { <span class="kw">super</span>(<span class="str">'usuarios'</span>); }
+
+  <span class="cm">// Método extra exclusivo de usuário</span>
+  <span class="kw">async</span> <span class="fn">buscarPorEmail</span>(email: <span class="kw">string</span>): <span class="cls">Promise</span>&lt;<span class="cls">IUsuario</span> | <span class="kw">null</span>&gt; {
+    <span class="kw">const</span> res = <span class="kw">await</span> pool.<span class="fn">query</span>&lt;<span class="cls">IUsuario</span>&gt;(
+      <span class="str">'SELECT * FROM usuarios WHERE email = $1'</span>, [email]
+    );
+    <span class="kw">return</span> res.rows[<span class="num">0</span>] ?? <span class="kw">null</span>;
+  }
+}
+
+<span class="kw">class</span> <span class="cls">ProdutoRepositorio</span> <span class="kw">extends</span> <span class="cls">RepositorioBase</span>&lt;<span class="cls">IProduto</span>&gt; {
+  <span class="fn">constructor</span>() { <span class="kw">super</span>(<span class="str">'produtos'</span>); }
+
+  <span class="kw">async</span> <span class="fn">buscarEmEstoque</span>(): <span class="cls">Promise</span>&lt;<span class="cls">IProduto</span>[]&gt; {
+    <span class="kw">const</span> res = <span class="kw">await</span> pool.<span class="fn">query</span>&lt;<span class="cls">IProduto</span>&gt;(
+      <span class="str">'SELECT * FROM produtos WHERE estoque &gt; 0'</span>
+    );
+    <span class="kw">return</span> res.rows;
+  }
+}
+
+<span class="cm">// ── Uso final ────────────────────────────────────────</span>
+<span class="kw">const</span> usuarioRepo = <span class="kw">new</span> <span class="cls">UsuarioRepositorio</span>();
+<span class="kw">const</span> produtoRepo = <span class="kw">new</span> <span class="cls">ProdutoRepositorio</span>();
+
+<span class="kw">const</span> usuario = <span class="kw">await</span> usuarioRepo.<span class="fn">buscarPorId</span>(<span class="num">1</span>); <span class="cm">// retorna IUsuario | null</span>
+<span class="kw">const</span> produto  = <span class="kw">await</span> produtoRepo.<span class="fn">buscarPorId</span>(<span class="num">5</span>); <span class="cm">// retorna IProduto | null</span>
+
+<span class="cm">// TypeScript sabe exatamente o tipo — autocomplete funciona!</span>
+<span class="cls">console</span>.<span class="fn">log</span>(usuario?.email);   <span class="cm">// ✅ propriedade de IUsuario</span>
+<span class="cls">console</span>.<span class="fn">log</span>(produto?.preco);   <span class="cm">// ✅ propriedade de IProduto</span>
+<span class="cls">console</span>.<span class="fn">log</span>(produto?.email);   <span class="cm">// ❌ Erro de compilação — IProduto não tem email!</span></code></pre>
+
+    <h3>Como o TypeScript lê <code>RepositorioBase&lt;T extends IEntidade&gt;</code></h3>
+
+    <table>
+      <tr><th>Parte</th><th>Significado</th></tr>
+      <tr><td><code>RepositorioBase</code></td><td>Nome da classe</td></tr>
+      <tr><td><code>&lt;T&gt;</code></td><td>Parâmetro de tipo — "espaço reservado" que será preenchido no uso</td></tr>
+      <tr><td><code>extends IEntidade</code></td><td>Restrição — T deve ter pelo menos <code>id: number</code></td></tr>
+      <tr><td><code>RepositorioBase&lt;IUsuario&gt;</code></td><td>T = IUsuario — todas as ocorrências de T viram IUsuario</td></tr>
+    </table>
+
+    <div class="callout tip">
+      <strong>Resumo mental:</strong> <code>&lt;T&gt;</code> é como uma variável, mas para tipos. Quando você escreve <code>RepositorioBase&lt;IUsuario&gt;</code>, o TypeScript substitui cada <code>T</code> por <code>IUsuario</code> e verifica tudo. Você ganha reuso de código sem abrir mão da segurança de tipos.
+    </div>
+  </section>
+
 </main>
 
   
 
 <script>
-  // Atualizar link ativo no menu ao scrollar
+  // ── Active nav on scroll ─────────────────────────
   const sections = document.querySelectorAll('section[id]');
   const navLinks = document.querySelectorAll('.nav-link');
 
@@ -1514,9 +2157,80 @@ storage.<span class="fn">set</span>&lt;<span class="cls">Preferencias</span>&gt;
   sections.forEach(s => observer.observe(s));
 
   navLinks.forEach(link => {
-    link.addEventListener('click', e => {
+    link.addEventListener('click', () => {
       navLinks.forEach(l => l.classList.remove('active'));
       link.classList.add('active');
+      // close sidebar on mobile after clicking a link
+      sidebar.classList.remove('open');
+      overlay.classList.remove('open');
+    });
+  });
+
+  // ── Reading progress bar ─────────────────────────
+  const progressBar = document.getElementById('progress-bar');
+  function updateProgress() {
+    const scrollTop = window.scrollY;
+    const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+    const pct = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+    progressBar.style.width = pct + '%';
+  }
+  window.addEventListener('scroll', updateProgress, { passive: true });
+
+  // ── Copy buttons on code blocks ──────────────────
+  document.querySelectorAll('pre').forEach(pre => {
+    const btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.textContent = 'copiar';
+    btn.addEventListener('click', () => {
+      const code = pre.querySelector('code');
+      // get text without file-tag content
+      const clone = code.cloneNode(true);
+      clone.querySelectorAll('.file-tag').forEach(el => el.remove());
+      navigator.clipboard.writeText(clone.innerText.trim()).then(() => {
+        btn.textContent = '✓ copiado';
+        btn.classList.add('copied');
+        setTimeout(() => {
+          btn.textContent = 'copiar';
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    });
+    pre.appendChild(btn);
+  });
+
+  // ── Mobile sidebar toggle ────────────────────────
+  const sidebar  = document.getElementById('sidebar');
+  const toggle   = document.getElementById('menu-toggle');
+  const overlay  = document.getElementById('sidebar-overlay');
+
+  toggle.addEventListener('click', () => {
+    const open = sidebar.classList.toggle('open');
+    overlay.classList.toggle('open', open);
+  });
+  overlay.addEventListener('click', () => {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('open');
+  });
+
+  // ── Back to top ──────────────────────────────────
+  const backTop = document.getElementById('back-top');
+  window.addEventListener('scroll', () => {
+    backTop.classList.toggle('visible', window.scrollY > 400);
+  }, { passive: true });
+  backTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+  // ── Sidebar search filter ────────────────────────
+  const searchInput = document.getElementById('nav-search');
+  searchInput.addEventListener('input', () => {
+    const q = searchInput.value.toLowerCase().trim();
+    navLinks.forEach(link => {
+      const text = link.textContent.toLowerCase();
+      link.classList.toggle('hidden', q.length > 0 && !text.includes(q));
+    });
+    // show/hide group titles based on visible links
+    document.querySelectorAll('.nav-group').forEach(group => {
+      const hasVisible = [...group.querySelectorAll('.nav-link')].some(l => !l.classList.contains('hidden'));
+      group.style.display = (!q || hasVisible) ? '' : 'none';
     });
   });
 </script>
