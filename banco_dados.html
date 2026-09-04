@@ -998,10 +998,11 @@ footer .dot { color: var(--amber); }
       <p class="chapter-intro">Modifica a estrutura de uma tabela já existente, sem precisar recriá-la.</p>
       <div class="console">
         <div class="bar"><span class="label">alter.sql</span><button class="run-btn">▶ Executar</button></div>
-        <pre><span class="kw">ALTER TABLE</span> tb_usuarios <span class="kw">ADD COLUMN</span>    tx_telefone <span class="fn">VARCHAR</span>(<span class="num">20</span>);
-<span class="kw">ALTER TABLE</span> tb_usuarios <span class="kw">DROP COLUMN</span>   nr_idade;
-<span class="kw">ALTER TABLE</span> tb_usuarios <span class="kw">ALTER COLUMN</span>  tx_nome <span class="kw">TYPE</span> <span class="fn">VARCHAR</span>(<span class="num">200</span>);
-<span class="kw">ALTER TABLE</span> tb_usuarios <span class="kw">RENAME COLUMN</span> tx_email <span class="kw">TO</span> tx_email_contato;</pre>
+        <pre><span class="kw">ALTER TABLE</span> tb_usuario <span class="kw">ADD COLUMN</span>    tx_telefone <span class="fn">VARCHAR</span>(<span class="num">20</span>);
+<span class="kw">ALTER TABLE</span> tb_usuario <span class="kw">DROP COLUMN</span>   nr_idade;
+<span class="kw">ALTER TABLE</span> tb_usuario <span class="kw">ALTER COLUMN</span>  tx_nome <span class="kw">TYPE</span> <span class="fn">VARCHAR</span>(<span class="num">200</span>);
+<span class="kw">ALTER TABLE</span> tb_usuario <span class="kw">RENAME COLUMN</span> tx_email <span class="kw">TO</span> tx_email_contato;</pre>
+<span class="kw">ALTER TABLE</span> tb_usuario <span class="kw">ADD CONSTRAINT</span> pk_usuario <span class="kw">PRIMARY KEY </span> (id_usuario);</pre>
         <div class="result"><div class="result-inner"><span class="msg">✓ ALTER TABLE — estrutura atualizada.</span></div></div>
       </div>
 
