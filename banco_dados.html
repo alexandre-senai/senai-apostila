@@ -739,6 +739,25 @@ footer .dot { color: var(--amber); }
 );</pre>
         <div class="result"><div class="result-inner"><span class="msg">✓ "tb_pedidos" criada; cd_usuario só aceita ids que existam em tb_usuarios.</span></div></div>
       </div>
+
+      <h3 class="subhead">Criando a tabela "por extenso" com constraints nomeadas</h3>
+      <p class="chapter-intro">Existe uma segunda forma: declarar as colunas "limpas" e, no final do <code class="inline">CREATE TABLE</code>, listar cada constraint separadamente com um <b>nome próprio</b>. Fica mais longo, mas deixa cada regra fácil de identificar, alterar ou remover depois.</p>
+      <div class="console">
+        <div class="bar"><span class="label">criar_tabela_extensa.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">CREATE TABLE</span> tb_pedidos (
+    id_pedido <span class="fn">SERIAL</span>,
+    cd_usuario <span class="fn">INTEGER</span>,
+    vl_total <span class="fn">NUMERIC</span>(<span class="num">10</span>,<span class="num">2</span>),
+    tx_status <span class="fn">VARCHAR</span>(<span class="num">20</span>) <span class="kw">DEFAULT</span> <span class="str">'pendente'</span>,
+    dt_criacao <span class="fn">TIMESTAMP</span> <span class="kw">DEFAULT</span> NOW(),
+
+    <span class="kw">CONSTRAINT</span> pk_tb_pedidos <span class="kw">PRIMARY KEY</span> (id_pedido),
+    <span class="kw">CONSTRAINT</span> fk_tb_pedidos_cd_usuario <span class="kw">FOREIGN KEY</span> (cd_usuario) <span class="kw">REFERENCES</span> tb_usuarios(id_usuario),
+    <span class="kw">CONSTRAINT</span> ck_tb_pedidos_vl_total <span class="kw">CHECK</span> (vl_total &gt;= <span class="num">0</span>),
+    <span class="kw">CONSTRAINT</span> uq_tb_pedidos_cd_usuario_dt <span class="kw">UNIQUE</span> (cd_usuario, dt_criacao)
+);
+
+
     </section>
 
     <!-- CAP DDL DML DCL -->
