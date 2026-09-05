@@ -996,6 +996,16 @@ footer .dot { color: var(--amber); }
     <section class="chapter" id="cap9">
       <div class="chapter-header"><span class="chap-num"></span><h2>ALTER TABLE — mudando a estrutura</h2></div>
       <p class="chapter-intro">Modifica a estrutura de uma tabela já existente, sem precisar recriá-la.</p>
+     
+      <div class="chapter-header"><span class="chap-num"></span><h2>ALTER TABLE — comandos:</h2></div>
+      <div class="console">
+        <pre>ALTER TABLE <span class="kw">ADD COLUMN</span> <span class="fn">Cria uma nova coluna;</span></pre>
+        <pre>ALTER TABLE <span class="kw">DROP COLUMN</span> <span class="fn">Remove uma coluna;</span></pre>
+        <pre>ALTER TABLE <span class="kw">ALTER COLUMN</span> <span class="fn">Modifica/edita uma coluna existe;</span></pre>
+        <pre>ALTER TABLE <span class="kw">RENAME COLUMN</span> <span class="fn">Renomeia uma coluna;</span></pre>
+        <pre>ALTER TABLE <span class="kw">ADD CONSTRAINT</span> <span class="fn">Adiciona uma nova regra (Unique, CHECK, FK, PK etc..); </span></pre>
+      </div>
+     
       <div class="console">
         <div class="bar"><span class="label">alter.sql</span><button class="run-btn">▶ Executar</button></div>
         <pre><span class="kw">ALTER TABLE</span> tb_usuario <span class="kw">ADD COLUMN</span>    tx_telefone <span class="fn">VARCHAR</span>(<span class="num">20</span>);
@@ -1006,14 +1016,7 @@ footer .dot { color: var(--amber); }
         <div class="result"><div class="result-inner"><span class="msg">✓ ALTER TABLE — estrutura atualizada.</span></div></div>
       </div>
 
-  <div class="chapter-header"><span class="chap-num"></span><h2>ALTER TABLE — comandos:</h2></div>
-      <div class="console">
-        <pre>ALTER TABLE <span class="kw">ADD COLUMN</span> <span class="fn">Cria uma nova coluna;</span></pre>
-        <pre>ALTER TABLE <span class="kw">DROP COLUMN</span> <span class="fn">Remove uma coluna;</span></pre>
-        <pre>ALTER TABLE <span class="kw">ALTER COLUMN</span> <span class="fn">Modifica/edita uma coluna existe;</span></pre>
-        <pre>ALTER TABLE <span class="kw">RENAME COLUMN</span> <span class="fn">Renomeia uma coluna;</span></pre>
-        <pre>ALTER TABLE <span class="kw">ADD CONSTRAINT</span> <span class="fn">Adiciona uma nova regra (Unique, CHECK, FK, PK etc..); </span></pre>
-      </div>
+  
 
     </section>
 
