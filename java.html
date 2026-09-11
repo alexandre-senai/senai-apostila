@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Java do Zero — Guia Interativo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0d1117;
+  --bg-panel: #161b22;
+  --bg-panel-alt: #1c2230;
+  --bg-card: #161b22;
+  --border: #21293a;
+  --border-mid: #2d3748;
+  --text: #e2e8f0;
+  --text-muted: #718096;
+  --text-subtle: #4a5568;
+  --cyan: #f0954d;
+  --cyan-dim: rgba(240,149,77,.12);
+  --amber: #f6ad55;
+  --amber-dim: rgba(246,173,85,.12);
+  --green: #68d391;
+  --green-dim: rgba(104,211,145,.12);
+  --red: #fc8181;
+  --red-dim: rgba(252,129,129,.12);
+  --blue: #63b3ed;
+  --blue-dim: rgba(99,179,237,.12);
+  --purple: #b794f4;
+  --purple-dim: rgba(183,148,244,.12);
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --sidebar-w: 256px;
+  --header-h: 56px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 15px; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  line-height: 1.65;
+  min-height: 100vh;
+}
+a { color: var(--cyan); text-decoration: none; }
+a:hover { text-decoration: underline; }
+::selection { background: var(--cyan); color: #170d04; }
+
+/* ── TOP NAV BAR ── */
+#topbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+  height: var(--header-h);
+  background: rgba(13,17,23,.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; padding: 0 20px; gap: 16px;
+}
+#topbar .brand {
+  font-family: var(--font-mono); font-weight: 600; font-size: .9rem;
+  color: var(--cyan); display: flex; align-items: center; gap: 8px; white-space: nowrap;
+}
+#topbar .brand .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--amber); box-shadow: 0 0 6px var(--amber);
+  animation: blink 1.8s ease-in-out infinite;
+}
+@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:.2;} }
+#topbar .search-wrap {
+  flex: 1; max-width: 420px; margin-left: auto; position: relative;
+}
+#topbar .search-wrap input {
+  width: 100%; background: var(--bg-panel-alt); border: 1px solid var(--border-mid);
+  color: var(--text); font-family: var(--font-body); font-size: .85rem;
+  padding: 7px 12px 7px 34px; border-radius: var(--radius);
+  outline: none; transition: border-color .15s;
+}
+#topbar .search-wrap input:focus { border-color: var(--cyan); }
+#topbar .search-wrap input::placeholder { color: var(--text-subtle); }
+#topbar .search-wrap .ico {
+  position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+  color: var(--text-subtle); font-size: .85rem; pointer-events: none;
+}
+#progress {
+  position: fixed; top: var(--header-h); left: 0; height: 2px; width: 0%;
+  background: linear-gradient(90deg, var(--cyan), var(--blue));
+  z-index: 300; transition: width .08s linear;
+}
+
+/* ── LAYOUT ── */
+.layout {
+  display: grid;
+  grid-template-columns: var(--sidebar-w) 1fr;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding-top: var(--header-h);
+  min-height: 100vh;
+}
+@media (max-width: 900px) {
+  .layout { grid-template-columns: 1fr; }
+  nav.sidebar { display: none; }
+}
+
+/* ── SIDEBAR ── */
+nav.sidebar {
+  position: sticky; top: var(--header-h); height: calc(100vh - var(--header-h));
+  overflow-y: auto; border-right: 1px solid var(--border);
+  padding: 20px 0;
+  scrollbar-width: thin; scrollbar-color: var(--border-mid) transparent;
+}
+.sidebar-section-label {
+  font-family: var(--font-mono); font-size: .62rem; font-weight: 600;
+  color: var(--text-subtle); text-transform: uppercase; letter-spacing: .1em;
+  padding: 14px 18px 4px; display: flex; align-items: center; gap: 8px;
+}
+.sidebar-section-label::before {
+  content: ""; flex: 1; height: 1px; background: var(--border);
+}
+nav.sidebar ol { list-style: none; }
+nav.sidebar li { position: relative; }
+nav.sidebar a {
+  display: flex; align-items: center; gap: 10px;
+  font-size: .8rem; color: var(--text-muted); text-decoration: none;
+  padding: 5px 18px; border-left: 2px solid transparent;
+  transition: all .12s ease; line-height: 1.35;
+}
+nav.sidebar a .n {
+  font-family: var(--font-mono); font-size: .65rem; color: var(--border-mid);
+  min-width: 22px; flex-shrink: 0;
+}
+nav.sidebar a:hover { color: var(--text); background: var(--cyan-dim); }
+nav.sidebar a.active {
+  color: var(--cyan); border-left-color: var(--cyan);
+  background: var(--cyan-dim);
+}
+nav.sidebar a.active .n { color: var(--cyan); }
+
+/* ── MAIN CONTENT ── */
+main { padding: 0 52px 120px; min-width: 0; max-width: 880px; }
+@media (max-width: 900px) { main { padding: 0 20px 80px; } }
+
+/* ── HERO ── */
+.hero {
+  padding: 72px 0 60px;
+  border-bottom: 1px solid var(--border);
+}
+.hero .eyebrow {
+  font-family: var(--font-mono); font-size: .75rem; color: var(--amber);
+  letter-spacing: .12em; text-transform: uppercase;
+  display: flex; align-items: center; gap: 8px; margin-bottom: 20px;
+}
+.hero .eyebrow::before { content: "›"; color: var(--cyan); }
+.hero h1 {
+  font-family: var(--font-display); font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 700; line-height: 1.1; letter-spacing: -.02em; margin-bottom: 16px;
+}
+.hero h1 em { color: var(--cyan); font-style: normal; }
+.hero .lead {
+  color: var(--text-muted); font-size: 1rem; max-width: 540px; margin-bottom: 36px; line-height: 1.75;
+}
+.hero-console {
+  background: var(--bg-panel); border: 1px solid var(--border-mid);
+  border-radius: var(--radius-lg); max-width: 600px;
+  box-shadow: 0 16px 48px rgba(0,0,0,.45); overflow: hidden;
+}
+.hero-console .bar {
+  display: flex; align-items: center; gap: 6px;
+  padding: 10px 14px; border-bottom: 1px solid var(--border);
+  background: var(--bg-panel-alt);
+}
+.hero-console .bar .dot-r { width:10px;height:10px;border-radius:50%;background:#fc8181; }
+.hero-console .bar .dot-y { width:10px;height:10px;border-radius:50%;background:#f6ad55; }
+.hero-console .bar .dot-g { width:10px;height:10px;border-radius:50%;background:#68d391; }
+.hero-console .bar .title {
+  margin-left: 8px; font-family: var(--font-mono); font-size: .72rem; color: var(--text-subtle);
+}
+.hero-console .body {
+  padding: 18px 20px; font-family: var(--font-mono); font-size: .88rem; min-height: 120px;
+}
+.hero-console .body .line { color: var(--text-muted); margin-bottom: 4px; }
+#typed { color: var(--text); }
+.cursor { display:inline-block;width:7px;height:1.1em;background:var(--cyan);animation:blink .9s infinite;margin-left:2px;vertical-align:text-bottom; }
+.hero-console .body .out { color: var(--green); white-space: pre; margin-top:8px; }
+
+/* ── CHAPTER SECTIONS ── */
+main { counter-reset: chapnum; }
+section.chapter {
+  padding: 60px 0 8px;
+  border-top: 1px solid var(--border);
+  scroll-margin-top: calc(var(--header-h) + 24px);
+  counter-increment: chapnum;
+}
+section.chapter:first-of-type { border-top: none; }
+
+.chapter-header {
+  display: flex; align-items: flex-start; gap: 16px;
+  margin-bottom: 14px;
+}
+.chap-num {
+  font-family: var(--font-mono); font-size: .68rem; font-weight: 600;
+  color: var(--cyan); background: var(--cyan-dim); border: 1px solid rgba(240,149,77,.25);
+  padding: 4px 10px; border-radius: 5px; flex-shrink: 0; margin-top: 7px;
+  min-width: 46px; text-align: center;
+}
+.chap-num::before { content: counter(chapnum, decimal-leading-zero); }
+.chapter-header h2 {
+  font-family: var(--font-display); font-size: 1.7rem; font-weight: 600; line-height: 1.2;
+}
+.chapter-intro {
+  color: var(--text-muted); font-size: .95rem; max-width: 700px;
+  margin-bottom: 24px; line-height: 1.8;
+}
+.chapter-intro b, .chapter-intro strong { color: var(--text); }
+
+/* ── SUBHEADINGS ── */
+h3.subhead {
+  font-family: var(--font-display); font-size: 1rem; font-weight: 600;
+  margin: 32px 0 10px; color: var(--text); display: flex; align-items: center; gap: 8px;
+}
+h3.subhead::before {
+  content: ""; display: inline-block; width: 3px; height: 14px;
+  background: var(--cyan); border-radius: 2px; flex-shrink: 0;
+}
+h4.micro-head {
+  font-family: var(--font-mono); font-size: .78rem; color: var(--amber);
+  text-transform: uppercase; letter-spacing: .07em;
+  margin: 24px 0 8px; display: flex; align-items: center; gap: 8px;
+}
+h4.micro-head::before { content: "→"; color: var(--cyan); }
+
+/* ── CARDS ── */
+.grid { display: grid; gap: 12px; margin: 20px 0; }
+.grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+@media (max-width: 720px) {
+  .grid.cols-2, .grid.cols-3, .grid.cols-4 { grid-template-columns: 1fr; }
+}
+.card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 18px;
+  transition: border-color .15s, transform .15s;
+}
+.card:hover { border-color: var(--border-mid); transform: translateY(-2px); }
+.card h3 {
+  font-family: var(--font-display); font-size: .95rem; font-weight: 600;
+  margin-bottom: 6px; display: flex; align-items: center; gap: 8px;
+}
+.card p { color: var(--text-muted); font-size: .85rem; line-height: 1.6; }
+.card code { font-family: var(--font-mono); color: var(--amber); font-size: .82em; }
+
+/* ── TAGS ── */
+.tag {
+  font-family: var(--font-mono); font-size: .6rem; padding: 2px 8px;
+  border-radius: 20px; display: inline-block; margin-bottom: 8px;
+  letter-spacing: .06em; font-weight: 600; text-transform: uppercase;
+}
+.tag.ddl { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(99,179,237,.2); }
+.tag.dml { background: var(--green-dim); color: var(--green); border: 1px solid rgba(104,211,145,.2); }
+.tag.dcl { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(183,148,244,.2); }
+.tag.tcl { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(246,173,85,.2); }
+
+/* ── CONSOLE ── */
+.console {
+  background: var(--bg-panel); border: 1px solid var(--border-mid);
+  border-radius: var(--radius-lg); margin: 16px 0; overflow: hidden;
+}
+.console .bar {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 8px 14px; border-bottom: 1px solid var(--border);
+  background: var(--bg-panel-alt);
+}
+.console .bar .label {
+  font-family: var(--font-mono); font-size: .7rem; color: var(--text-subtle);
+  letter-spacing: .04em;
+}
+.console .bar button {
+  font-family: var(--font-mono); font-size: .7rem; color: #170d04;
+  background: var(--cyan); border: none; padding: 4px 12px;
+  border-radius: 5px; cursor: pointer; font-weight: 700;
+  transition: background .12s; white-space: nowrap;
+}
+.console .bar button:hover { background: #f7ad6f; }
+.console pre {
+  padding: 16px 18px; overflow-x: auto; font-family: var(--font-mono);
+  font-size: .84rem; line-height: 1.75; tab-size: 4;
+}
+.console pre .kw { color: var(--blue); font-weight: 600; }
+.console pre .fn { color: var(--amber); }
+.console pre .str { color: var(--green); }
+.console pre .cmt { color: var(--text-subtle); font-style: italic; }
+.console pre .num { color: var(--purple); }
+.console .result {
+  max-height: 0; overflow: hidden; transition: max-height .3s ease;
+  border-top: 1px solid transparent;
+}
+.console .result.open { max-height: 320px; border-top: 1px solid var(--border); }
+.console .result-inner { padding: 12px 18px; font-family: var(--font-mono); font-size: .8rem; }
+.console .result .msg { color: var(--green); font-weight: 600; }
+
+/* ── TYPES TABLE ── */
+.types-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: .88rem; }
+.types-table th {
+  text-align: left; padding: 9px 14px; border-bottom: 2px solid var(--border-mid);
+  font-family: var(--font-mono); color: var(--cyan); font-size: .72rem;
+  text-transform: uppercase; letter-spacing: .07em;
+}
+.types-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.types-table tr:hover td { background: var(--bg-panel); }
+.types-table code { font-family: var(--font-mono); color: var(--amber); font-size: .83rem; }
+.types-table td.desc { color: var(--text-muted); }
+
+/* ── STEPS ── */
+.steps { counter-reset: stepn; list-style: none; margin: 16px 0; }
+.steps li {
+  counter-increment: stepn; padding: 6px 0 6px 40px; position: relative;
+  color: var(--text-muted); font-size: .9rem; line-height: 1.6;
+}
+.steps li::before {
+  content: counter(stepn); position: absolute; left: 0; top: 7px;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--bg-panel-alt); border: 1px solid var(--cyan);
+  color: var(--cyan); font-family: var(--font-mono); font-size: .7rem;
+  display: flex; align-items: center; justify-content: center;
+}
+.steps li b { color: var(--text); }
+
+/* ── INLINE CODE ── */
+code.inline {
+  font-family: var(--font-mono); background: var(--bg-panel-alt);
+  color: var(--amber); padding: 1px 6px; border-radius: 4px; font-size: .82em;
+}
+
+/* ── NOTE ── */
+.note {
+  display: flex; gap: 12px;
+  background: var(--bg-panel); border-left: 3px solid var(--cyan);
+  border-radius: 0 var(--radius) var(--radius) 0;
+  padding: 12px 16px; margin: 16px 0; font-size: .88rem; color: var(--text-muted);
+}
+.note b { color: var(--text); }
+.note.warn { border-left-color: var(--amber); }
+.note.danger { border-left-color: var(--red); }
+.note.warn code.inline { background: var(--amber-dim); color: var(--amber); }
+
+/* ── SEARCH HIGHLIGHT ── */
+mark.search-match {
+  background: rgba(246,173,85,.35); color: var(--text);
+  border-radius: 2px; padding: 0 2px;
+}
+
+/* ── FOOTER ── */
+footer {
+  text-align: center; padding: 56px 20px 40px; color: var(--text-subtle);
+  font-size: .8rem; border-top: 1px solid var(--border);
+  margin-top: 48px; font-family: var(--font-mono);
+}
+footer .dot { color: var(--amber); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+  html { scroll-behavior: auto; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header id="topbar">
+  <div class="brand"><span class="dot"></span>java://guia</div>
+  <div class="search-wrap">
+    <span class="ico">⌕</span>
+    <input type="text" id="searchInput" placeholder="Buscar no guia…" autocomplete="off" spellcheck="false">
+  </div>
+</header>
+
+<div id="progress"></div>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <nav class="sidebar" aria-label="Sumário">
+    <div class="sidebar-section-label">Fundamentos</div>
+    <ol>
+      <li><a href="#cap1" data-nav><span class="n">01</span>O que é Java</a></li>
+      <li><a href="#cap2" data-nav><span class="n">02</span>Variáveis e tipos de dados</a></li>
+      <li><a href="#cap3" data-nav><span class="n">03</span>Operadores</a></li>
+      <li><a href="#cap4" data-nav><span class="n">04</span>Estruturas condicionais</a></li>
+      <li><a href="#cap5" data-nav><span class="n">05</span>Estruturas de repetição</a></li>
+      <li><a href="#cap6" data-nav><span class="n">06</span>Arrays</a></li>
+    </ol>
+    <div class="sidebar-section-label">Orientação a objetos</div>
+    <ol>
+      <li><a href="#cap7" data-nav><span class="n">07</span>Classes e objetos</a></li>
+      <li><a href="#cap8" data-nav><span class="n">08</span>Atributos</a></li>
+      <li><a href="#cap9" data-nav><span class="n">09</span>Métodos</a></li>
+      <li><a href="#cap10" data-nav><span class="n">10</span>Construtores</a></li>
+      <li><a href="#cap-modificadores" data-nav><span class="n">11</span>Modificadores de acesso</a></li>
+    </ol>
+    <div class="sidebar-section-label">Herança e polimorfismo</div>
+    <ol>
+      <li><a href="#cap11" data-nav><span class="n">12</span>Herança</a></li>
+      <li><a href="#cap12" data-nav><span class="n">13</span>Override</a></li>
+      <li><a href="#cap13" data-nav><span class="n">14</span>Polimorfismo</a></li>
+    </ol>
+    <div class="sidebar-section-label">Contratos</div>
+    <ol>
+      <li><a href="#cap14" data-nav><span class="n">15</span>Interfaces</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <!-- HERO -->
+    <section class="hero">
+      <div class="eyebrow">guia interativo · Java</div>
+      <h1>Aprenda Java <em>na ordem certa de estudo</em></h1>
+      <p class="lead">Da sintaxe básica até interfaces — cada capítulo traz a explicação e um console para você ver o código rodando de verdade, na sequência que você precisa estudar primeiro.</p>
+      <div class="hero-console">
+        <div class="bar">
+          <span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span>
+          <span class="title">java — guia interativo</span>
+        </div>
+        <div class="body">
+          <div class="line">// bem-vindo(a). isto é uma simulação visual.</div>
+          <div id="typed"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CAP 1 -->
+    <section class="chapter" id="cap1">
+      <div class="chapter-header"><span class="chap-num"></span><h2>O que é Java?</h2></div>
+      <p class="chapter-intro"><b>Java</b> é uma linguagem orientada a objetos, fortemente tipada e compilada para uma máquina virtual — a <b>JVM</b> (Java Virtual Machine). O código-fonte não roda direto no sistema operacional: primeiro é compilado em <i>bytecode</i>, e a JVM interpreta esse bytecode em qualquer plataforma que a tenha instalada.</p>
+      <div class="grid cols-3">
+        <div class="card"><h3>📝 .java</h3><p>Código-fonte que você escreve, com extensão <code>.java</code>.</p></div>
+        <div class="card"><h3>⚙️ javac</h3><p>O compilador transforma o código em <i>bytecode</i> (<code>.class</code>).</p></div>
+        <div class="card"><h3>☕ JVM</h3><p>A máquina virtual executa o bytecode em qualquer sistema operacional.</p></div>
+      </div>
+      <div class="note"><span>💡</span><div><b>"Write once, run anywhere":</b> o mesmo arquivo .class compilado no Windows roda sem alteração em Linux ou macOS, desde que haja uma JVM instalada.</div></div>
+      <h3 class="subhead">Seu primeiro programa</h3>
+      <p style="color:var(--text-muted); font-size:.9rem; max-width:700px; margin-bottom:8px;">Todo programa Java precisa de uma classe com um método <code class="inline">main</code> — é o ponto de entrada que a JVM procura para começar a execução.</p>
+      <div class="console">
+        <div class="bar"><span class="label">Main.java</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">public class</span> Main {
+    <span class="kw">public static</span> <span class="fn">void</span> main(<span class="fn">String</span>[] args) {
+        System.out.println(<span class="str">"Olá, mundo!"</span>);
+    }
+}</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ javac Main.java &amp;&amp; java Main → Olá, mundo!</span></div></div>
+      </div>
+    </section>
+
+    <!-- CAP 2 -->
+    <section class="chapter" id="cap2">
+      <div class="chapter-header"><span class="chap-num"></span><h2>Variáveis e tipos de dados</h2></div>
+      <p class="chapter-intro">Java é <b>fortemente tipada</b>: toda variável precisa de um tipo declarado, e esse tipo não muda depois. Os tipos se dividem em <b>primitivos</b> (valores simples, guardados diretamente) e <b>referência</b> (objetos, guardados como um endereço de memória).</p>
+      <table class="types-table">
+        <thead><tr><th>Tipo</th><th>Uso</th></tr></thead>
+        <tbody>
+          <tr><td><code>int</code></td><td class="desc">Números inteiros de 32 bits. Ex.: <code>int idade = 28;</code></td></tr>
+          <tr><td><code>long</code></td><td class="desc">Inteiros grandes de 64 bits. Ex.: <code>long populacao = 8000000000L;</code></td></tr>
+          <tr><td><code>double</code></td><td class="desc">Números decimais de 64 bits. Ex.: <code>double preco = 19.90;</code></td></tr>
+          <tr><td><code>boolean</code></td><td class="desc">Verdadeiro ou falso. Ex.: <code>boolean ativo = true;</code></td></tr>
+          <tr><td><code>char</code></td><td class="desc">Um único caractere. Ex.: <code>char letra = 'A';</code></td></tr>
+          <tr><td><code>String</code></td><td class="desc">Tipo de referência para texto. Ex.: <code>String nome = "Ana";</code></td></tr>
+        </tbody>
+      </table>
+      <div class="console">
+        <div class="bar"><span class="label">Variaveis.java</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="fn">String</span> nome = <span class="str">"Ana Silva"</span>;   <span class="cmt">// referência</span>
+<span class="fn">int</span> idade = <span class="num">28</span>;               <span class="cmt">// primitivo</span>
+<span class="fn">double</span> salario = <span class="num">3500.50</span>;
+<span class="fn">boolean</span> ativo = <span class="kw">true</span>;
+
+System.out.println(nome + <span class="str">" tem "</span> + idade + <span class="str">" anos."</span>);</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ Ana Silva tem 28 anos.</span></div></div>
+      </div>
+      <div class="note"><span>💡</span><div>Desde o Java 10 existe <code class="inline">var</code>, que infere o tipo automaticamente: <code class="inline">var idade = 28;</code> continua sendo <code class="inline">int</code> por trás dos panos — só a escrita fica mais curta.</div></div>
+    </section>
+
+    <!-- CAP 3 -->
+    <section class="chapter" id="cap3">
+      <div class="chapter-header"><span class="chap-num"></span><h2>Operadores</h2></div>
+      <p class="chapter-intro">Operadores combinam valores e variáveis para produzir um resultado — aritmético, comparativo ou lógico.</p>
+      <div class="grid cols-4">
+        <div class="card"><h3>➕ Aritméticos</h3><p><code>+ - * / %</code> — soma, subtração, multiplicação, divisão e resto.</p></div>
+        <div class="card"><h3>⚖️ Relacionais</h3><p><code>== != &gt; &lt;</code> — comparam dois valores e retornam <code>boolean</code>.</p></div>
+        <div class="card"><h3>🔗 Lógicos</h3><p><code>&amp;&amp; || !</code> — combinam condições booleanas.</p></div>
+        <div class="card"><h3>✍️ Atribuição</h3><p><code>= += -= *=</code> — atribuem e atualizam valores.</p></div>
+      </div>
+      <div class="console">
+        <div class="bar"><span class="label">Operadores.java</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="fn">int</span> a = <span class="num">10</span>, b = <span class="num">3</span>;
+
+System.out.println(a % b);          <span class="cmt">// resto da divisão</span>
+System.out.println(a &gt; b &amp;&amp; b &gt; <span class="num">0</span>); <span class="cmt">// AND lógico</span>
+System.out.println(a == <span class="num">10</span>);        <span class="cmt">// comparação</span></pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ 1 · true · true</span></div></div>
+      </div>
+      <div class="note warn"><span>⚠️</span><div>Não confunda <code class="inline">=</code> (atribuição) com <code class="inline">==</code> (comparação). Para comparar o <i>conteúdo</i> de objetos como <code class="inline">String</code>, use <code class="inline">.equals()</code> em vez de <code class="inline">==</code>, que compara referências de memória.</div></div>
+    </section>
+
+    <!-- CAP 4 -->
+    <section class="chapter" id="cap4">
+      <div class="chapter-header"><span class="chap-num"></span><h2>Estruturas condicionais</h2></div>
+      <p class="chapter-intro">Permitem que o programa tome decisões, executando blocos de código diferentes de acordo com uma condição.</p>
+      <div class="console">
+        <div class="bar"><span class="label">Condicionais.java</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="fn">int</span> idade = <span class="num">17</span>;
+
+<span class="kw">if</span> (idade &gt;= <span class="num">18</span>) {
+    System.out.println(<span class="str">"Maior de idade"</span>);
+} <span class="kw">else if</span> (idade &gt;= <span class="num">12</span>) {
+    System.out.println(<span class="str">"Adolescente"</span>);
+} <span class="kw">else</span> {
+    System.out.println(<span class="str">"Criança"</span>);
+}</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ Adolescente</span></div></div>
+      </div>
+      <h3 class="subhead">switch</h3>
+      <p style="color:var(--text-muted); font-size:.9rem; max-width:700px; margin-bottom:8px;">Útil quando há várias comparações do mesmo valor contra opções fixas.</p>
+      <div class="console">
+        <div class="bar"><span class="label">Switch.java</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="fn">int</span> dia = <span class="num">3</span>;
+<span class="fn">String</span> nome = <span class="kw">switch</span> (dia) {
+    <span class="kw">case</span> <span class="num">1</span> -&gt; <span class="str">"Domingo"</span>;
+    <span class="kw">case</span> <span class="num">2</span> -&gt; <span class="str">"Segunda"</span>;
+    <span class="kw">case</span> <span class="num">3</span> -&gt; <span class="str">"Terça"</span>;
+    <span class="kw">default</span> -&gt; <span class="str">"Dia inválido"</span>;
+};
+System.out.println(nome);</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ Terça</span></div></div>
+      </div>
+    </section>
+
+    <!-- CAP 5 -->
+    <section class="chapter" id="cap5">
+      <div class="chapter-header"><span class="chap-num"></span><h2>Estruturas de repetição</h2></div>
+      <p class="chapter-intro">Repetem um bloco de código enquanto uma condição for verdadeira — evitam duplicar código manualmente.</p>
+      <div class="grid cols-3">
+        <div class="card"><h3>for</h3><p>Quando o número de repetições já é conhecido.</p></div>
+        <div class="card"><h3>while</h3><p>Quando a condição é testada antes de cada repetição.</p></div>
+        <div class="card"><h3>do-while</h3><p>Quando o bloco precisa rodar ao menos uma vez.</p></div>
+      </div>
+      <div class="console">
+        <div class="bar"><span class="label">Repeticao.java</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">for</span> (<span class="fn">int</span> i = <span class="num">1</span>; i &lt;= <span class="num">5</span>; i++) {
+    System.out.println(<span class="str">"Contagem: "</span> + i);
+}
+
+<span class="fn">int</span> contador = <span class="num">0</span>;
+<span class="kw">while</span> (contador &lt; <span class="num">3</span>) {
+    System.out.println(<span class="str">"while: "</span> + contador);
+    contador++;
+}</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ Contagem: 1…5 · while: 0, 1, 2</span></div></div>
+      </div>
+    </section>
+
+    <!-- CAP 6 -->
+    <section class="chapter" id="cap6">
+      <div class="chapter-header"><span class="chap-num"></span><h2>Arrays</h2></div>
+      <p class="chapter-intro">Um <b>array</b> guarda vários valores do mesmo tipo em posições sequenciais, acessadas por índice — o primeiro elemento está sempre na posição <code class="inline">0</code>.</p>
+      <div class="console">
+        <div class="bar"><span class="label">Arrays.java</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="fn">int</span>[] notas = {<span class="num">8</span>, <span class="num">6</span>, <span class="num">9</span>, <span class="num">10</span>, <span class="num">7</span>};
+
+<span class="kw">for</span> (<span class="fn">int</span> i = <span class="num">0</span>; i &lt; notas.length; i++) {
+    System.out.println(<span class="str">"Nota "</span> + i + <span class="str">": "</span> + notas[i]);
+}
+
+<span class="cmt">// percorrendo com for-each</span>
+<span class="kw">for</span> (<span class="fn">int</span> nota : notas) {
+    System.out.println(nota);
+}</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ Nota 0: 8 … Nota 4: 7</span></div></div>
+      </div>
+      <div class="note"><span>💡</span><div>O tamanho de um array é fixo depois de criado. Para uma coleção que cresce dinamicamente, Java oferece <code class="inline">ArrayList</code>, do pacote <code class="inline">java.util</code>.</div></div>
+    </section>
+
+    <!-- CAP 7 -->
+    <section class="chapter" id="cap7">
+      <div class="chapter-header"><span class="chap-num"></span><h2>Classes e objetos</h2></div>
+      <p class="chapter-intro">Até aqui, tudo rodou dentro de um único método. A <b>Orientação a Objetos</b> organiza o código em torno de <b>classes</b> — moldes que descrevem características (atributos) e comportamentos (métodos) — e <b>objetos</b>, instâncias concretas criadas a partir desse molde.</p>
+      <div class="grid cols-2">
+        <div class="card"><h3>🧩 Classe</h3><p>O molde/planta. Ex.: a classe <code>Carro</code> descreve o que todo carro tem.</p></div>
+        <div class="card"><h3>🚗 Objeto</h3><p>Uma instância real. Ex.: <code>meuCarro</code>, criado a partir de <code>Carro</code>.</p></div>
+      </div>
+      <div class="console">
+        <div class="bar"><span class="label">Carro.java</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">public class</span> Carro {
+    <span class="fn">String</span> modelo;
+    <span class="fn">int</span> ano;
+}
+
+<span class="kw">public class</span> Main {
+    <span class="kw">public static</span> <span class="fn">void</span> main(<span class="fn">String</span>[] args) {
+        Carro meuCarro = <span class="kw">new</span> Carro();  <span class="cmt">// criando um objeto</span>
+        meuCarro.modelo = <span class="str">"Civic"</span>;
+        meuCarro.ano = <span class="num">2024</span>;
+
+        System.out.println(meuCarro.modelo + <span class="str">" - "</span> + meuCarro.ano);
+    }
+}</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ Civic - 2024</span></div></div>
+      </div>
+      <div class="note"><span>💡</span><div><b>Analogia:</b> a classe é a planta de uma casa; o objeto é cada casa construída a partir dela. Você pode construir várias casas (objetos) diferentes a partir da mesma planta (classe).</div></div>
+    </section>
+
+    <!-- CAP 8 -->
+    <section class="chapter" id="cap8">
+      <div class="chapter-header"><span class="chap-num"></span><h2>Atributos</h2></div>
+      <p class="chapter-intro"><b>Atributos</b> (ou campos) são as variáveis declaradas dentro de uma classe — representam o <i>estado</i> de cada objeto. Cada objeto tem sua própria cópia dos atributos.</p>
+      <div class="console">
+        <div class="bar"><span class="label">Pessoa.java</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">public class</span> Pessoa {
+    <span class="kw">private</span> <span class="fn">String</span> nome;   <span class="cmt">// atributo</span>
+    <span class="kw">private</span> <span class="fn">int</span> idade;     <span class="cmt">// atributo</span>
+
+    <span class="kw">public</span> <span class="fn">String</span> getNome() { <span class="kw">return</span> nome; }
+    <span class="kw">public</span> <span class="fn">void</span> setNome(<span class="fn">String</span> nome) { <span class="kw">this</span>.nome = nome; }
+}</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ classe "Pessoa" com 2 atributos privados</span></div></div>
+      </div>
+      <h3 class="subhead">Encapsulamento</h3>
+      <p style="color:var(--text-muted); font-size:.9rem; max-width:700px; margin-bottom:8px;">É boa prática declarar atributos como <code class="inline">private</code>, expondo o acesso apenas por métodos públicos (<code class="inline">get</code>/<code class="inline">set</code>) — isso protege o estado interno do objeto contra alterações indevidas de fora da classe. O capítulo 11 detalha todos os modificadores de acesso.</p>
+    </section>
+
+    <!-- CAP 9 -->
+    <section class="chapter" id="cap9">
+      <div class="chapter-header"><span class="chap-num"></span><h2>Métodos</h2></div>
+      <p class="chapter-intro"><b>Métodos</b> são os comportamentos da classe — blocos de código que operam sobre os atributos do objeto. Recebem um nome, podem receber parâmetros e podem devolver um valor (ou <code class="inline">void</code>, quando não devolvem nada).</p>
+      <div class="console">
+        <div class="bar"><span class="label">ContaBancaria.java</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">public class</span> ContaBancaria {
+    <span class="kw">private</span> <span class="fn">double</span> saldo;
+
+    <span class="kw">public</span> <span class="fn">void</span> depositar(<span class="fn">double</span> valor) {   <span class="cmt">// método void</span>
+        saldo += valor;
+    }
+
+    <span class="kw">public</span> <span class="fn">boolean</span> sacar(<span class="fn">double</span> valor) {    <span class="cmt">// com retorno</span>
+        <span class="kw">if</span> (valor &gt; saldo) <span class="kw">return</span> <span class="kw">false</span>;
+        saldo -= valor;
+        <span class="kw">return</span> <span class="kw">true</span>;
+    }
+}</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ depositar() e sacar() alteram o estado interno de "saldo"</span></div></div>
+      </div>
+      <ol class="steps">
+        <li><b>Assinatura</b> — tipo de retorno + nome + parâmetros.</li>
+        <li><b>Parâmetros</b> — valores recebidos entre parênteses.</li>
+        <li><b>Corpo</b> — lógica executada quando o método é chamado.</li>
+        <li><b>Retorno</b> — <code>return</code> devolve um valor ao chamador.</li>
+      </ol>
+    </section>
+
+    <!-- CAP 10 -->
+    <section class="chapter" id="cap10">
+      <div class="chapter-header"><span class="chap-num"></span><h2>Construtores</h2></div>
+      <p class="chapter-intro">Um <b>construtor</b> é um método especial, chamado automaticamente quando um objeto é criado com <code class="inline">new</code>. Serve para inicializar os atributos logo na criação do objeto. Tem o mesmo nome da classe e não tem tipo de retorno.</p>
+      <div class="console">
+        <div class="bar"><span class="label">Pessoa.java</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">public class</span> Pessoa {
+    <span class="kw">private</span> <span class="fn">String</span> nome;
+    <span class="kw">private</span> <span class="fn">int</span> idade;
+
+    <span class="kw">public</span> Pessoa(<span class="fn">String</span> nome, <span class="fn">int</span> idade) {  <span class="cmt">// construtor</span>
+        <span class="kw">this</span>.nome = nome;
+        <span class="kw">this</span>.idade = idade;
+    }
+}
+
+<span class="cmt">// uso:</span>
+Pessoa p = <span class="kw">new</span> Pessoa(<span class="str">"Ana"</span>, <span class="num">28</span>);</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ objeto "p" já nasce com nome e idade preenchidos</span></div></div>
+      </div>
+      <div class="note"><span>💡</span><div>Se você não escrever nenhum construtor, Java gera um <b>construtor padrão</b> (sem parâmetros) automaticamente. Assim que você declara qualquer construtor próprio, esse padrão deixa de existir.</div></div>
+    </section>
+
+    <!-- CAP MODIFICADORES -->
+    <section class="chapter" id="cap-modificadores">
+      <div class="chapter-header"><span class="chap-num"></span><h2>Modificadores de acesso</h2></div>
+      <p class="chapter-intro"><b>Modificadores de acesso</b> controlam de onde uma classe, atributo, método ou construtor pode ser enxergado e usado. Eles são a base do <b>encapsulamento</b>: decidem o que fica exposto como "interface pública" e o que fica escondido como detalhe interno da classe.</p>
+
+      <table class="types-table">
+        <thead><tr><th>Modificador</th><th>Visibilidade</th></tr></thead>
+        <tbody>
+          <tr><td><code>private</code></td><td class="desc">Só dentro da própria classe. O nível mais restrito.</td></tr>
+          <tr><td><i>default</i> (nenhum)</td><td class="desc">Classe e qualquer outra classe do mesmo pacote — também chamado de <i>package-private</i>.</td></tr>
+          <tr><td><code>protected</code></td><td class="desc">Classe, mesmo pacote e subclasses (mesmo em outro pacote).</td></tr>
+          <tr><td><code>public</code></td><td class="desc">Acessível de qualquer lugar. O nível mais aberto.</td></tr>
+        </tbody>
+      </table>
+
+      <div class="console">
+        <div class="bar"><span class="label">ContaBancaria.java</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">public class</span> ContaBancaria {
+    <span class="kw">private</span> <span class="fn">double</span> saldo;              <span class="cmt">// só a própria classe acessa</span>
+
+    <span class="kw">public</span> ContaBancaria(<span class="fn">double</span> saldoInicial) {  <span class="cmt">// construtor público</span>
+        <span class="kw">this</span>.saldo = saldoInicial;
+    }
+
+    <span class="kw">public</span> <span class="fn">double</span> getSaldo() {         <span class="cmt">// método público — "porta de entrada"</span>
+        <span class="kw">return</span> saldo;
+    }
+
+    <span class="kw">private</span> <span class="fn">boolean</span> saldoSuficiente(<span class="fn">double</span> valor) {  <span class="cmt">// detalhe interno</span>
+        <span class="kw">return</span> valor &lt;= saldo;
+    }
+}</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ saldo e saldoSuficiente() ficam escondidos; getSaldo() e o construtor são a porta de entrada da classe</span></div></div>
+      </div>
+
+      <h3 class="subhead">Onde cada modificador se aplica</h3>
+      <div class="grid cols-2">
+        <div class="card"><h3>Classes</h3><p>Uma classe de nível mais alto só pode ser <code>public</code> ou <i>default</i> — nunca <code>private</code> ou <code>protected</code>.</p></div>
+        <div class="card"><h3>Atributos, métodos e construtores</h3><p>Podem usar os quatro níveis: <code>private</code>, <i>default</i>, <code>protected</code> ou <code>public</code>.</p></div>
+      </div>
+
+      <div class="note"><span>💡</span><div><b>Regra prática:</b> comece restringindo tudo com <code class="inline">private</code> e só abra o acesso (<code class="inline">protected</code> ou <code class="inline">public</code>) quando outra classe realmente precisar usar aquilo. É mais fácil abrir depois do que fechar um acesso que já está sendo usado em vários lugares.</div></div>
+
+      <div class="note warn"><span>⚠️</span><div><code class="inline">protected</code> só faz diferença real para <b>herança</b>: fora do pacote, apenas subclasses enxergam o membro. É por isso que atributos pensados para serem herdados — como o <code class="inline">nome</code> em <code class="inline">Animal</code> do próximo capítulo — costumam usar <code class="inline">protected</code> em vez de <code class="inline">private</code>.</div></div>
+    </section>
+
+    <!-- CAP 11 -->
+    <section class="chapter" id="cap11">
+      <div class="chapter-header"><span class="chap-num"></span><h2>Herança</h2></div>
+      <p class="chapter-intro"><b>Herança</b> permite que uma classe (subclasse) reaproveite atributos e métodos de outra (superclasse), usando a palavra-chave <code class="inline">extends</code>. Representa uma relação "é um" — um <code class="inline">Cachorro</code> <i>é um</i> <code class="inline">Animal</code>.</p>
+      <div class="console">
+        <div class="bar"><span class="label">Heranca.java</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">public class</span> Animal {
+    <span class="kw">protected</span> <span class="fn">String</span> nome;
+
+    <span class="kw">public</span> Animal(<span class="fn">String</span> nome) { <span class="kw">this</span>.nome = nome; }
+
+    <span class="kw">public</span> <span class="fn">void</span> emitirSom() {
+        System.out.println(nome + <span class="str">" faz um som."</span>);
+    }
+}
+
+<span class="kw">public class</span> Cachorro <span class="kw">extends</span> Animal {   <span class="cmt">// herda de Animal</span>
+    <span class="kw">public</span> Cachorro(<span class="fn">String</span> nome) {
+        <span class="kw">super</span>(nome);                     <span class="cmt">// construtor da superclasse</span>
+    }
+}
+
+Cachorro rex = <span class="kw">new</span> Cachorro(<span class="str">"Rex"</span>);
+rex.emitirSom();</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ Rex faz um som.</span></div></div>
+      </div>
+      <div class="note"><span>💡</span><div><code class="inline">super(...)</code> chama o construtor da superclasse; <code class="inline">super.metodo()</code> chama a versão do método definida na superclasse, mesmo que a subclasse a tenha sobrescrito.</div></div>
+      <div class="note warn"><span>⚠️</span><div>Java só permite <b>herança simples</b> de classes — uma classe só pode ter um <code class="inline">extends</code>. Para reaproveitar comportamento de várias fontes, use interfaces (capítulo 14).</div></div>
+    </section>
+
+    <!-- CAP 12 -->
+    <section class="chapter" id="cap12">
+      <div class="chapter-header"><span class="chap-num"></span><h2>Override (sobrescrita de métodos)</h2></div>
+      <p class="chapter-intro"><b>Override</b> acontece quando uma subclasse redefine um método herdado da superclasse, dando a ele um comportamento próprio — mantendo a mesma assinatura (nome, parâmetros e tipo de retorno).</p>
+      <div class="console">
+        <div class="bar"><span class="label">Override.java</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">public class</span> Animal {
+    <span class="kw">public</span> <span class="fn">void</span> emitirSom() {
+        System.out.println(<span class="str">"Som genérico de animal."</span>);
+    }
+}
+
+<span class="kw">public class</span> Gato <span class="kw">extends</span> Animal {
+    <span class="cmt">@Override</span>
+    <span class="kw">public</span> <span class="fn">void</span> emitirSom() {          <span class="cmt">// sobrescreve</span>
+        System.out.println(<span class="str">"Miau!"</span>);
+    }
+}</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ Gato.emitirSom() substitui a versão de Animal</span></div></div>
+      </div>
+      <h3 class="subhead">Override × Overload (sobrecarga)</h3>
+      <table class="types-table">
+        <thead><tr><th></th><th>Override</th><th>Overload</th></tr></thead>
+        <tbody>
+          <tr><td class="desc">Onde ocorre</td><td class="desc">Entre superclasse e subclasse</td><td class="desc">Na mesma classe</td></tr>
+          <tr><td class="desc">Assinatura</td><td class="desc">Idêntica à do método original</td><td class="desc">Mesmo nome, parâmetros diferentes</td></tr>
+          <tr><td class="desc">Objetivo</td><td class="desc">Mudar o comportamento herdado</td><td class="desc">Oferecer variações do mesmo método</td></tr>
+        </tbody>
+      </table>
+      <div class="note"><span>💡</span><div>A anotação <code class="inline">@Override</code> não é obrigatória, mas é boa prática: o compilador avisa se você errou a assinatura e acabou criando um método novo em vez de sobrescrever o existente.</div></div>
+    </section>
+
+    <!-- CAP 13 -->
+    <section class="chapter" id="cap13">
+      <div class="chapter-header"><span class="chap-num"></span><h2>Polimorfismo</h2></div>
+      <p class="chapter-intro"><b>Polimorfismo</b> ("muitas formas") é a capacidade de tratar objetos de subclasses diferentes através de uma referência do tipo da superclasse — e cada um responder à mesma chamada de método com seu próprio comportamento, graças ao override.</p>
+      <div class="console">
+        <div class="bar"><span class="label">Polimorfismo.java</span><button class="run-btn">▶ Executar</button></div>
+        <pre>Animal[] animais = {
+    <span class="kw">new</span> Cachorro(<span class="str">"Rex"</span>),
+    <span class="kw">new</span> Gato(),
+};
+
+<span class="kw">for</span> (Animal a : animais) {
+    a.emitirSom();   <span class="cmt">// cada objeto executa a SUA versão</span>
+}</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ Rex faz um som. · Miau!</span></div></div>
+      </div>
+      <div class="note"><span>💡</span><div><b>Analogia:</b> um controle remoto "ligar" funciona para TV, ar-condicionado ou som — mesmo comando, comportamento diferente em cada aparelho. É exatamente isso que o polimorfismo faz com <code class="inline">a.emitirSom()</code>.</div></div>
+      <p style="color:var(--text-muted); font-size:.9rem; max-width:700px; margin-top:8px;">Esse é o polimorfismo <b>em tempo de execução</b>: a JVM decide, ao rodar, qual versão sobrescrita do método chamar, com base no tipo real do objeto — não no tipo da variável.</p>
+    </section>
+
+    <!-- CAP 14 -->
+    <section class="chapter" id="cap14">
+      <div class="chapter-header"><span class="chap-num"></span><h2>Interfaces</h2></div>
+      <p class="chapter-intro">Uma <b>interface</b> define um <i>contrato</i>: uma lista de métodos que qualquer classe que a implemente é obrigada a fornecer, sem impor como esses métodos são implementados. Diferente da herança, uma classe pode implementar <b>várias</b> interfaces.</p>
+      <div class="console">
+        <div class="bar"><span class="label">Voador.java</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">public interface</span> Voador {
+    <span class="fn">void</span> voar();   <span class="cmt">// sem corpo — apenas o contrato</span>
+}
+
+<span class="kw">public class</span> Passaro <span class="kw">implements</span> Voador {
+    <span class="cmt">@Override</span>
+    <span class="kw">public</span> <span class="fn">void</span> voar() {
+        System.out.println(<span class="str">"O pássaro está voando."</span>);
+    }
+}
+
+<span class="kw">public class</span> Aviao <span class="kw">implements</span> Voador {
+    <span class="cmt">@Override</span>
+    <span class="kw">public</span> <span class="fn">void</span> voar() {
+        System.out.println(<span class="str">"O avião decolou."</span>);
+    }
+}</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ Passaro e Aviao cumprem o contrato "Voador", cada um a sua maneira</span></div></div>
+      </div>
+      <h3 class="subhead">Herança × Interface</h3>
+      <table class="types-table">
+        <thead><tr><th></th><th>Herança (extends)</th><th>Interface (implements)</th></tr></thead>
+        <tbody>
+          <tr><td class="desc">Quantas por classe</td><td class="desc">Apenas uma</td><td class="desc">Quantas forem necessárias</td></tr>
+          <tr><td class="desc">O que compartilha</td><td class="desc">Atributos e implementação</td><td class="desc">Apenas o contrato (assinaturas)</td></tr>
+          <tr><td class="desc">Relação típica</td><td class="desc">"é um" (Cachorro é um Animal)</td><td class="desc">"é capaz de" (Passaro é capaz de Voar)</td></tr>
+        </tbody>
+      </table>
+      <div class="note"><span>💡</span><div>Interfaces dão o polimorfismo mais flexível em Java: um método pode receber um parâmetro do tipo <code class="inline">Voador</code> e funcionar com qualquer classe que implemente essa interface — <code class="inline">Passaro</code>, <code class="inline">Aviao</code> ou uma futura <code class="inline">Drone</code>.</div></div>
+      <div class="note warn"><span>⚠️</span><div>Desde o Java 8, interfaces podem ter métodos <code class="inline">default</code> com corpo, mas isso não muda sua função principal: definir um contrato que várias classes, não relacionadas por herança, podem cumprir.</div></div>
+    </section>
+
+    <footer>fim do guia <span class="dot">●</span> continue praticando escrevendo suas próprias classes</footer>
+  </main>
+</div>
+
+<script>
+// ── TYPING ANIMATION ──
+const typedEl = document.getElementById('typed');
+const typedText = "System.out.println(\"Aprendendo Java!\");";
+let ti = 0;
+function typeLoop() {
+  if (ti <= typedText.length) {
+    typedEl.innerHTML = typedText.slice(0, ti) + '<span class="cursor">&nbsp;</span>';
+    ti++;
+    setTimeout(typeLoop, 55);
+  } else {
+    setTimeout(() => {
+      typedEl.innerHTML = typedText + '<div class="out">Aprendendo Java!</div>';
+    }, 400);
+  }
+}
+typeLoop();
+
+// ── PROGRESS BAR ──
+const bar = document.getElementById('progress');
+window.addEventListener('scroll', () => {
+  const h = document.documentElement;
+  bar.style.width = (h.scrollTop / (h.scrollHeight - h.clientHeight) * 100) + '%';
+});
+
+// ── SCROLLSPY ──
+const navLinks = document.querySelectorAll('nav.sidebar a[data-nav]');
+const sections = document.querySelectorAll('section.chapter');
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navLinks.forEach(a => a.classList.remove('active'));
+      const link = document.querySelector('nav.sidebar a[href="#' + e.target.id + '"]');
+      if (link) {
+        link.classList.add('active');
+        link.scrollIntoView({ block: 'nearest' });
+      }
+    }
+  });
+}, { rootMargin: '-10% 0px -72% 0px' });
+sections.forEach(s => io.observe(s));
+
+// ── RUN BUTTONS ──
+document.querySelectorAll('.run-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const result = btn.closest('.console').querySelector('.result');
+    const isOpen = result.classList.contains('open');
+    result.classList.toggle('open');
+    btn.textContent = isOpen ? '▶ Executar' : '↺ Fechar';
+  });
+});
+
+// ── SEARCH ──
+const searchInput = document.getElementById('searchInput');
+let searchMarks = [];
+
+function clearSearch() {
+  searchMarks.forEach(el => {
+    const parent = el.parentNode;
+    if (parent) {
+      parent.replaceChild(document.createTextNode(el.textContent), el);
+      parent.normalize();
+    }
+  });
+  searchMarks = [];
+}
+
+function highlightText(node, term) {
+  if (node.nodeType === 3) {
+    const idx = node.textContent.toLowerCase().indexOf(term);
+    if (idx === -1) return;
+    const mark = document.createElement('mark');
+    mark.className = 'search-match';
+    const before  = document.createTextNode(node.textContent.slice(0, idx));
+    const matched = document.createTextNode(node.textContent.slice(idx, idx + term.length));
+    const after   = document.createTextNode(node.textContent.slice(idx + term.length));
+    mark.appendChild(matched);
+    const parent = node.parentNode;
+    parent.insertBefore(before, node);
+    parent.insertBefore(mark, node);
+    parent.insertBefore(after, node);
+    parent.removeChild(node);
+    searchMarks.push(mark);
+  } else if (node.nodeType === 1 && !['SCRIPT','STYLE','MARK'].includes(node.tagName)) {
+    Array.from(node.childNodes).forEach(child => highlightText(child, term));
+  }
+}
+
+searchInput.addEventListener('input', () => {
+  clearSearch();
+  const term = searchInput.value.trim().toLowerCase();
+  if (term.length < 2) return;
+  highlightText(document.querySelector('main'), term);
+  if (searchMarks.length > 0) {
+    searchMarks[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+});
+searchInput.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { searchInput.value = ''; clearSearch(); }
+});
+</script>
+</body>
+</html>
