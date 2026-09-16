@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR"> 
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -254,17 +254,6 @@ h4.micro-head::before { content: "→"; color: var(--cyan); }
 .card p { color: var(--text-muted); font-size: .85rem; line-height: 1.6; }
 .card code { font-family: var(--font-mono); color: var(--amber); font-size: .82em; }
 
-/* ── TAGS ── */
-.tag {
-  font-family: var(--font-mono); font-size: .6rem; padding: 2px 8px;
-  border-radius: 20px; display: inline-block; margin-bottom: 8px;
-  letter-spacing: .06em; font-weight: 600; text-transform: uppercase;
-}
-.tag.ddl { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(99,179,237,.2); }
-.tag.dml { background: var(--green-dim); color: var(--green); border: 1px solid rgba(104,211,145,.2); }
-.tag.dcl { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(183,148,244,.2); }
-.tag.tcl { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(246,173,85,.2); }
-
 /* ── CONSOLE ── */
 .console {
   background: var(--bg-panel); border: 1px solid var(--border-mid);
@@ -354,6 +343,98 @@ mark.search-match {
   border-radius: 2px; padding: 0 2px;
 }
 
+/* ── ANALOGY BOX ── */
+.analogy {
+  display: flex; gap: 14px; align-items: flex-start;
+  background: var(--purple-dim); border: 1px solid rgba(183,148,244,.2);
+  border-radius: var(--radius); padding: 14px 16px;
+  margin: 16px 0; font-size: .88rem; color: var(--text-muted);
+}
+.analogy .icon { font-size: 1.4rem; flex-shrink: 0; }
+.analogy b { color: var(--purple); }
+
+/* ── FLOW DIAGRAM ── */
+.flow {
+  display: flex; align-items: center; gap: 0; margin: 20px 0; flex-wrap: wrap;
+}
+.flow-step {
+  background: var(--bg-panel); border: 1px solid var(--border-mid);
+  border-radius: var(--radius); padding: 10px 16px; text-align: center;
+  font-family: var(--font-mono); font-size: .78rem; color: var(--text);
+  flex: 1; min-width: 100px;
+}
+.flow-step .label { color: var(--cyan); font-weight: 600; font-size: .85rem; display: block; margin-bottom: 2px; }
+.flow-step .sub { color: var(--text-muted); font-size: .68rem; }
+.flow-arrow {
+  color: var(--cyan); font-size: 1.2rem; padding: 0 4px; flex-shrink: 0;
+}
+
+/* ── ACTIVITIES SECTION ── */
+section.chapter.activities {
+  counter-increment: none;
+}
+section.chapter.activities .chap-num::before { content: "✎"; }
+section.chapter.activities .chapter-header h2 { color: var(--green); }
+
+.activity {
+  background: var(--bg-panel); border: 1px solid var(--border-mid);
+  border-radius: var(--radius-lg); margin: 20px 0; overflow: hidden;
+}
+.activity-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px; border-bottom: 1px solid var(--border);
+  background: var(--bg-panel-alt);
+}
+.activity-num {
+  font-family: var(--font-mono); font-size: .65rem; color: var(--green);
+  background: var(--green-dim); border: 1px solid rgba(104,211,145,.2);
+  padding: 2px 8px; border-radius: 4px; font-weight: 600;
+}
+.activity-title {
+  font-family: var(--font-display); font-size: .95rem; font-weight: 600;
+  color: var(--text); margin: 0 12px; flex: 1;
+}
+.activity-tag {
+  font-family: var(--font-mono); font-size: .6rem; padding: 2px 8px;
+  border-radius: 20px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em;
+}
+.activity-tag.easy { background: var(--green-dim); color: var(--green); border: 1px solid rgba(104,211,145,.2); }
+.activity-tag.medium { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(246,173,85,.2); }
+.activity-tag.hard { background: var(--red-dim); color: var(--red); border: 1px solid rgba(252,129,129,.2); }
+
+.activity-body { padding: 18px 18px 4px; }
+.activity-body p { color: var(--text-muted); font-size: .9rem; line-height: 1.7; margin-bottom: 14px; }
+.activity-body p strong { color: var(--text); }
+
+.activity-answer {
+  margin: 0; padding: 0;
+  border-top: 1px solid var(--border);
+}
+.activity-answer-toggle {
+  width: 100%; background: none; border: none; cursor: pointer;
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 18px; color: var(--cyan);
+  font-family: var(--font-mono); font-size: .78rem; font-weight: 600;
+  transition: background .12s; text-align: left;
+}
+.activity-answer-toggle:hover { background: var(--cyan-dim); }
+.activity-answer-toggle .arrow { transition: transform .2s; display: inline-block; }
+.activity-answer-toggle.open .arrow { transform: rotate(90deg); }
+
+.activity-answer-body {
+  max-height: 0; overflow: hidden; transition: max-height .35s ease;
+}
+.activity-answer-body.open { max-height: 1200px; }
+.activity-answer-body .inner {
+  padding: 4px 0 16px;
+  border-top: 1px dashed var(--border-mid);
+  margin: 0 18px;
+}
+.activity-answer-body .inner p {
+  color: var(--text-muted); font-size: .88rem; line-height: 1.7; margin: 12px 0 8px;
+}
+.activity-answer-body .inner p strong { color: var(--green); }
+
 /* ── FOOTER ── */
 footer {
   text-align: center; padding: 56px 20px 40px; color: var(--text-subtle);
@@ -387,10 +468,10 @@ footer .dot { color: var(--amber); }
     <div class="sidebar-section-label">Fundamentos</div>
     <ol>
       <li><a href="#cap1" data-nav><span class="n">01</span>O que é Java</a></li>
-      <li><a href="#cap2" data-nav><span class="n">02</span>Variáveis e tipos de dados</a></li>
+      <li><a href="#cap2" data-nav><span class="n">02</span>Variáveis e tipos</a></li>
       <li><a href="#cap3" data-nav><span class="n">03</span>Operadores</a></li>
-      <li><a href="#cap4" data-nav><span class="n">04</span>Estruturas condicionais</a></li>
-      <li><a href="#cap5" data-nav><span class="n">05</span>Estruturas de repetição</a></li>
+      <li><a href="#cap4" data-nav><span class="n">04</span>Condicionais</a></li>
+      <li><a href="#cap5" data-nav><span class="n">05</span>Repetição</a></li>
       <li><a href="#cap6" data-nav><span class="n">06</span>Arrays</a></li>
     </ol>
     <div class="sidebar-section-label">Orientação a objetos</div>
@@ -411,6 +492,10 @@ footer .dot { color: var(--amber); }
     <ol>
       <li><a href="#cap14" data-nav><span class="n">15</span>Interfaces</a></li>
     </ol>
+    <div class="sidebar-section-label">Prática</div>
+    <ol>
+      <li><a href="#atividades" data-nav><span class="n">✎</span>Atividades</a></li>
+    </ol>
   </nav>
 
   <main>
@@ -418,7 +503,7 @@ footer .dot { color: var(--amber); }
     <section class="hero">
       <div class="eyebrow">guia interativo · Java</div>
       <h1>Aprenda <em>Java</em></h1>
-      <p class="lead">Da sintaxe básica até interfaces — cada capítulo traz a explicação e um console para você ver o código rodando de verdade, na sequência que você precisa estudar primeiro.</p>
+      <p class="lead">Da sintaxe básica até interfaces — cada capítulo traz a explicação, uma analogia do mundo real e um console para ver o código funcionando. No final, há atividades com respostas para você testar o que aprendeu.</p>
       <div class="hero-console">
         <div class="bar">
           <span class="dot-r"></span><span class="dot-y"></span><span class="dot-g"></span>
@@ -434,102 +519,138 @@ footer .dot { color: var(--amber); }
     <!-- CAP 1 -->
     <section class="chapter" id="cap1">
       <div class="chapter-header"><span class="chap-num"></span><h2>O que é Java?</h2></div>
-      <p class="chapter-intro"><b>Java</b> é uma linguagem orientada a objetos, fortemente tipada e compilada para uma máquina virtual — a <b>JVM</b> (Java Virtual Machine). O código-fonte não roda direto no sistema operacional: primeiro é compilado em <i>bytecode</i>, e a JVM interpreta esse bytecode em qualquer plataforma que a tenha instalada.</p>
-      <div class="grid cols-3">
-        <div class="card"><h3>📝 .java</h3><p>Código-fonte que você escreve, com extensão <code>.java</code>.</p></div>
-        <div class="card"><h3>⚙️ javac</h3><p>O compilador transforma o código em <i>bytecode</i> (<code>.class</code>).</p></div>
-        <div class="card"><h3>☕ JVM</h3><p>A máquina virtual executa o bytecode em qualquer sistema operacional.</p></div>
+      <p class="chapter-intro"><b>Java</b> é uma linguagem orientada a objetos, fortemente tipada e compilada para uma máquina virtual — a <b>JVM</b> (Java Virtual Machine). O código-fonte não roda direto no sistema operacional: primeiro é compilado em <i>bytecode</i>, e a JVM interpreta esse bytecode em qualquer plataforma.</p>
+
+      <div class="analogy">
+        <div class="icon">🏭</div>
+        <div><b>Analogia:</b> pense no seu código <code>.java</code> como uma receita escrita em português. O compilador (<code>javac</code>) traduz para uma "língua universal" (bytecode). A JVM é o cozinheiro que sabe executar essa língua universal em qualquer cozinha — Windows, Linux ou macOS.</div>
       </div>
-      <div class="note"><span>💡</span><div><b>"Write once, run anywhere":</b> o mesmo arquivo .class compilado no Windows roda sem alteração em Linux ou macOS, desde que haja uma JVM instalada.</div></div>
+
+      <h3 class="subhead">Como o código vira programa</h3>
+      <div class="flow">
+        <div class="flow-step"><span class="label">.java</span><span class="sub">você escreve</span></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><span class="label">javac</span><span class="sub">compilador</span></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><span class="label">.class</span><span class="sub">bytecode</span></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><span class="label">JVM</span><span class="sub">executa</span></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step"><span class="label">Resultado</span><span class="sub">na tela</span></div>
+      </div>
+
+      <div class="note"><span>💡</span><div><b>"Write once, run anywhere":</b> o mesmo arquivo <code class="inline">.class</code> compilado no Windows roda sem alteração em Linux ou macOS, desde que haja uma JVM instalada. Esse é um dos grandes diferenciais do Java.</div></div>
+
       <h3 class="subhead">Seu primeiro programa</h3>
-      <p style="color:var(--text-muted); font-size:.9rem; max-width:700px; margin-bottom:8px;">Todo programa Java precisa de uma classe com um método <code class="inline">main</code> — é o ponto de entrada que a JVM procura para começar a execução.</p>
+      <p style="color:var(--text-muted); font-size:.9rem; max-width:700px; margin-bottom:8px;">Todo programa Java precisa de uma <b>classe</b> com um método <code class="inline">main</code> — é o ponto de entrada que a JVM procura para começar a execução. Pense no <code class="inline">main</code> como a porta da frente do seu programa.</p>
       <div class="console">
         <div class="bar"><span class="label">Main.java</span><button class="run-btn">▶ Executar</button></div>
-        <pre><span class="kw">public class</span> Main {
-    <span class="kw">public static</span> <span class="fn">void</span> main(<span class="fn">String</span>[] args) {
-        System.out.println(<span class="str">"Olá, mundo!"</span>);
+        <pre><span class="kw">public class</span> Main {                          <span class="cmt">// nome da classe = nome do arquivo</span>
+    <span class="kw">public static</span> <span class="fn">void</span> main(<span class="fn">String</span>[] args) {  <span class="cmt">// ponto de entrada da JVM</span>
+        System.out.println(<span class="str">"Olá, mundo!"</span>);   <span class="cmt">// imprime na tela</span>
     }
 }</pre>
-        <div class="result"><div class="result-inner"><span class="msg">✓ javac Main.java &amp;&amp; java Main → Olá, mundo!</span></div></div>
+        <div class="result"><div class="result-inner"><span class="msg">✓ Olá, mundo!</span></div></div>
       </div>
+      <div class="note warn"><span>⚠️</span><div>O nome da classe <b>deve</b> ser idêntico ao nome do arquivo. Se a classe se chama <code class="inline">Main</code>, o arquivo deve se chamar <code class="inline">Main.java</code> — Java diferencia maiúsculas de minúsculas.</div></div>
     </section>
 
     <!-- CAP 2 -->
     <section class="chapter" id="cap2">
       <div class="chapter-header"><span class="chap-num"></span><h2>Variáveis e tipos de dados</h2></div>
-      <p class="chapter-intro">Java é <b>fortemente tipada</b>: toda variável precisa de um tipo declarado, e esse tipo não muda depois. Os tipos se dividem em <b>primitivos</b> (valores simples, guardados diretamente) e <b>referência</b> (objetos, guardados como um endereço de memória).</p>
+      <p class="chapter-intro">Uma <b>variável</b> é um espaço nomeado na memória para guardar um valor. Em Java, toda variável precisa de um <b>tipo</b> declarado — isso se chama <b>tipagem forte</b>. Os tipos se dividem em <b>primitivos</b> (valores simples guardados diretamente) e <b>referência</b> (objetos guardados como endereço de memória).</p>
+
+      <div class="analogy">
+        <div class="icon">📦</div>
+        <div><b>Analogia:</b> uma variável é como uma caixa rotulada. O tipo define o <i>tamanho</i> e o que pode guardar — uma caixa de <b>int</b> só aceita números inteiros, uma de <b>String</b> só aceita texto. Uma vez definido o tipo, não muda.</div>
+      </div>
+
+      <h3 class="subhead">Tipos mais usados</h3>
       <table class="types-table">
-        <thead><tr><th>Tipo</th><th>Uso</th></tr></thead>
+        <thead><tr><th>Tipo</th><th>O que guarda</th><th>Exemplo</th></tr></thead>
         <tbody>
-          <tr><td><code>int</code></td><td class="desc">Números inteiros de 32 bits. Ex.: <code>int idade = 28;</code></td></tr>
-          <tr><td><code>long</code></td><td class="desc">Inteiros grandes de 64 bits. Ex.: <code>long populacao = 8000000000L;</code></td></tr>
-          <tr><td><code>double</code></td><td class="desc">Números decimais de 64 bits. Ex.: <code>double preco = 19.90;</code></td></tr>
-          <tr><td><code>boolean</code></td><td class="desc">Verdadeiro ou falso. Ex.: <code>boolean ativo = true;</code></td></tr>
-          <tr><td><code>char</code></td><td class="desc">Um único caractere. Ex.: <code>char letra = 'A';</code></td></tr>
-          <tr><td><code>String</code></td><td class="desc">Tipo de referência para texto. Ex.: <code>String nome = "Ana";</code></td></tr>
+          <tr><td><code>int</code></td><td class="desc">Números inteiros (32 bits)</td><td class="desc"><code>int idade = 28;</code></td></tr>
+          <tr><td><code>long</code></td><td class="desc">Inteiros grandes (64 bits)</td><td class="desc"><code>long populacao = 8_000_000_000L;</code></td></tr>
+          <tr><td><code>double</code></td><td class="desc">Números decimais (64 bits)</td><td class="desc"><code>double preco = 19.90;</code></td></tr>
+          <tr><td><code>boolean</code></td><td class="desc">Verdadeiro ou falso</td><td class="desc"><code>boolean ativo = true;</code></td></tr>
+          <tr><td><code>char</code></td><td class="desc">Um único caractere</td><td class="desc"><code>char letra = 'A';</code></td></tr>
+          <tr><td><code>String</code></td><td class="desc">Texto (tipo de referência)</td><td class="desc"><code>String nome = "Ana";</code></td></tr>
         </tbody>
       </table>
+
       <div class="console">
         <div class="bar"><span class="label">Variaveis.java</span><button class="run-btn">▶ Executar</button></div>
-        <pre><span class="fn">String</span> nome = <span class="str">"Ana Silva"</span>;   <span class="cmt">// referência</span>
-<span class="fn">int</span> idade = <span class="num">28</span>;               <span class="cmt">// primitivo</span>
-<span class="fn">double</span> salario = <span class="num">3500.50</span>;
-<span class="fn">boolean</span> ativo = <span class="kw">true</span>;
+        <pre><span class="fn">String</span> nome    = <span class="str">"Ana Silva"</span>;   <span class="cmt">// tipo referência — guarda texto</span>
+<span class="fn">int</span>    idade   = <span class="num">28</span>;             <span class="cmt">// tipo primitivo — número inteiro</span>
+<span class="fn">double</span> salario = <span class="num">3500.50</span>;        <span class="cmt">// número decimal</span>
+<span class="fn">boolean</span> ativo  = <span class="kw">true</span>;           <span class="cmt">// verdadeiro ou falso</span>
 
 System.out.println(nome + <span class="str">" tem "</span> + idade + <span class="str">" anos."</span>);</pre>
         <div class="result"><div class="result-inner"><span class="msg">✓ Ana Silva tem 28 anos.</span></div></div>
       </div>
-      <div class="note"><span>💡</span><div>Desde o Java 10 existe <code class="inline">var</code>, que infere o tipo automaticamente: <code class="inline">var idade = 28;</code> continua sendo <code class="inline">int</code> por trás dos panos — só a escrita fica mais curta.</div></div>
+
+      <div class="note"><span>💡</span><div>Desde o Java 10 existe <code class="inline">var</code>, que infere o tipo automaticamente: <code class="inline">var idade = 28;</code> continua sendo <code class="inline">int</code> por trás dos panos — só a escrita fica mais curta. Use com cuidado: o tipo inferido <b>não muda depois</b>.</div></div>
     </section>
 
     <!-- CAP 3 -->
     <section class="chapter" id="cap3">
       <div class="chapter-header"><span class="chap-num"></span><h2>Operadores</h2></div>
-      <p class="chapter-intro">Operadores combinam valores e variáveis para produzir um resultado — aritmético, comparativo ou lógico.</p>
-      <div class="grid cols-4">
-        <div class="card"><h3>➕ Aritméticos</h3><p><code>+ - * / %</code> — soma, subtração, multiplicação, divisão e resto.</p></div>
-        <div class="card"><h3>⚖️ Relacionais</h3><p><code>== != &gt; &lt;</code> — comparam dois valores e retornam <code>boolean</code>.</p></div>
-        <div class="card"><h3>🔗 Lógicos</h3><p><code>&amp;&amp; || !</code> — combinam condições booleanas.</p></div>
-        <div class="card"><h3>✍️ Atribuição</h3><p><code>= += -= *=</code> — atribuem e atualizam valores.</p></div>
+      <p class="chapter-intro">Operadores combinam valores e variáveis para produzir um resultado — aritmético, comparativo ou lógico. São os "verbos" do código: somam, comparam, decidem.</p>
+
+      <div class="grid cols-2">
+        <div class="card"><h3>➕ Aritméticos</h3><p><code>+  -  *  /  %</code><br>Soma, subtração, multiplicação, divisão e <b>resto da divisão</b>. O <code>%</code> é muito usado para saber se um número é par (<code>n % 2 == 0</code>).</p></div>
+        <div class="card"><h3>⚖️ Relacionais</h3><p><code>==  !=  &gt;  &lt;  &gt;=  &lt;=</code><br>Comparam dois valores e retornam <code>boolean</code>. O resultado é sempre <code>true</code> ou <code>false</code>.</p></div>
+        <div class="card"><h3>🔗 Lógicos</h3><p><code>&amp;&amp;  ||  !</code><br><b>E</b> (ambos verdadeiros), <b>OU</b> (pelo menos um verdadeiro) e <b>NÃO</b> (inverte). Combinam condições booleanas.</p></div>
+        <div class="card"><h3>✍️ Atribuição</h3><p><code>=  +=  -=  *=  /=</code><br>Atribuem e atualizam valores. <code>x += 5</code> é o mesmo que <code>x = x + 5</code> — atalho conveniente.</p></div>
       </div>
+
       <div class="console">
         <div class="bar"><span class="label">Operadores.java</span><button class="run-btn">▶ Executar</button></div>
         <pre><span class="fn">int</span> a = <span class="num">10</span>, b = <span class="num">3</span>;
 
-System.out.println(a % b);          <span class="cmt">// resto da divisão</span>
-System.out.println(a &gt; b &amp;&amp; b &gt; <span class="num">0</span>); <span class="cmt">// AND lógico</span>
-System.out.println(a == <span class="num">10</span>);        <span class="cmt">// comparação</span></pre>
-        <div class="result"><div class="result-inner"><span class="msg">✓ 1 · true · true</span></div></div>
+System.out.println(a % b);           <span class="cmt">// 1  — resto de 10 ÷ 3</span>
+System.out.println(a &gt; b &amp;&amp; b &gt; <span class="num">0</span>); <span class="cmt">// true — ambas as condições são verdadeiras</span>
+System.out.println(a == <span class="num">10</span>);         <span class="cmt">// true — a é igual a 10?</span>
+System.out.println(!(a == <span class="num">10</span>));      <span class="cmt">// false — inverte o resultado</span></pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ 1 · true · true · false</span></div></div>
       </div>
-      <div class="note warn"><span>⚠️</span><div>Não confunda <code class="inline">=</code> (atribuição) com <code class="inline">==</code> (comparação). Para comparar o <i>conteúdo</i> de objetos como <code class="inline">String</code>, use <code class="inline">.equals()</code> em vez de <code class="inline">==</code>, que compara referências de memória.</div></div>
+
+      <div class="note warn"><span>⚠️</span><div>Não confunda <code class="inline">=</code> (atribuição: "recebe o valor") com <code class="inline">==</code> (comparação: "é igual a?"). Para comparar o <i>conteúdo</i> de objetos como <code class="inline">String</code>, use <code class="inline">.equals()</code> em vez de <code class="inline">==</code>, que compara referências de memória.</div></div>
     </section>
 
     <!-- CAP 4 -->
     <section class="chapter" id="cap4">
       <div class="chapter-header"><span class="chap-num"></span><h2>Estruturas condicionais</h2></div>
-      <p class="chapter-intro">Permitem que o programa tome decisões, executando blocos de código diferentes de acordo com uma condição.</p>
+      <p class="chapter-intro">Permitem que o programa tome <b>decisões</b>, executando blocos de código diferentes de acordo com uma condição. Sem elas, o programa só faria sempre a mesma coisa.</p>
+
+      <div class="analogy">
+        <div class="icon">🚦</div>
+        <div><b>Analogia:</b> pense em um semáforo. <b>Se</b> a luz for verde → siga. <b>Se não, se</b> for amarelo → reduza a velocidade. <b>Caso contrário</b> → pare. O <code>if / else if / else</code> funciona exatamente assim.</div>
+      </div>
+
       <div class="console">
         <div class="bar"><span class="label">Condicionais.java</span><button class="run-btn">▶ Executar</button></div>
         <pre><span class="fn">int</span> idade = <span class="num">17</span>;
 
 <span class="kw">if</span> (idade &gt;= <span class="num">18</span>) {
-    System.out.println(<span class="str">"Maior de idade"</span>);
+    System.out.println(<span class="str">"Maior de idade"</span>);   <span class="cmt">// condição verdadeira</span>
 } <span class="kw">else if</span> (idade &gt;= <span class="num">12</span>) {
-    System.out.println(<span class="str">"Adolescente"</span>);
+    System.out.println(<span class="str">"Adolescente"</span>);       <span class="cmt">// ← esta roda (17 &gt;= 12)</span>
 } <span class="kw">else</span> {
     System.out.println(<span class="str">"Criança"</span>);
 }</pre>
         <div class="result"><div class="result-inner"><span class="msg">✓ Adolescente</span></div></div>
       </div>
-      <h3 class="subhead">switch</h3>
-      <p style="color:var(--text-muted); font-size:.9rem; max-width:700px; margin-bottom:8px;">Útil quando há várias comparações do mesmo valor contra opções fixas.</p>
+
+      <h3 class="subhead">switch — múltiplas opções fixas</h3>
+      <p style="color:var(--text-muted); font-size:.9rem; max-width:700px; margin-bottom:8px;">Use <code class="inline">switch</code> quando você compara <i>o mesmo valor</i> contra várias opções conhecidas. É mais legível do que vários <code class="inline">else if</code> em sequência.</p>
       <div class="console">
         <div class="bar"><span class="label">Switch.java</span><button class="run-btn">▶ Executar</button></div>
         <pre><span class="fn">int</span> dia = <span class="num">3</span>;
-<span class="fn">String</span> nome = <span class="kw">switch</span> (dia) {
+<span class="fn">String</span> nome = <span class="kw">switch</span> (dia) {   <span class="cmt">// switch expression (Java 14+)</span>
     <span class="kw">case</span> <span class="num">1</span> -&gt; <span class="str">"Domingo"</span>;
     <span class="kw">case</span> <span class="num">2</span> -&gt; <span class="str">"Segunda"</span>;
-    <span class="kw">case</span> <span class="num">3</span> -&gt; <span class="str">"Terça"</span>;
+    <span class="kw">case</span> <span class="num">3</span> -&gt; <span class="str">"Terça"</span>;        <span class="cmt">// ← dia 3</span>
     <span class="kw">default</span> -&gt; <span class="str">"Dia inválido"</span>;
 };
 System.out.println(nome);</pre>
@@ -540,56 +661,76 @@ System.out.println(nome);</pre>
     <!-- CAP 5 -->
     <section class="chapter" id="cap5">
       <div class="chapter-header"><span class="chap-num"></span><h2>Estruturas de repetição</h2></div>
-      <p class="chapter-intro">Repetem um bloco de código enquanto uma condição for verdadeira — evitam duplicar código manualmente.</p>
+      <p class="chapter-intro">Repetem um bloco de código enquanto uma condição for verdadeira — evitam copiar e colar código manualmente. Java tem três tipos, cada um com seu caso ideal de uso.</p>
+
       <div class="grid cols-3">
-        <div class="card"><h3>for</h3><p>Quando o número de repetições já é conhecido.</p></div>
-        <div class="card"><h3>while</h3><p>Quando a condição é testada antes de cada repetição.</p></div>
-        <div class="card"><h3>do-while</h3><p>Quando o bloco precisa rodar ao menos uma vez.</p></div>
+        <div class="card"><h3>🔁 for</h3><p>Quando você <b>sabe quantas vezes</b> vai repetir. Tem inicialização, condição e incremento na mesma linha.</p></div>
+        <div class="card"><h3>🔄 while</h3><p>Quando você <b>não sabe quantas vezes</b> vai repetir — depende de uma condição que muda durante a execução.</p></div>
+        <div class="card"><h3>⏩ do-while</h3><p>Quando o bloco precisa rodar <b>ao menos uma vez</b> antes de testar a condição.</p></div>
       </div>
+
       <div class="console">
         <div class="bar"><span class="label">Repeticao.java</span><button class="run-btn">▶ Executar</button></div>
-        <pre><span class="kw">for</span> (<span class="fn">int</span> i = <span class="num">1</span>; i &lt;= <span class="num">5</span>; i++) {
+        <pre><span class="cmt">// for: conta de 1 a 5</span>
+<span class="kw">for</span> (<span class="fn">int</span> i = <span class="num">1</span>; i &lt;= <span class="num">5</span>; i++) {
     System.out.println(<span class="str">"Contagem: "</span> + i);
 }
 
+<span class="cmt">// while: roda enquanto a condição for verdadeira</span>
 <span class="fn">int</span> contador = <span class="num">0</span>;
 <span class="kw">while</span> (contador &lt; <span class="num">3</span>) {
     System.out.println(<span class="str">"while: "</span> + contador);
-    contador++;
+    contador++;  <span class="cmt">// incrementa para não ficar em loop infinito!</span>
 }</pre>
-        <div class="result"><div class="result-inner"><span class="msg">✓ Contagem: 1…5 · while: 0, 1, 2</span></div></div>
+        <div class="result"><div class="result-inner"><span class="msg">✓ Contagem: 1, 2, 3, 4, 5 · while: 0, 1, 2</span></div></div>
       </div>
+
+      <div class="note warn"><span>⚠️</span><div>Se a condição do <code class="inline">while</code> nunca se tornar <code class="inline">false</code>, o programa trava em um <b>loop infinito</b>. Sempre certifique-se de que a variável da condição é atualizada dentro do bloco.</div></div>
     </section>
 
     <!-- CAP 6 -->
     <section class="chapter" id="cap6">
       <div class="chapter-header"><span class="chap-num"></span><h2>Arrays</h2></div>
-      <p class="chapter-intro">Um <b>array</b> guarda vários valores do mesmo tipo em posições sequenciais, acessadas por índice — o primeiro elemento está sempre na posição <code class="inline">0</code>.</p>
+      <p class="chapter-intro">Um <b>array</b> guarda vários valores do <b>mesmo tipo</b> em posições sequenciais, acessadas por índice numérico. O primeiro elemento está sempre na posição <code class="inline">0</code>.</p>
+
+      <div class="analogy">
+        <div class="icon">🗃️</div>
+        <div><b>Analogia:</b> um array é como uma gaveta com compartimentos numerados. A gaveta tem tamanho fixo — você define quantos compartimentos quer ao criá-la — e cada compartimento guarda um valor do mesmo tipo.</div>
+      </div>
+
       <div class="console">
         <div class="bar"><span class="label">Arrays.java</span><button class="run-btn">▶ Executar</button></div>
-        <pre><span class="fn">int</span>[] notas = {<span class="num">8</span>, <span class="num">6</span>, <span class="num">9</span>, <span class="num">10</span>, <span class="num">7</span>};
+        <pre><span class="fn">int</span>[] notas = {<span class="num">8</span>, <span class="num">6</span>, <span class="num">9</span>, <span class="num">10</span>, <span class="num">7</span>};   <span class="cmt">// array de 5 inteiros</span>
 
-<span class="kw">for</span> (<span class="fn">int</span> i = <span class="num">0</span>; i &lt; notas.length; i++) {
-    System.out.println(<span class="str">"Nota "</span> + i + <span class="str">": "</span> + notas[i]);
-}
+<span class="cmt">// acesso por índice (começa no 0)</span>
+System.out.println(notas[<span class="num">0</span>]);    <span class="cmt">// 8 — primeiro elemento</span>
+System.out.println(notas[<span class="num">4</span>]);    <span class="cmt">// 7 — último elemento</span>
 
-<span class="cmt">// percorrendo com for-each</span>
+<span class="cmt">// percorrendo todos com for-each (mais limpo)</span>
 <span class="kw">for</span> (<span class="fn">int</span> nota : notas) {
-    System.out.println(nota);
+    System.out.print(nota + <span class="str">" "</span>);
 }</pre>
-        <div class="result"><div class="result-inner"><span class="msg">✓ Nota 0: 8 … Nota 4: 7</span></div></div>
+        <div class="result"><div class="result-inner"><span class="msg">✓ 8 · 7 · 8 6 9 10 7</span></div></div>
       </div>
-      <div class="note"><span>💡</span><div>O tamanho de um array é fixo depois de criado. Para uma coleção que cresce dinamicamente, Java oferece <code class="inline">ArrayList</code>, do pacote <code class="inline">java.util</code>.</div></div>
+
+      <div class="note"><span>💡</span><div>O tamanho de um array é <b>fixo</b> depois de criado. Para uma lista que cresce dinamicamente, Java oferece <code class="inline">ArrayList</code> — estude-o assim que se sentir confortável com arrays.</div></div>
     </section>
 
     <!-- CAP 7 -->
     <section class="chapter" id="cap7">
       <div class="chapter-header"><span class="chap-num"></span><h2>Classes e objetos</h2></div>
-      <p class="chapter-intro">Até aqui, tudo rodou dentro de um único método. A <b>Orientação a Objetos</b> organiza o código em torno de <b>classes</b> — moldes que descrevem características (atributos) e comportamentos (métodos) — e <b>objetos</b>, instâncias concretas criadas a partir desse molde.</p>
-      <div class="grid cols-2">
-        <div class="card"><h3>🧩 Classe</h3><p>O molde/planta. Ex.: a classe <code>Carro</code> descreve o que todo carro tem.</p></div>
-        <div class="card"><h3>🚗 Objeto</h3><p>Uma instância real. Ex.: <code>meuCarro</code>, criado a partir de <code>Carro</code>.</p></div>
+      <p class="chapter-intro">Até aqui, tudo rodou dentro de um único método. A <b>Orientação a Objetos</b> organiza o código em torno de <b>classes</b> (moldes) e <b>objetos</b> (instâncias concretas criadas a partir do molde).</p>
+
+      <div class="analogy">
+        <div class="icon">🏠</div>
+        <div><b>Analogia:</b> a <b>classe</b> é a planta baixa de uma casa — ela descreve como a casa será, mas não é a casa em si. O <b>objeto</b> é cada casa construída a partir dessa planta. Você pode construir várias casas (objetos) a partir da mesma planta (classe), cada uma com cores e tamanhos diferentes.</div>
       </div>
+
+      <div class="grid cols-2">
+        <div class="card"><h3>🧩 Classe</h3><p>O <b>molde</b>. Define atributos (o que o objeto tem) e métodos (o que o objeto faz). Ex.: a classe <code>Carro</code> descreve que todo carro tem <code>modelo</code> e <code>ano</code>.</p></div>
+        <div class="card"><h3>🚗 Objeto</h3><p>A <b>instância real</b> criada com <code>new</code>. Ex.: <code>meuCarro</code> é um objeto da classe <code>Carro</code>, com valores próprios de <code>modelo</code> e <code>ano</code>.</p></div>
+      </div>
+
       <div class="console">
         <div class="bar"><span class="label">Carro.java</span><button class="run-btn">▶ Executar</button></div>
         <pre><span class="kw">public class</span> Carro {
@@ -599,139 +740,183 @@ System.out.println(nome);</pre>
 
 <span class="kw">public class</span> Main {
     <span class="kw">public static</span> <span class="fn">void</span> main(<span class="fn">String</span>[] args) {
-        Carro meuCarro = <span class="kw">new</span> Carro();  <span class="cmt">// criando um objeto</span>
+        Carro meuCarro = <span class="kw">new</span> Carro();   <span class="cmt">// cria um objeto</span>
         meuCarro.modelo = <span class="str">"Civic"</span>;
         meuCarro.ano = <span class="num">2024</span>;
 
+        Carro outroCarro = <span class="kw">new</span> Carro();  <span class="cmt">// outro objeto, independente</span>
+        outroCarro.modelo = <span class="str">"Gol"</span>;
+        outroCarro.ano = <span class="num">2020</span>;
+
         System.out.println(meuCarro.modelo + <span class="str">" - "</span> + meuCarro.ano);
+        System.out.println(outroCarro.modelo + <span class="str">" - "</span> + outroCarro.ano);
     }
 }</pre>
-        <div class="result"><div class="result-inner"><span class="msg">✓ Civic - 2024</span></div></div>
+        <div class="result"><div class="result-inner"><span class="msg">✓ Civic - 2024 · Gol - 2020</span></div></div>
       </div>
-      <div class="note"><span>💡</span><div><b>Analogia:</b> a classe é a planta de uma casa; o objeto é cada casa construída a partir dela. Você pode construir várias casas (objetos) diferentes a partir da mesma planta (classe).</div></div>
     </section>
 
     <!-- CAP 8 -->
     <section class="chapter" id="cap8">
       <div class="chapter-header"><span class="chap-num"></span><h2>Atributos</h2></div>
-      <p class="chapter-intro"><b>Atributos</b> (ou campos) são as variáveis declaradas dentro de uma classe — representam o <i>estado</i> de cada objeto. Cada objeto tem sua própria cópia dos atributos.</p>
+      <p class="chapter-intro"><b>Atributos</b> (ou campos) são as variáveis declaradas dentro de uma classe — representam o <i>estado</i> do objeto. Cada objeto tem sua própria cópia dos atributos, independente dos outros objetos da mesma classe.</p>
+
       <div class="console">
         <div class="bar"><span class="label">Pessoa.java</span><button class="run-btn">▶ Executar</button></div>
         <pre><span class="kw">public class</span> Pessoa {
-    <span class="kw">private</span> <span class="fn">String</span> nome;   <span class="cmt">// atributo</span>
-    <span class="kw">private</span> <span class="fn">int</span> idade;     <span class="cmt">// atributo</span>
+    <span class="kw">private</span> <span class="fn">String</span> nome;    <span class="cmt">// atributo privado</span>
+    <span class="kw">private</span> <span class="fn">int</span> idade;      <span class="cmt">// atributo privado</span>
 
+    <span class="cmt">// getter: lê o valor do atributo</span>
     <span class="kw">public</span> <span class="fn">String</span> getNome() { <span class="kw">return</span> nome; }
+
+    <span class="cmt">// setter: define ou atualiza o valor</span>
     <span class="kw">public</span> <span class="fn">void</span> setNome(<span class="fn">String</span> nome) { <span class="kw">this</span>.nome = nome; }
+    <span class="kw">public</span> <span class="fn">void</span> setIdade(<span class="fn">int</span> idade) { <span class="kw">this</span>.idade = idade; }
 }</pre>
-        <div class="result"><div class="result-inner"><span class="msg">✓ classe "Pessoa" com 2 atributos privados</span></div></div>
+        <div class="result"><div class="result-inner"><span class="msg">✓ atributos privados protegidos por getters e setters</span></div></div>
       </div>
+
       <h3 class="subhead">Encapsulamento</h3>
-      <p style="color:var(--text-muted); font-size:.9rem; max-width:700px; margin-bottom:8px;">É boa prática declarar atributos como <code class="inline">private</code>, expondo o acesso apenas por métodos públicos (<code class="inline">get</code>/<code class="inline">set</code>) — isso protege o estado interno do objeto contra alterações indevidas de fora da classe. O capítulo 11 detalha todos os modificadores de acesso.</p>
+      <p style="color:var(--text-muted); font-size:.9rem; max-width:700px; margin-bottom:12px;">Declare atributos como <code class="inline">private</code> e exponha o acesso somente por métodos <code class="inline">get</code>/<code class="inline">set</code>. Isso protege o estado interno do objeto e permite validar os dados antes de aceitá-los.</p>
+
+      <div class="analogy">
+        <div class="icon">🔒</div>
+        <div><b>Por que encapsular?</b> Se <code>idade</code> fosse público, alguém poderia fazer <code>pessoa.idade = -5</code>. Com um setter, você pode verificar: <em>"se valor &lt; 0, recuse"</em> — o objeto controla sua própria integridade.</div>
+      </div>
     </section>
 
     <!-- CAP 9 -->
     <section class="chapter" id="cap9">
       <div class="chapter-header"><span class="chap-num"></span><h2>Métodos</h2></div>
-      <p class="chapter-intro"><b>Métodos</b> são os comportamentos da classe — blocos de código que operam sobre os atributos do objeto. Recebem um nome, podem receber parâmetros e podem devolver um valor (ou <code class="inline">void</code>, quando não devolvem nada).</p>
+      <p class="chapter-intro"><b>Métodos</b> são os comportamentos da classe — blocos de código reutilizáveis que operam sobre os atributos do objeto. Têm um nome, podem receber parâmetros e podem devolver um valor.</p>
+
       <div class="console">
         <div class="bar"><span class="label">ContaBancaria.java</span><button class="run-btn">▶ Executar</button></div>
         <pre><span class="kw">public class</span> ContaBancaria {
     <span class="kw">private</span> <span class="fn">double</span> saldo;
 
-    <span class="kw">public</span> <span class="fn">void</span> depositar(<span class="fn">double</span> valor) {   <span class="cmt">// método void</span>
+    <span class="cmt">// método void: não devolve valor</span>
+    <span class="kw">public</span> <span class="fn">void</span> depositar(<span class="fn">double</span> valor) {
         saldo += valor;
+        System.out.println(<span class="str">"Depositado: R$ "</span> + valor);
     }
 
-    <span class="kw">public</span> <span class="fn">boolean</span> sacar(<span class="fn">double</span> valor) {    <span class="cmt">// com retorno</span>
-        <span class="kw">if</span> (valor &gt; saldo) <span class="kw">return</span> <span class="kw">false</span>;
+    <span class="cmt">// método com retorno: devolve boolean</span>
+    <span class="kw">public</span> <span class="fn">boolean</span> sacar(<span class="fn">double</span> valor) {
+        <span class="kw">if</span> (valor &gt; saldo) {
+            System.out.println(<span class="str">"Saldo insuficiente!"</span>);
+            <span class="kw">return</span> <span class="kw">false</span>;
+        }
         saldo -= valor;
+        System.out.println(<span class="str">"Saque de R$ "</span> + valor + <span class="str">" realizado."</span>);
         <span class="kw">return</span> <span class="kw">true</span>;
     }
+
+    <span class="kw">public</span> <span class="fn">double</span> getSaldo() { <span class="kw">return</span> saldo; }
 }</pre>
-        <div class="result"><div class="result-inner"><span class="msg">✓ depositar() e sacar() alteram o estado interno de "saldo"</span></div></div>
+        <div class="result"><div class="result-inner"><span class="msg">✓ depositar() e sacar() encapsulam toda a lógica — quem usa a conta não precisa saber como funciona por dentro</span></div></div>
       </div>
+
       <ol class="steps">
-        <li><b>Assinatura</b> — tipo de retorno + nome + parâmetros.</li>
-        <li><b>Parâmetros</b> — valores recebidos entre parênteses.</li>
-        <li><b>Corpo</b> — lógica executada quando o método é chamado.</li>
-        <li><b>Retorno</b> — <code>return</code> devolve um valor ao chamador.</li>
+        <li><b>Tipo de retorno</b> — o que o método devolve (<code>void</code> se não devolve nada).</li>
+        <li><b>Nome</b> — verbo no infinitivo é convenção: <code>depositar</code>, <code>calcular</code>, <code>buscar</code>.</li>
+        <li><b>Parâmetros</b> — valores recebidos entre parênteses. Podem ser zero ou mais.</li>
+        <li><b>Corpo</b> — lógica entre chaves, executada quando o método é chamado.</li>
+        <li><b>return</b> — devolve um valor ao chamador (obrigatório se o retorno não for <code>void</code>).</li>
       </ol>
     </section>
 
     <!-- CAP 10 -->
     <section class="chapter" id="cap10">
       <div class="chapter-header"><span class="chap-num"></span><h2>Construtores</h2></div>
-      <p class="chapter-intro">Um <b>construtor</b> é um método especial, chamado automaticamente quando um objeto é criado com <code class="inline">new</code>. Serve para inicializar os atributos logo na criação do objeto. Tem o mesmo nome da classe e não tem tipo de retorno.</p>
+      <p class="chapter-intro">Um <b>construtor</b> é um método especial chamado automaticamente quando um objeto é criado com <code class="inline">new</code>. Serve para inicializar os atributos no momento da criação. Tem o mesmo nome da classe e sem tipo de retorno.</p>
+
+      <div class="analogy">
+        <div class="icon">🏗️</div>
+        <div><b>Analogia:</b> o construtor é como o checklist de inauguração de uma loja — antes de abrir as portas, você configura tudo: produtos nas prateleiras, caixa com troco, luzes acesas. O objeto "nasce pronto para usar".</div>
+      </div>
+
       <div class="console">
         <div class="bar"><span class="label">Pessoa.java</span><button class="run-btn">▶ Executar</button></div>
         <pre><span class="kw">public class</span> Pessoa {
     <span class="kw">private</span> <span class="fn">String</span> nome;
     <span class="kw">private</span> <span class="fn">int</span> idade;
 
-    <span class="kw">public</span> Pessoa(<span class="fn">String</span> nome, <span class="fn">int</span> idade) {  <span class="cmt">// construtor</span>
-        <span class="kw">this</span>.nome = nome;
+    <span class="cmt">// construtor: mesmo nome da classe, sem retorno</span>
+    <span class="kw">public</span> Pessoa(<span class="fn">String</span> nome, <span class="fn">int</span> idade) {
+        <span class="kw">this</span>.nome = nome;    <span class="cmt">// "this" diferencia o parâmetro do atributo</span>
         <span class="kw">this</span>.idade = idade;
+    }
+
+    <span class="kw">public</span> <span class="fn">String</span> toString() {
+        <span class="kw">return</span> nome + <span class="str">", "</span> + idade + <span class="str">" anos"</span>;
     }
 }
 
 <span class="cmt">// uso:</span>
-Pessoa p = <span class="kw">new</span> Pessoa(<span class="str">"Ana"</span>, <span class="num">28</span>);</pre>
-        <div class="result"><div class="result-inner"><span class="msg">✓ objeto "p" já nasce com nome e idade preenchidos</span></div></div>
+Pessoa p = <span class="kw">new</span> Pessoa(<span class="str">"Ana"</span>, <span class="num">28</span>);
+System.out.println(p.toString());</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ Ana, 28 anos</span></div></div>
       </div>
-      <div class="note"><span>💡</span><div>Se você não escrever nenhum construtor, Java gera um <b>construtor padrão</b> (sem parâmetros) automaticamente. Assim que você declara qualquer construtor próprio, esse padrão deixa de existir.</div></div>
+
+      <div class="note"><span>💡</span><div>Se você não escrever nenhum construtor, Java gera um <b>construtor padrão</b> (sem parâmetros) automaticamente. Assim que você declara qualquer construtor próprio, esse padrão deixa de existir — você precisaria declará-lo explicitamente se ainda quiser usá-lo.</div></div>
     </section>
 
     <!-- CAP MODIFICADORES -->
     <section class="chapter" id="cap-modificadores">
       <div class="chapter-header"><span class="chap-num"></span><h2>Modificadores de acesso</h2></div>
-      <p class="chapter-intro"><b>Modificadores de acesso</b> controlam de onde uma classe, atributo, método ou construtor pode ser enxergado e usado. Eles são a base do <b>encapsulamento</b>: decidem o que fica exposto como "interface pública" e o que fica escondido como detalhe interno da classe.</p>
+      <p class="chapter-intro"><b>Modificadores de acesso</b> controlam de onde uma classe, atributo, método ou construtor pode ser visto e usado. São a base do <b>encapsulamento</b>: decidem o que fica exposto como interface pública e o que fica escondido como detalhe interno.</p>
+
+      <div class="analogy">
+        <div class="icon">🏢</div>
+        <div><b>Analogia:</b> em um prédio, alguns ambientes são <b>públicos</b> (saguão — qualquer pessoa entra), outros são <b>de acesso restrito</b> (só funcionários do mesmo andar), e outros são <b>privados</b> (a sala do diretor — só ele entra). Os modificadores funcionam assim.</div>
+      </div>
 
       <table class="types-table">
-        <thead><tr><th>Modificador</th><th>Visibilidade</th></tr></thead>
+        <thead><tr><th>Modificador</th><th>Visibilidade</th><th>Uso típico</th></tr></thead>
         <tbody>
-          <tr><td><code>private</code></td><td class="desc">Só dentro da própria classe. O nível mais restrito.</td></tr>
-          <tr><td><i>default</i> (nenhum)</td><td class="desc">Classe e qualquer outra classe do mesmo pacote — também chamado de <i>package-private</i>.</td></tr>
-          <tr><td><code>protected</code></td><td class="desc">Classe, mesmo pacote e subclasses (mesmo em outro pacote).</td></tr>
-          <tr><td><code>public</code></td><td class="desc">Acessível de qualquer lugar. O nível mais aberto.</td></tr>
+          <tr><td><code>private</code></td><td class="desc">Só dentro da própria classe. Nível mais restrito.</td><td class="desc">Atributos internos</td></tr>
+          <tr><td><i>default</i> (nenhum)</td><td class="desc">Classe e qualquer classe do mesmo pacote.</td><td class="desc">Classes utilitárias internas</td></tr>
+          <tr><td><code>protected</code></td><td class="desc">Classe, mesmo pacote e subclasses.</td><td class="desc">Atributos herdáveis</td></tr>
+          <tr><td><code>public</code></td><td class="desc">Acessível de qualquer lugar. Nível mais aberto.</td><td class="desc">API pública da classe</td></tr>
         </tbody>
       </table>
 
       <div class="console">
         <div class="bar"><span class="label">ContaBancaria.java</span><button class="run-btn">▶ Executar</button></div>
         <pre><span class="kw">public class</span> ContaBancaria {
-    <span class="kw">private</span> <span class="fn">double</span> saldo;              <span class="cmt">// só a própria classe acessa</span>
+    <span class="kw">private</span> <span class="fn">double</span> saldo;              <span class="cmt">// só esta classe enxerga</span>
 
-    <span class="kw">public</span> ContaBancaria(<span class="fn">double</span> saldoInicial) {  <span class="cmt">// construtor público</span>
-        <span class="kw">this</span>.saldo = saldoInicial;
+    <span class="kw">public</span> ContaBancaria(<span class="fn">double</span> inicial) {  <span class="cmt">// qualquer um pode criar</span>
+        <span class="kw">this</span>.saldo = inicial;
     }
 
-    <span class="kw">public</span> <span class="fn">double</span> getSaldo() {         <span class="cmt">// método público — "porta de entrada"</span>
+    <span class="kw">public</span> <span class="fn">double</span> getSaldo() {         <span class="cmt">// porta de entrada pública</span>
         <span class="kw">return</span> saldo;
     }
 
-    <span class="kw">private</span> <span class="fn">boolean</span> saldoSuficiente(<span class="fn">double</span> valor) {  <span class="cmt">// detalhe interno</span>
-        <span class="kw">return</span> valor &lt;= saldo;
+    <span class="kw">private</span> <span class="fn">boolean</span> saldoSuficiente(<span class="fn">double</span> v) { <span class="cmt">// detalhe interno</span>
+        <span class="kw">return</span> v &lt;= saldo;
     }
 }</pre>
-        <div class="result"><div class="result-inner"><span class="msg">✓ saldo e saldoSuficiente() ficam escondidos; getSaldo() e o construtor são a porta de entrada da classe</span></div></div>
+        <div class="result"><div class="result-inner"><span class="msg">✓ saldo e saldoSuficiente() ficam escondidos; getSaldo() e o construtor são a interface pública</span></div></div>
       </div>
 
-      <h3 class="subhead">Onde cada modificador se aplica</h3>
-      <div class="grid cols-2">
-        <div class="card"><h3>Classes</h3><p>Uma classe de nível mais alto só pode ser <code>public</code> ou <i>default</i> — nunca <code>private</code> ou <code>protected</code>.</p></div>
-        <div class="card"><h3>Atributos, métodos e construtores</h3><p>Podem usar os quatro níveis: <code>private</code>, <i>default</i>, <code>protected</code> ou <code>public</code>.</p></div>
-      </div>
-
-      <div class="note"><span>💡</span><div><b>Regra prática:</b> comece restringindo tudo com <code class="inline">private</code> e só abra o acesso (<code class="inline">protected</code> ou <code class="inline">public</code>) quando outra classe realmente precisar usar aquilo. É mais fácil abrir depois do que fechar um acesso que já está sendo usado em vários lugares.</div></div>
-
-      <div class="note warn"><span>⚠️</span><div><code class="inline">protected</code> só faz diferença real para <b>herança</b>: fora do pacote, apenas subclasses enxergam o membro. É por isso que atributos pensados para serem herdados — como o <code class="inline">nome</code> em <code class="inline">Animal</code> do próximo capítulo — costumam usar <code class="inline">protected</code> em vez de <code class="inline">private</code>.</div></div>
+      <div class="note"><span>💡</span><div><b>Regra prática:</b> comece com tudo <code class="inline">private</code> e só abra (<code class="inline">protected</code> ou <code class="inline">public</code>) quando outra classe realmente precisar. É mais fácil abrir depois do que fechar um acesso já usado em vários lugares.</div></div>
+      <div class="note warn"><span>⚠️</span><div><code class="inline">protected</code> só faz diferença real na <b>herança</b>: fora do pacote, apenas subclasses enxergam o membro. Atributos que serão herdados costumam usar <code class="inline">protected</code> em vez de <code class="inline">private</code>.</div></div>
     </section>
 
     <!-- CAP 11 -->
     <section class="chapter" id="cap11">
       <div class="chapter-header"><span class="chap-num"></span><h2>Herança</h2></div>
-      <p class="chapter-intro"><b>Herança</b> permite que uma classe (subclasse) reaproveite atributos e métodos de outra (superclasse), usando a palavra-chave <code class="inline">extends</code>. Representa uma relação "é um" — um <code class="inline">Cachorro</code> <i>é um</i> <code class="inline">Animal</code>.</p>
+      <p class="chapter-intro"><b>Herança</b> permite que uma classe (subclasse) reaproveite atributos e métodos de outra (superclasse), usando <code class="inline">extends</code>. Representa uma relação <b>"é um"</b> — um <code>Cachorro</code> <i>é um</i> <code>Animal</code>.</p>
+
+      <div class="analogy">
+        <div class="icon">🧬</div>
+        <div><b>Analogia:</b> pense em uma herança de família. Filhos herdam características dos pais (sobrenome, traços físicos), mas podem ter suas próprias particularidades. A subclasse <b>herda</b> o que a superclasse tem e pode <b>adicionar</b> ou <b>modificar</b> comportamentos.</div>
+      </div>
+
       <div class="console">
         <div class="bar"><span class="label">Heranca.java</span><button class="run-btn">▶ Executar</button></div>
         <pre><span class="kw">public class</span> Animal {
@@ -746,22 +931,25 @@ Pessoa p = <span class="kw">new</span> Pessoa(<span class="str">"Ana"</span>, <s
 
 <span class="kw">public class</span> Cachorro <span class="kw">extends</span> Animal {   <span class="cmt">// herda de Animal</span>
     <span class="kw">public</span> Cachorro(<span class="fn">String</span> nome) {
-        <span class="kw">super</span>(nome);                     <span class="cmt">// construtor da superclasse</span>
+        <span class="kw">super</span>(nome);   <span class="cmt">// chama o construtor da superclasse</span>
     }
+    <span class="cmt">// herda emitirSom() automaticamente</span>
 }
 
 Cachorro rex = <span class="kw">new</span> Cachorro(<span class="str">"Rex"</span>);
 rex.emitirSom();</pre>
         <div class="result"><div class="result-inner"><span class="msg">✓ Rex faz um som.</span></div></div>
       </div>
-      <div class="note"><span>💡</span><div><code class="inline">super(...)</code> chama o construtor da superclasse; <code class="inline">super.metodo()</code> chama a versão do método definida na superclasse, mesmo que a subclasse a tenha sobrescrito.</div></div>
-      <div class="note warn"><span>⚠️</span><div>Java só permite <b>herança simples</b> de classes — uma classe só pode ter um <code class="inline">extends</code>. Para reaproveitar comportamento de várias fontes, use interfaces (capítulo 14).</div></div>
+
+      <div class="note"><span>💡</span><div><code class="inline">super(...)</code> chama o construtor da superclasse. <code class="inline">super.metodo()</code> chama a versão do método definida na superclasse, mesmo que a subclasse a tenha sobrescrito.</div></div>
+      <div class="note warn"><span>⚠️</span><div>Java só permite <b>herança simples</b> de classes — uma classe só pode ter um <code class="inline">extends</code>. Para reaproveitar comportamentos de várias fontes, use <b>interfaces</b> (capítulo 15).</div></div>
     </section>
 
     <!-- CAP 12 -->
     <section class="chapter" id="cap12">
-      <div class="chapter-header"><span class="chap-num"></span><h2>Override (sobrescrita de métodos)</h2></div>
-      <p class="chapter-intro"><b>Override</b> acontece quando uma subclasse redefine um método herdado da superclasse, dando a ele um comportamento próprio — mantendo a mesma assinatura (nome, parâmetros e tipo de retorno).</p>
+      <div class="chapter-header"><span class="chap-num"></span><h2>Override — sobrescrita de métodos</h2></div>
+      <p class="chapter-intro"><b>Override</b> acontece quando uma subclasse redefine um método herdado da superclasse, dando a ele um comportamento próprio — mantendo exatamente a mesma assinatura (nome, parâmetros e tipo de retorno).</p>
+
       <div class="console">
         <div class="bar"><span class="label">Override.java</span><button class="run-btn">▶ Executar</button></div>
         <pre><span class="kw">public class</span> Animal {
@@ -771,19 +959,23 @@ rex.emitirSom();</pre>
 }
 
 <span class="kw">public class</span> Gato <span class="kw">extends</span> Animal {
-    <span class="cmt">@Override</span>
-    <span class="kw">public</span> <span class="fn">void</span> emitirSom() {          <span class="cmt">// sobrescreve</span>
+    <span class="cmt">@Override</span>                              <span class="cmt">// anotação — boa prática</span>
+    <span class="kw">public</span> <span class="fn">void</span> emitirSom() {              <span class="cmt">// mesma assinatura, novo comportamento</span>
         System.out.println(<span class="str">"Miau!"</span>);
     }
-}</pre>
-        <div class="result"><div class="result-inner"><span class="msg">✓ Gato.emitirSom() substitui a versão de Animal</span></div></div>
+}
+
+Gato g = <span class="kw">new</span> Gato();
+g.emitirSom();</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ Miau!</span></div></div>
       </div>
+
       <h3 class="subhead">Override × Overload (sobrecarga)</h3>
       <table class="types-table">
-        <thead><tr><th></th><th>Override</th><th>Overload</th></tr></thead>
+        <thead><tr><th></th><th>Override (sobrescrita)</th><th>Overload (sobrecarga)</th></tr></thead>
         <tbody>
           <tr><td class="desc">Onde ocorre</td><td class="desc">Entre superclasse e subclasse</td><td class="desc">Na mesma classe</td></tr>
-          <tr><td class="desc">Assinatura</td><td class="desc">Idêntica à do método original</td><td class="desc">Mesmo nome, parâmetros diferentes</td></tr>
+          <tr><td class="desc">Assinatura</td><td class="desc">Idêntica ao método original</td><td class="desc">Mesmo nome, parâmetros diferentes</td></tr>
           <tr><td class="desc">Objetivo</td><td class="desc">Mudar o comportamento herdado</td><td class="desc">Oferecer variações do mesmo método</td></tr>
         </tbody>
       </table>
@@ -794,47 +986,64 @@ rex.emitirSom();</pre>
     <section class="chapter" id="cap13">
       <div class="chapter-header"><span class="chap-num"></span><h2>Polimorfismo</h2></div>
       <p class="chapter-intro"><b>Polimorfismo</b> ("muitas formas") é a capacidade de tratar objetos de subclasses diferentes através de uma referência do tipo da superclasse — e cada um responder à mesma chamada de método com seu próprio comportamento, graças ao override.</p>
+
+      <div class="analogy">
+        <div class="icon">🎮</div>
+        <div><b>Analogia:</b> um controle remoto tem o botão "ligar" — o mesmo comando funciona para TV, ar-condicionado ou som, mas cada aparelho liga de um jeito diferente. É isso que o polimorfismo faz: mesmo chamado (<code>emitirSom()</code>), comportamento diferente em cada objeto.</div>
+      </div>
+
       <div class="console">
         <div class="bar"><span class="label">Polimorfismo.java</span><button class="run-btn">▶ Executar</button></div>
-        <pre>Animal[] animais = {
-    <span class="kw">new</span> Cachorro(<span class="str">"Rex"</span>),
+        <pre><span class="cmt">// referência do tipo Animal pode guardar qualquer subclasse</span>
+Animal[] animais = {
+    <span class="kw">new</span> Cachorro(<span class="str">"Rex"</span>),   <span class="cmt">// Cachorro é um Animal</span>
     <span class="kw">new</span> Gato(),
 };
 
 <span class="kw">for</span> (Animal a : animais) {
-    a.emitirSom();   <span class="cmt">// cada objeto executa a SUA versão</span>
+    a.emitirSom();   <span class="cmt">// a JVM chama a versão certa em tempo de execução</span>
 }</pre>
         <div class="result"><div class="result-inner"><span class="msg">✓ Rex faz um som. · Miau!</span></div></div>
       </div>
-      <div class="note"><span>💡</span><div><b>Analogia:</b> um controle remoto "ligar" funciona para TV, ar-condicionado ou som — mesmo comando, comportamento diferente em cada aparelho. É exatamente isso que o polimorfismo faz com <code class="inline">a.emitirSom()</code>.</div></div>
-      <p style="color:var(--text-muted); font-size:.9rem; max-width:700px; margin-top:8px;">Esse é o polimorfismo <b>em tempo de execução</b>: a JVM decide, ao rodar, qual versão sobrescrita do método chamar, com base no tipo real do objeto — não no tipo da variável.</p>
+
+      <p style="color:var(--text-muted); font-size:.9rem; max-width:700px; margin-top:12px;">Esse é o polimorfismo <b>em tempo de execução</b>: a JVM decide, ao rodar, qual versão do método chamar com base no tipo real do objeto — não no tipo da variável.</p>
     </section>
 
     <!-- CAP 14 -->
     <section class="chapter" id="cap14">
       <div class="chapter-header"><span class="chap-num"></span><h2>Interfaces</h2></div>
-      <p class="chapter-intro">Uma <b>interface</b> define um <i>contrato</i>: uma lista de métodos que qualquer classe que a implemente é obrigada a fornecer, sem impor como esses métodos são implementados. Diferente da herança, uma classe pode implementar <b>várias</b> interfaces.</p>
+      <p class="chapter-intro">Uma <b>interface</b> define um <i>contrato</i>: uma lista de métodos que qualquer classe que a implemente é obrigada a fornecer, sem impor como esses métodos são implementados. Uma classe pode implementar <b>várias</b> interfaces — algo impossível com herança de classe.</p>
+
+      <div class="analogy">
+        <div class="icon">📋</div>
+        <div><b>Analogia:</b> um contrato de trabalho define <em>o que</em> o funcionário deve fazer (entregar relatórios, atender clientes), mas não diz <em>como</em>. A interface é exatamente isso: define o que a classe deve ser capaz de fazer, cada uma à sua maneira.</div>
+      </div>
+
       <div class="console">
         <div class="bar"><span class="label">Voador.java</span><button class="run-btn">▶ Executar</button></div>
         <pre><span class="kw">public interface</span> Voador {
-    <span class="fn">void</span> voar();   <span class="cmt">// sem corpo — apenas o contrato</span>
+    <span class="fn">void</span> voar();   <span class="cmt">// contrato: sem implementação</span>
 }
 
 <span class="kw">public class</span> Passaro <span class="kw">implements</span> Voador {
     <span class="cmt">@Override</span>
     <span class="kw">public</span> <span class="fn">void</span> voar() {
-        System.out.println(<span class="str">"O pássaro está voando."</span>);
+        System.out.println(<span class="str">"O pássaro bate asas e voa."</span>);
     }
 }
 
 <span class="kw">public class</span> Aviao <span class="kw">implements</span> Voador {
     <span class="cmt">@Override</span>
     <span class="kw">public</span> <span class="fn">void</span> voar() {
-        System.out.println(<span class="str">"O avião decolou."</span>);
+        System.out.println(<span class="str">"O avião acelera na pista e decola."</span>);
     }
-}</pre>
-        <div class="result"><div class="result-inner"><span class="msg">✓ Passaro e Aviao cumprem o contrato "Voador", cada um a sua maneira</span></div></div>
+}
+
+Voador[] voadores = { <span class="kw">new</span> Passaro(), <span class="kw">new</span> Aviao() };
+<span class="kw">for</span> (Voador v : voadores) v.voar();</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ O pássaro bate asas e voa. · O avião acelera na pista e decola.</span></div></div>
       </div>
+
       <h3 class="subhead">Herança × Interface</h3>
       <table class="types-table">
         <thead><tr><th></th><th>Herança (extends)</th><th>Interface (implements)</th></tr></thead>
@@ -844,11 +1053,349 @@ rex.emitirSom();</pre>
           <tr><td class="desc">Relação típica</td><td class="desc">"é um" (Cachorro é um Animal)</td><td class="desc">"é capaz de" (Passaro é capaz de Voar)</td></tr>
         </tbody>
       </table>
-      <div class="note"><span>💡</span><div>Interfaces dão o polimorfismo mais flexível em Java: um método pode receber um parâmetro do tipo <code class="inline">Voador</code> e funcionar com qualquer classe que implemente essa interface — <code class="inline">Passaro</code>, <code class="inline">Aviao</code> ou uma futura <code class="inline">Drone</code>.</div></div>
-      <div class="note warn"><span>⚠️</span><div>Desde o Java 8, interfaces podem ter métodos <code class="inline">default</code> com corpo, mas isso não muda sua função principal: definir um contrato que várias classes, não relacionadas por herança, podem cumprir.</div></div>
+
+      <div class="note"><span>💡</span><div>Interfaces dão o polimorfismo mais flexível: um método pode receber <code class="inline">Voador</code> e funcionar com qualquer classe que implemente essa interface — <code class="inline">Passaro</code>, <code class="inline">Aviao</code> ou uma futura <code class="inline">Drone</code>.</div></div>
+      <div class="note warn"><span>⚠️</span><div>Desde o Java 8, interfaces podem ter métodos <code class="inline">default</code> com corpo, mas isso não muda sua função principal: definir um contrato que classes não relacionadas por herança podem cumprir.</div></div>
     </section>
 
-    <footer>fim do guia <span class="dot">●</span> continue praticando escrevendo suas próprias classes</footer>
+    <!-- ATIVIDADES -->
+    <section class="chapter activities" id="atividades">
+      <div class="chapter-header">
+        <span class="chap-num"></span>
+        <h2>Atividades práticas</h2>
+      </div>
+      <p class="chapter-intro">Teste o que você aprendeu. Leia cada enunciado, tente resolver por conta própria e depois clique em <b>Ver resposta</b>. As atividades cobrem os principais conceitos do guia.</p>
+
+      <!-- ATIVIDADE 1 -->
+      <div class="activity">
+        <div class="activity-header">
+          <span class="activity-num">Atividade 01</span>
+          <span class="activity-title">Variáveis e saída de dados</span>
+          <span class="activity-tag easy">Fácil</span>
+        </div>
+        <div class="activity-body">
+          <p>Declare variáveis para armazenar o nome de um aluno (<code>String</code>), sua nota (<code>double</code>) e se ele foi aprovado (<code>boolean</code>). Depois imprima uma mensagem no formato:<br><strong>Ana obteve 8.5 — Aprovado: true</strong></p>
+        </div>
+        <div class="activity-answer">
+          <button class="activity-answer-toggle" onclick="toggleAnswer(this)">
+            <span class="arrow">▶</span> Ver resposta
+          </button>
+          <div class="activity-answer-body">
+            <div class="inner">
+              <p><strong>Solução:</strong></p>
+              <div class="console" style="margin:0">
+                <div class="bar"><span class="label">Atividade01.java</span></div>
+                <pre><span class="fn">String</span> nome = <span class="str">"Ana"</span>;
+<span class="fn">double</span> nota = <span class="num">8.5</span>;
+<span class="fn">boolean</span> aprovado = nota >= <span class="num">7.0</span>;
+
+System.out.println(nome + <span class="str">" obteve "</span> + nota + <span class="str">" — Aprovado: "</span> + aprovado);</pre>
+              </div>
+              <p><strong>Saída:</strong> <code>Ana obteve 8.5 — Aprovado: true</code></p>
+              <p>A variável <code>aprovado</code> é calculada diretamente a partir de <code>nota >= 7.0</code>, que retorna um <code>boolean</code>.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ATIVIDADE 2 -->
+      <div class="activity">
+        <div class="activity-header">
+          <span class="activity-num">Atividade 02</span>
+          <span class="activity-title">Condicional — classificação de notas</span>
+          <span class="activity-tag easy">Fácil</span>
+        </div>
+        <div class="activity-body">
+          <p>Dada uma variável <code>int nota = 75</code>, escreva um <code>if/else if/else</code> que imprima:<br>
+          <strong>A</strong> se nota ≥ 90 · <strong>B</strong> se nota ≥ 70 · <strong>C</strong> se nota ≥ 50 · <strong>Reprovado</strong> caso contrário.</p>
+        </div>
+        <div class="activity-answer">
+          <button class="activity-answer-toggle" onclick="toggleAnswer(this)">
+            <span class="arrow">▶</span> Ver resposta
+          </button>
+          <div class="activity-answer-body">
+            <div class="inner">
+              <p><strong>Solução:</strong></p>
+              <div class="console" style="margin:0">
+                <div class="bar"><span class="label">Atividade02.java</span></div>
+                <pre><span class="fn">int</span> nota = <span class="num">75</span>;
+
+<span class="kw">if</span> (nota >= <span class="num">90</span>) {
+    System.out.println(<span class="str">"A"</span>);
+} <span class="kw">else if</span> (nota >= <span class="num">70</span>) {
+    System.out.println(<span class="str">"B"</span>);    <span class="cmt">// ← 75 cai aqui</span>
+} <span class="kw">else if</span> (nota >= <span class="num">50</span>) {
+    System.out.println(<span class="str">"C"</span>);
+} <span class="kw">else</span> {
+    System.out.println(<span class="str">"Reprovado"</span>);
+}</pre>
+              </div>
+              <p><strong>Saída:</strong> <code>B</code></p>
+              <p>As condições são testadas em ordem — a primeira verdadeira é executada e as demais são ignoradas. Por isso as faixas ficam em ordem decrescente.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ATIVIDADE 3 -->
+      <div class="activity">
+        <div class="activity-header">
+          <span class="activity-num">Atividade 03</span>
+          <span class="activity-title">Laço for — soma dos números ímpares</span>
+          <span class="activity-tag easy">Fácil</span>
+        </div>
+        <div class="activity-body">
+          <p>Use um laço <code>for</code> para somar todos os números ímpares de 1 a 20 e imprimir o resultado.</p>
+        </div>
+        <div class="activity-answer">
+          <button class="activity-answer-toggle" onclick="toggleAnswer(this)">
+            <span class="arrow">▶</span> Ver resposta
+          </button>
+          <div class="activity-answer-body">
+            <div class="inner">
+              <p><strong>Solução:</strong></p>
+              <div class="console" style="margin:0">
+                <div class="bar"><span class="label">Atividade03.java</span></div>
+                <pre><span class="fn">int</span> soma = <span class="num">0</span>;
+
+<span class="kw">for</span> (<span class="fn">int</span> i = <span class="num">1</span>; i <= <span class="num">20</span>; i++) {
+    <span class="kw">if</span> (i % <span class="num">2</span> != <span class="num">0</span>) {   <span class="cmt">// % 2 != 0 → ímpar</span>
+        soma += i;
+    }
+}
+
+System.out.println(<span class="str">"Soma dos ímpares: "</span> + soma);</pre>
+              </div>
+              <p><strong>Saída:</strong> <code>Soma dos ímpares: 100</code></p>
+              <p>O operador <code>%</code> (resto da divisão) retorna 0 para pares e 1 para ímpares. A soma dos ímpares de 1 a 19 é: 1+3+5+7+9+11+13+15+17+19 = 100.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ATIVIDADE 4 -->
+      <div class="activity">
+        <div class="activity-header">
+          <span class="activity-num">Atividade 04</span>
+          <span class="activity-title">Array — maior nota da turma</span>
+          <span class="activity-tag medium">Médio</span>
+        </div>
+        <div class="activity-body">
+          <p>Dado o array <code>double[] notas = {7.5, 9.0, 6.0, 8.5, 10.0, 5.5}</code>, percorra o array e imprima a <strong>maior nota encontrada</strong>.</p>
+        </div>
+        <div class="activity-answer">
+          <button class="activity-answer-toggle" onclick="toggleAnswer(this)">
+            <span class="arrow">▶</span> Ver resposta
+          </button>
+          <div class="activity-answer-body">
+            <div class="inner">
+              <p><strong>Solução:</strong></p>
+              <div class="console" style="margin:0">
+                <div class="bar"><span class="label">Atividade04.java</span></div>
+                <pre><span class="fn">double</span>[] notas = {<span class="num">7.5</span>, <span class="num">9.0</span>, <span class="num">6.0</span>, <span class="num">8.5</span>, <span class="num">10.0</span>, <span class="num">5.5</span>};
+<span class="fn">double</span> maior = notas[<span class="num">0</span>];  <span class="cmt">// começa assumindo que o primeiro é o maior</span>
+
+<span class="kw">for</span> (<span class="fn">double</span> nota : notas) {
+    <span class="kw">if</span> (nota > maior) {
+        maior = nota;       <span class="cmt">// atualiza se encontrar um maior</span>
+    }
+}
+
+System.out.println(<span class="str">"Maior nota: "</span> + maior);</pre>
+              </div>
+              <p><strong>Saída:</strong> <code>Maior nota: 10.0</code></p>
+              <p>A estratégia é inicializar <code>maior</code> com o primeiro elemento e substituir sempre que encontrar um valor maior. Nunca inicialize com 0, pois se todas as notas forem negativas, o resultado seria errado.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ATIVIDADE 5 -->
+      <div class="activity">
+        <div class="activity-header">
+          <span class="activity-num">Atividade 05</span>
+          <span class="activity-title">Classe Produto com construtor e método</span>
+          <span class="activity-tag medium">Médio</span>
+        </div>
+        <div class="activity-body">
+          <p>Crie uma classe <code>Produto</code> com atributos <strong>privados</strong> <code>nome</code> (String) e <code>preco</code> (double). Adicione:</p>
+          <ul style="color:var(--text-muted); font-size:.9rem; margin-left:20px; margin-top:4px; line-height:2;">
+            <li>Um construtor que receba os dois atributos</li>
+            <li>Um método <code>aplicarDesconto(double percentual)</code> que reduza o preço</li>
+            <li>Um método <code>exibir()</code> que imprima nome e preço atual</li>
+          </ul>
+        </div>
+        <div class="activity-answer">
+          <button class="activity-answer-toggle" onclick="toggleAnswer(this)">
+            <span class="arrow">▶</span> Ver resposta
+          </button>
+          <div class="activity-answer-body">
+            <div class="inner">
+              <p><strong>Solução:</strong></p>
+              <div class="console" style="margin:0">
+                <div class="bar"><span class="label">Produto.java</span></div>
+                <pre><span class="kw">public class</span> Produto {
+    <span class="kw">private</span> <span class="fn">String</span> nome;
+    <span class="kw">private</span> <span class="fn">double</span> preco;
+
+    <span class="kw">public</span> Produto(<span class="fn">String</span> nome, <span class="fn">double</span> preco) {
+        <span class="kw">this</span>.nome = nome;
+        <span class="kw">this</span>.preco = preco;
+    }
+
+    <span class="kw">public void</span> aplicarDesconto(<span class="fn">double</span> percentual) {
+        preco -= preco * (percentual / <span class="num">100</span>);
+    }
+
+    <span class="kw">public void</span> exibir() {
+        System.out.println(nome + <span class="str">": R$ "</span> + preco);
+    }
+}
+
+<span class="cmt">// uso:</span>
+Produto p = <span class="kw">new</span> Produto(<span class="str">"Teclado"</span>, <span class="num">200.0</span>);
+p.exibir();
+p.aplicarDesconto(<span class="num">10</span>);  <span class="cmt">// 10% de desconto</span>
+p.exibir();</pre>
+              </div>
+              <p><strong>Saída:</strong><br><code>Teclado: R$ 200.0</code><br><code>Teclado: R$ 180.0</code></p>
+              <p>O método <code>aplicarDesconto</code> modifica o atributo <code>preco</code> diretamente, pois está dentro da própria classe — mesmo sendo <code>private</code>, os métodos da classe têm acesso.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ATIVIDADE 6 -->
+      <div class="activity">
+        <div class="activity-header">
+          <span class="activity-num">Atividade 06</span>
+          <span class="activity-title">Herança — Veículos</span>
+          <span class="activity-tag medium">Médio</span>
+        </div>
+        <div class="activity-body">
+          <p>Crie uma superclasse <code>Veiculo</code> com atributo <code>marca</code> e método <code>mover()</code> que imprime <em>"Veículo em movimento."</em>. Crie duas subclasses — <code>Carro</code> e <code>Moto</code> — e faça cada uma sobrescrever <code>mover()</code> com uma mensagem própria. Instancie as duas e chame <code>mover()</code>.</p>
+        </div>
+        <div class="activity-answer">
+          <button class="activity-answer-toggle" onclick="toggleAnswer(this)">
+            <span class="arrow">▶</span> Ver resposta
+          </button>
+          <div class="activity-answer-body">
+            <div class="inner">
+              <p><strong>Solução:</strong></p>
+              <div class="console" style="margin:0">
+                <div class="bar"><span class="label">Heranca.java</span></div>
+                <pre><span class="kw">public class</span> Veiculo {
+    <span class="kw">protected</span> <span class="fn">String</span> marca;
+
+    <span class="kw">public</span> Veiculo(<span class="fn">String</span> marca) { <span class="kw">this</span>.marca = marca; }
+
+    <span class="kw">public void</span> mover() {
+        System.out.println(<span class="str">"Veículo em movimento."</span>);
+    }
+}
+
+<span class="kw">public class</span> Carro <span class="kw">extends</span> Veiculo {
+    <span class="kw">public</span> Carro(<span class="fn">String</span> marca) { <span class="kw">super</span>(marca); }
+
+    <span class="cmt">@Override</span>
+    <span class="kw">public void</span> mover() {
+        System.out.println(marca + <span class="str">": carro acelerando na estrada."</span>);
+    }
+}
+
+<span class="kw">public class</span> Moto <span class="kw">extends</span> Veiculo {
+    <span class="kw">public</span> Moto(<span class="fn">String</span> marca) { <span class="kw">super</span>(marca); }
+
+    <span class="cmt">@Override</span>
+    <span class="kw">public void</span> mover() {
+        System.out.println(marca + <span class="str">": moto zigzagueando no trânsito."</span>);
+    }
+}
+
+<span class="cmt">// polimorfismo em ação</span>
+Veiculo[] frota = { <span class="kw">new</span> Carro(<span class="str">"Toyota"</span>), <span class="kw">new</span> Moto(<span class="str">"Honda"</span>) };
+<span class="kw">for</span> (Veiculo v : frota) v.mover();</pre>
+              </div>
+              <p><strong>Saída:</strong><br><code>Toyota: carro acelerando na estrada.</code><br><code>Honda: moto zigzagueando no trânsito.</code></p>
+              <p>Note como o array é do tipo <code>Veiculo</code>, mas cada objeto executa a sua própria versão de <code>mover()</code> — isso é polimorfismo.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ATIVIDADE 7 -->
+      <div class="activity">
+        <div class="activity-header">
+          <span class="activity-num">Atividade 07</span>
+          <span class="activity-title">Interface — Formas geométricas</span>
+          <span class="activity-tag hard">Desafio</span>
+        </div>
+        <div class="activity-body">
+          <p>Crie uma interface <code>Forma</code> com o método <code>double calcularArea()</code>. Implemente-a em duas classes:</p>
+          <ul style="color:var(--text-muted); font-size:.9rem; margin-left:20px; margin-top:4px; line-height:2;">
+            <li><code>Retangulo</code> com atributos <code>largura</code> e <code>altura</code> → área = largura × altura</li>
+            <li><code>Circulo</code> com atributo <code>raio</code> → área = π × raio²</li>
+          </ul>
+          <p>Crie um array de <code>Forma</code> com um retângulo e um círculo e imprima a área de cada um.</p>
+        </div>
+        <div class="activity-answer">
+          <button class="activity-answer-toggle" onclick="toggleAnswer(this)">
+            <span class="arrow">▶</span> Ver resposta
+          </button>
+          <div class="activity-answer-body">
+            <div class="inner">
+              <p><strong>Solução:</strong></p>
+              <div class="console" style="margin:0">
+                <div class="bar"><span class="label">Formas.java</span></div>
+                <pre><span class="kw">public interface</span> Forma {
+    <span class="fn">double</span> calcularArea();   <span class="cmt">// contrato</span>
+}
+
+<span class="kw">public class</span> Retangulo <span class="kw">implements</span> Forma {
+    <span class="kw">private</span> <span class="fn">double</span> largura, altura;
+
+    <span class="kw">public</span> Retangulo(<span class="fn">double</span> largura, <span class="fn">double</span> altura) {
+        <span class="kw">this</span>.largura = largura;
+        <span class="kw">this</span>.altura = altura;
+    }
+
+    <span class="cmt">@Override</span>
+    <span class="kw">public</span> <span class="fn">double</span> calcularArea() {
+        <span class="kw">return</span> largura * altura;
+    }
+}
+
+<span class="kw">public class</span> Circulo <span class="kw">implements</span> Forma {
+    <span class="kw">private</span> <span class="fn">double</span> raio;
+
+    <span class="kw">public</span> Circulo(<span class="fn">double</span> raio) { <span class="kw">this</span>.raio = raio; }
+
+    <span class="cmt">@Override</span>
+    <span class="kw">public</span> <span class="fn">double</span> calcularArea() {
+        <span class="kw">return</span> Math.PI * raio * raio;
+    }
+}
+
+<span class="cmt">// uso:</span>
+Forma[] formas = {
+    <span class="kw">new</span> Retangulo(<span class="num">4</span>, <span class="num">5</span>),
+    <span class="kw">new</span> Circulo(<span class="num">3</span>)
+};
+
+<span class="kw">for</span> (Forma f : formas) {
+    System.out.printf(<span class="str">"Área: %.2f%n"</span>, f.calcularArea());
+}</pre>
+              </div>
+              <p><strong>Saída:</strong><br><code>Área: 20,00</code><br><code>Área: 28,27</code></p>
+              <p>O array é do tipo <code>Forma</code> — qualquer classe que implemente a interface pode ser guardada nele. <code>Math.PI</code> é a constante π disponível em Java. <code>%.2f</code> formata o <code>double</code> com 2 casas decimais.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <footer>fim do guia <span class="dot">●</span> a melhor forma de aprender é praticar — escreva suas próprias classes</footer>
   </main>
 </div>
 
@@ -903,6 +1450,16 @@ document.querySelectorAll('.run-btn').forEach(btn => {
     btn.textContent = isOpen ? '▶ Executar' : '↺ Fechar';
   });
 });
+
+// ── ACTIVITY TOGGLES ──
+function toggleAnswer(btn) {
+  const body = btn.nextElementSibling;
+  const isOpen = body.classList.contains('open');
+  body.classList.toggle('open');
+  btn.classList.toggle('open');
+  btn.querySelector('.arrow').textContent = isOpen ? '▶' : '▼';
+  btn.childNodes[1].textContent = isOpen ? ' Ver resposta' : ' Ocultar resposta';
+}
 
 // ── SEARCH ──
 const searchInput = document.getElementById('searchInput');
