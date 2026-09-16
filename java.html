@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR"> 
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -419,9 +419,10 @@ section.chapter.activities .chapter-header h2 { color: var(--green); }
 }
 .activity-answer-toggle:hover { background: var(--cyan-dim); }
 .activity-answer-toggle .arrow { transition: transform .2s; display: inline-block; }
+.activity-answer-toggle.open .arrow { transform: rotate(90deg); }
 
 .activity-answer-body {
-  max-height: 0; overflow: hidden; transition: max-height 0.8s ease-in-out;
+  max-height: 0; overflow: hidden; transition: max-height .35s ease;
 }
 .activity-answer-body.open { max-height: 1200px; }
 .activity-answer-body .inner {
@@ -479,17 +480,18 @@ footer .dot { color: var(--amber); }
       <li><a href="#cap8" data-nav><span class="n">08</span>Atributos</a></li>
       <li><a href="#cap9" data-nav><span class="n">09</span>Métodos</a></li>
       <li><a href="#cap10" data-nav><span class="n">10</span>Construtores</a></li>
-      <li><a href="#cap-modificadores" data-nav><span class="n">11</span>Modificadores de acesso</a></li>
+      <li><a href="#cap-encapsulamento" data-nav><span class="n">11</span>Encapsulamento</a></li>
+      <li><a href="#cap-modificadores" data-nav><span class="n">12</span>Modificadores de acesso</a></li>
     </ol>
     <div class="sidebar-section-label">Herança e polimorfismo</div>
     <ol>
-      <li><a href="#cap11" data-nav><span class="n">12</span>Herança</a></li>
-      <li><a href="#cap12" data-nav><span class="n">13</span>Override</a></li>
-      <li><a href="#cap13" data-nav><span class="n">14</span>Polimorfismo</a></li>
+      <li><a href="#cap11" data-nav><span class="n">13</span>Herança</a></li>
+      <li><a href="#cap12" data-nav><span class="n">14</span>Override</a></li>
+      <li><a href="#cap13" data-nav><span class="n">15</span>Polimorfismo</a></li>
     </ol>
     <div class="sidebar-section-label">Contratos</div>
     <ol>
-      <li><a href="#cap14" data-nav><span class="n">15</span>Interfaces</a></li>
+      <li><a href="#cap14" data-nav><span class="n">16</span>Interfaces</a></li>
     </ol>
     <div class="sidebar-section-label">Prática</div>
     <ol>
@@ -862,8 +864,177 @@ System.out.println(p.toString());</pre>
       <div class="note"><span>💡</span><div>Se você não escrever nenhum construtor, Java gera um <b>construtor padrão</b> (sem parâmetros) automaticamente. Assim que você declara qualquer construtor próprio, esse padrão deixa de existir — você precisaria declará-lo explicitamente se ainda quiser usá-lo.</div></div>
     </section>
 
+    <!-- CAP ENCAPSULAMENTO -->
+    <section class="chapter" id="cap-encapsulamento">
+      <div class="chapter-header"><span class="chap-num"></span><h2>Encapsulamento</h2></div>
+      <p class="chapter-intro"><b>Encapsulamento</b> é o princípio de esconder os detalhes internos de uma classe e expor apenas o necessário por meio de métodos públicos controlados. Os atributos ficam <b>privados</b> e o acesso ocorre por <b>getters</b> e <b>setters</b> — que podem validar os dados antes de aceitar qualquer alteração.</p>
+
+      <div class="analogy">
+        <div class="icon">🏧</div>
+        <div><b>Analogia:</b> um caixa eletrônico. Você interage com botões e tela (interface pública), mas nunca toca no mecanismo de contagem de notas (estado interno). O banco protege o que é sensível e expõe apenas o que é seguro para você operar.</div>
+      </div>
+
+      <h3 class="subhead">Sem encapsulamento × com encapsulamento</h3>
+      <p style="color:var(--text-muted); font-size:.9rem; max-width:700px; margin-bottom:12px;">Com atributos públicos, qualquer código pode atribuir um valor inválido diretamente. Com <code class="inline">private</code> + setter, a classe controla o que entra:</p>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:16px 0;">
+        <div style="background:var(--bg-panel); border:1px solid var(--border-mid); border-radius:var(--radius); overflow:hidden;">
+          <div style="padding:8px 14px; background:#2a1a1a; border-bottom:1px solid var(--border); font-family:var(--font-mono); font-size:.7rem; color:var(--red);">✗ Sem encapsulamento</div>
+          <pre style="padding:14px 16px; font-family:var(--font-mono); font-size:.8rem; line-height:1.75; overflow-x:auto;"><span class="kw">public class</span> Produto {
+  <span class="kw">public</span> <span class="fn">String</span> nome;
+  <span class="kw">public</span> <span class="fn">double</span> preco;
+}
+
+<span class="cmt">// qualquer código pode:</span>
+Produto p = <span class="kw">new</span> Produto();
+p.preco = <span class="num">-99</span>;  <span class="cmt">// inválido!</span>
+p.nome  = <span class="str">""</span>;   <span class="cmt">// inválido!</span></pre>
+        </div>
+        <div style="background:var(--bg-panel); border:1px solid var(--border-mid); border-radius:var(--radius); overflow:hidden;">
+          <div style="padding:8px 14px; background:#0d1f14; border-bottom:1px solid var(--border); font-family:var(--font-mono); font-size:.7rem; color:var(--green);">✓ Com encapsulamento</div>
+          <pre style="padding:14px 16px; font-family:var(--font-mono); font-size:.8rem; line-height:1.75; overflow-x:auto;"><span class="kw">public class</span> Produto {
+  <span class="kw">private</span> <span class="fn">String</span> nome;
+  <span class="kw">private</span> <span class="fn">double</span> preco;
+
+  <span class="kw">public void</span> setPreco(<span class="fn">double</span> v) {
+    <span class="kw">if</span> (v > <span class="num">0</span>) preco = v;
+    <span class="cmt">// valor negativo é ignorado</span>
+  }
+}</pre>
+        </div>
+      </div>
+
+      <h3 class="subhead">private · getters · setters</h3>
+      <p style="color:var(--text-muted); font-size:.9rem; max-width:700px; margin-bottom:10px;">O padrão é declarar atributos como <code class="inline">private</code> e criar métodos públicos para acesso:</p>
+
+      <table style="width:100%; border-collapse:collapse; font-size:.88rem; margin:12px 0 20px;">
+        <thead>
+          <tr>
+            <th style="text-align:left; padding:8px 12px; border-bottom:2px solid var(--border-mid); font-family:var(--font-mono); color:var(--cyan); font-size:.7rem; text-transform:uppercase; letter-spacing:.07em;">Método</th>
+            <th style="text-align:left; padding:8px 12px; border-bottom:2px solid var(--border-mid); font-family:var(--font-mono); color:var(--cyan); font-size:.7rem; text-transform:uppercase; letter-spacing:.07em;">Prefixo</th>
+            <th style="text-align:left; padding:8px 12px; border-bottom:2px solid var(--border-mid); font-family:var(--font-mono); color:var(--cyan); font-size:.7rem; text-transform:uppercase; letter-spacing:.07em;">Retorna</th>
+            <th style="text-align:left; padding:8px 12px; border-bottom:2px solid var(--border-mid); font-family:var(--font-mono); color:var(--cyan); font-size:.7rem; text-transform:uppercase; letter-spacing:.07em;">Papel</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="padding:10px 12px; border-bottom:1px solid var(--border); color:var(--text-muted);"><code class="inline">getNome()</code></td>
+            <td style="padding:10px 12px; border-bottom:1px solid var(--border); color:var(--text-muted);"><code class="inline">get</code></td>
+            <td style="padding:10px 12px; border-bottom:1px solid var(--border); color:var(--text-muted);">valor do atributo</td>
+            <td style="padding:10px 12px; border-bottom:1px solid var(--border); color:var(--text-muted);">Leitura — nunca altera estado</td>
+          </tr>
+          <tr>
+            <td style="padding:10px 12px; border-bottom:1px solid var(--border); color:var(--text-muted);"><code class="inline">setNome(v)</code></td>
+            <td style="padding:10px 12px; border-bottom:1px solid var(--border); color:var(--text-muted);"><code class="inline">set</code></td>
+            <td style="padding:10px 12px; border-bottom:1px solid var(--border); color:var(--text-muted);"><code class="inline">void</code></td>
+            <td style="padding:10px 12px; border-bottom:1px solid var(--border); color:var(--text-muted);">Escrita com possível validação</td>
+          </tr>
+          <tr>
+            <td style="padding:10px 12px; color:var(--text-muted);"><code class="inline">isAtivo()</code></td>
+            <td style="padding:10px 12px; color:var(--text-muted);"><code class="inline">is</code></td>
+            <td style="padding:10px 12px; color:var(--text-muted);"><code class="inline">boolean</code></td>
+            <td style="padding:10px 12px; color:var(--text-muted);">Getter para atributos booleanos</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="console">
+        <div class="bar"><span class="label">ContaBancaria.java</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">public class</span> ContaBancaria {
+    <span class="kw">private</span> <span class="fn">String</span>  titular;
+    <span class="kw">private</span> <span class="fn">double</span>  saldo;
+    <span class="kw">private</span> <span class="fn">boolean</span> ativa;
+
+    <span class="kw">public</span> ContaBancaria(<span class="fn">String</span> titular, <span class="fn">double</span> saldoInicial) {
+        <span class="kw">this</span>.titular = titular;
+        <span class="kw">this</span>.saldo   = saldoInicial;
+        <span class="kw">this</span>.ativa   = <span class="kw">true</span>;
+    }
+
+    <span class="cmt">// getters — só leitura</span>
+    <span class="kw">public</span> <span class="fn">double</span>  getSaldo()   { <span class="kw">return</span> saldo;   }
+    <span class="kw">public</span> <span class="fn">String</span>  getTitular() { <span class="kw">return</span> titular; }
+    <span class="kw">public</span> <span class="fn">boolean</span> isAtiva()    { <span class="kw">return</span> ativa;   }
+
+    <span class="cmt">// operações controladas — sem setter de saldo direto!</span>
+    <span class="kw">public void</span> depositar(<span class="fn">double</span> valor) {
+        <span class="kw">if</span> (valor > <span class="num">0</span> && ativa) saldo += valor;
+    }
+
+    <span class="kw">public boolean</span> sacar(<span class="fn">double</span> valor) {
+        <span class="kw">if</span> (!ativa || valor > saldo) <span class="kw">return false</span>;
+        saldo -= valor;
+        <span class="kw">return true</span>;
+    }
+}</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ saldo só muda por depositar() e sacar() — nenhum código externo pode fazer: conta.saldo = 999999</span></div></div>
+      </div>
+
+      <div class="note"><span>💡</span><div>Note que não há <code class="inline">setSaldo()</code>. O saldo só muda pelos métodos <code class="inline">depositar()</code> e <code class="inline">sacar()</code>, que contêm as regras de negócio. Isso é encapsulamento de <b>comportamento</b>, não apenas de atributo.</div></div>
+
+      <h3 class="subhead">A palavra-chave <code class="inline">this</code></h3>
+      <p style="color:var(--text-muted); font-size:.9rem; max-width:700px; margin-bottom:10px;"><code class="inline">this</code> refere-se ao <b>objeto atual</b>. É necessário quando o nome do parâmetro é igual ao nome do atributo — sem ele, o Java entende que você está atribuindo a variável a ela mesma:</p>
+
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:16px 0;">
+        <div style="background:var(--bg-panel); border:1px solid var(--border-mid); border-radius:var(--radius); overflow:hidden;">
+          <div style="padding:8px 14px; background:#2a1a1a; border-bottom:1px solid var(--border); font-family:var(--font-mono); font-size:.7rem; color:var(--red);">✗ Ambíguo — não funciona</div>
+          <pre style="padding:14px 16px; font-family:var(--font-mono); font-size:.8rem; line-height:1.75; overflow-x:auto;"><span class="kw">public void</span> setNome(<span class="fn">String</span> nome) {
+  nome = nome; <span class="cmt">// parâmetro = parâmetro</span>
+               <span class="cmt">// atributo não é alterado!</span>
+}</pre>
+        </div>
+        <div style="background:var(--bg-panel); border:1px solid var(--border-mid); border-radius:var(--radius); overflow:hidden;">
+          <div style="padding:8px 14px; background:#0d1f14; border-bottom:1px solid var(--border); font-family:var(--font-mono); font-size:.7rem; color:var(--green);">✓ Correto com this</div>
+          <pre style="padding:14px 16px; font-family:var(--font-mono); font-size:.8rem; line-height:1.75; overflow-x:auto;"><span class="kw">public void</span> setNome(<span class="fn">String</span> nome) {
+  <span class="kw">this</span>.nome = nome;
+  <span class="cmt">// this.nome → atributo da classe</span>
+  <span class="cmt">// nome      → parâmetro recebido</span>
+}</pre>
+        </div>
+      </div>
+
+      <h3 class="subhead">Validação no setter</h3>
+      <div class="console">
+        <div class="bar"><span class="label">Aluno.java</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">public class</span> Aluno {
+    <span class="kw">private</span> <span class="fn">String</span> nome;
+    <span class="kw">private</span> <span class="fn">double</span> nota;   <span class="cmt">// deve estar entre 0 e 10</span>
+
+    <span class="kw">public void</span> setNome(<span class="fn">String</span> nome) {
+        <span class="kw">if</span> (nome != <span class="kw">null</span> && !nome.isBlank()) {
+            <span class="kw">this</span>.nome = nome;
+        } <span class="kw">else</span> {
+            System.out.println(<span class="str">"Nome inválido."</span>);
+        }
+    }
+
+    <span class="kw">public void</span> setNota(<span class="fn">double</span> nota) {
+        <span class="kw">if</span> (nota >= <span class="num">0</span> && nota <= <span class="num">10</span>) {
+            <span class="kw">this</span>.nota = nota;
+        } <span class="kw">else</span> {
+            System.out.println(<span class="str">"Nota deve estar entre 0 e 10."</span>);
+        }
+    }
+
+    <span class="kw">public</span> <span class="fn">String</span> getNome() { <span class="kw">return</span> nome; }
+    <span class="kw">public</span> <span class="fn">double</span> getNota() { <span class="kw">return</span> nota; }
+
+    <span class="kw">public</span> <span class="fn">String</span> situacao() {
+        <span class="kw">return</span> nota >= <span class="num">7</span> ? <span class="str">"Aprovado"</span> : <span class="str">"Reprovado"</span>;
+    }
+}
+
+<span class="cmt">// uso:</span>
+Aluno a = <span class="kw">new</span> Aluno();
+a.setNome(<span class="str">"Maria"</span>);
+a.setNota(<span class="num">8.5</span>);
+a.setNota(<span class="num">-3</span>);   <span class="cmt">// rejeitado pelo setter</span>
+System.out.println(a.getNome() + <span class="str">" — "</span> + a.situacao());</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ Nota deve estar entre 0 e 10. · Maria — Aprovado</span></div></div>
+      </div>
+    </section>
+
     <!-- CAP MODIFICADORES -->
-    <section class="chapter" id="cap-modificadores">
       <div class="chapter-header"><span class="chap-num"></span><h2>Modificadores de acesso</h2></div>
       <p class="chapter-intro"><b>Modificadores de acesso</b> controlam de onde uma classe, atributo, método ou construtor pode ser visto e usado. São a base do <b>encapsulamento</b>: decidem o que fica exposto como interface pública e o que fica escondido como detalhe interno.</p>
 
@@ -1077,7 +1248,7 @@ Voador[] voadores = { <span class="kw">new</span> Passaro(), <span class="kw">ne
         </div>
         <div class="activity-answer">
           <button class="activity-answer-toggle" onclick="toggleAnswer(this)">
-            <span class="arrow">Ver Resposta</span> 
+            <span class="arrow">▶</span> Ver resposta
           </button>
           <div class="activity-answer-body">
             <div class="inner">
@@ -1110,7 +1281,7 @@ System.out.println(nome + <span class="str">" obteve "</span> + nota + <span cla
         </div>
         <div class="activity-answer">
           <button class="activity-answer-toggle" onclick="toggleAnswer(this)">
-            <span class="arrow">Ver Resposta</span>  
+            <span class="arrow">▶</span> Ver resposta
           </button>
           <div class="activity-answer-body">
             <div class="inner">
@@ -1148,7 +1319,7 @@ System.out.println(nome + <span class="str">" obteve "</span> + nota + <span cla
         </div>
         <div class="activity-answer">
           <button class="activity-answer-toggle" onclick="toggleAnswer(this)">
-            <span class="arrow">Ver Resposta</span>  
+            <span class="arrow">▶</span> Ver resposta
           </button>
           <div class="activity-answer-body">
             <div class="inner">
@@ -1184,7 +1355,7 @@ System.out.println(<span class="str">"Soma dos ímpares: "</span> + soma);</pre>
         </div>
         <div class="activity-answer">
           <button class="activity-answer-toggle" onclick="toggleAnswer(this)">
-            <span class="arrow">Ver Resposta</span>  
+            <span class="arrow">▶</span> Ver resposta
           </button>
           <div class="activity-answer-body">
             <div class="inner">
@@ -1226,7 +1397,7 @@ System.out.println(<span class="str">"Maior nota: "</span> + maior);</pre>
         </div>
         <div class="activity-answer">
           <button class="activity-answer-toggle" onclick="toggleAnswer(this)">
-            <span class="arrow">Ver Resposta</span>  
+            <span class="arrow">▶</span> Ver resposta
           </button>
           <div class="activity-answer-body">
             <div class="inner">
@@ -1276,7 +1447,7 @@ p.exibir();</pre>
         </div>
         <div class="activity-answer">
           <button class="activity-answer-toggle" onclick="toggleAnswer(this)">
-            <span class="arrow">Ver Resposta</span>  
+            <span class="arrow">▶</span> Ver resposta
           </button>
           <div class="activity-answer-body">
             <div class="inner">
@@ -1339,7 +1510,7 @@ Veiculo[] frota = { <span class="kw">new</span> Carro(<span class="str">"Toyota"
         </div>
         <div class="activity-answer">
           <button class="activity-answer-toggle" onclick="toggleAnswer(this)">
-            <span class="arrow">Ver Resposta</span>  
+            <span class="arrow">▶</span> Ver resposta
           </button>
           <div class="activity-answer-body">
             <div class="inner">
