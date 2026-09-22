@@ -788,6 +788,13 @@ footer .dot { color: var(--amber); }
           <tr><td><code>ALL PRIVILEGES</code></td><td class="desc">Concede (ou revoga) todos os privilégios de uma vez.</td></tr>
         </tbody>
       </table>
+
+       <div class="grid cols-3">
+        <div class="card"><span class="tag ddl">GRANT</span><h3>Adiciona um privilégio</h3><p>Exemplo:</p> GRANT SELECT ON tabela TO joao;</div>
+        <div class="card"><span class="tag dml">REVOKE</span><h3>Remova um privilégio</h3><p>Exemplo:</p> REVOKE SELECT ON tabela TO joao;</div>
+        
+      </div>
+
       <div class="console">
         <div class="bar"><span class="label">dcl.sql — criar role e conceder acesso</span><button class="run-btn">▶ Executar</button></div>
         <pre><span class="kw">CREATE ROLE</span> app_leitura <span class="kw">WITH LOGIN PASSWORD</span> <span class="str">'senha_segura'</span>;
