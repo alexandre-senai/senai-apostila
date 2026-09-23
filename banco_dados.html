@@ -1672,9 +1672,9 @@ resumo_usuario <span class="kw">AS</span> (
       <p class="chapter-intro">Uma <b>sequence</b> gera números sequenciais únicos. É exatamente o mecanismo que o tipo <code class="inline">SERIAL</code> usa por trás dos panos para criar IDs automáticos.</p>
       <div class="console">
         <div class="bar"><span class="label">sequence.sql</span><button class="run-btn">▶ Executar</button></div>
-        <pre><span class="kw">CREATE SEQUENCE</span> sq_pedido_id <span class="kw">START</span> <span class="num">1000</span> <span class="kw">INCREMENT</span> <span class="num">1</span>;
-<span class="kw">SELECT</span> nextval(<span class="str">'sq_pedido_id'</span>);  <span class="cmt">-- → 1000</span>
-<span class="kw">SELECT</span> nextval(<span class="str">'sq_pedido_id'</span>);  <span class="cmt">-- → 1001</span></pre>
+        <pre><span class="kw">CREATE SEQUENCE</span> seq_pedido_id <span class="kw">START</span> <span class="num">1000</span> <span class="kw">INCREMENT</span> <span class="num">1</span>;
+<span class="kw">SELECT</span> nextval(<span class="str">'seq_pedido_id'</span>);  <span class="cmt">-- → 1000</span>
+<span class="kw">SELECT</span> nextval(<span class="str">'seq_pedido_id'</span>);  <span class="cmt">-- → 1001</span></pre>
         <div class="result"><div class="result-inner"><table><thead><tr><th>nextval</th></tr></thead><tbody><tr><td>1000</td></tr></tbody></table></div></div>
       </div>
     </section>
