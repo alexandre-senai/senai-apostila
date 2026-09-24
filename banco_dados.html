@@ -899,6 +899,113 @@ footer .dot { color: var(--amber); }
         </tbody></table></div></div>
       </div>
       <div class="note warn"><span>⚠️</span><div>Nunca conceda <code class="inline">ALL PRIVILEGES</code> para uma role usada por aplicação. Aplique o princípio do menor privilégio: dê só o que a aplicação precisa para funcionar — se ela só lê dados, só <code class="inline">SELECT</code>.</div></div>
+
+      <!-- PRIVILÉGIOS COMBINADOS -->
+      <h3 class="subhead">Quando um privilégio não é suficiente sozinho</h3>
+      <p class="chapter-intro">O PostgreSQL executa a operação inteira, não só o verbo. Sempre que um comando precisa <b>localizar</b> ou <b>retornar</b> dados antes de agir, ele exige <code class="inline">SELECT</code> implicitamente — mesmo que o verbo seja <code class="inline">UPDATE</code>, <code class="inline">DELETE</code> ou <code class="inline">INSERT</code>. Conceder só o verbo principal nesses casos resulta em <b>0 linhas afetadas sem nenhum erro</b>, o que é difícil de debugar.</p>
+
+      <!-- UPDATE -->
+      <h3 class="subhead" style="font-size:.8rem; margin-top:1.4rem;">UPDATE</h3>
+      <div class="grid cols-2" style="margin-bottom:.75rem">
+        <div class="card"><h3>Só <code style="font-size:.8em">UPDATE</code></h3><p>Quando não há <code>WHERE</code> nem <code>RETURNING</code> — o banco não precisa ler linhas antes de agir.</p></div>
+        <div class="card"><h3><code style="font-size:.8em">UPDATE</code> + <code style="font-size:.8em">SELECT</code></h3><p>Sempre que houver <code>WHERE</code>, <code>RETURNING</code> ou <code>UPDATE … FROM outra_tabela</code>.</p></div>
+      </div>
+      <div class="console">
+        <div class="bar"><span class="label">update_privilegios.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- só UPDATE: sem WHERE, sem RETURNING</span>
+<span class="kw">UPDATE</span> tb_produtos <span class="kw">SET</span> ativo = false;
+
+<span class="cmt">-- UPDATE + SELECT: tem WHERE → banco precisa ler para filtrar</span>
+<span class="kw">UPDATE</span> tb_produtos <span class="kw">SET</span> ativo = false <span class="kw">WHERE</span> preco &lt; <span class="num">10</span>;
+
+<span class="cmt">-- UPDATE + SELECT: tem RETURNING → banco precisa ler para retornar</span>
+<span class="kw">UPDATE</span> tb_pedidos <span class="kw">SET</span> status = <span class="str">'enviado'</span> <span class="kw">RETURNING</span> id, cliente;
+
+<span class="cmt">-- UPDATE + SELECT nas duas tabelas: JOIN implícito</span>
+<span class="kw">UPDATE</span> tb_pedidos p
+<span class="kw">SET</span>    status = <span class="str">'vip'</span>
+<span class="kw">FROM</span>   tb_usuarios u
+<span class="kw">WHERE</span>  u.id = p.usuario_id <span class="kw">AND</span> u.tipo = <span class="str">'premium'</span>;</pre>
+        <div class="result"><div class="result-inner"><span class="msg">ℹ️ Sem SELECT, os comandos com WHERE ou RETURNING executam com 0 linhas afetadas — sem erro.</span></div></div>
+      </div>
+
+      <!-- DELETE -->
+      <h3 class="subhead" style="font-size:.8rem; margin-top:1.4rem;">DELETE</h3>
+      <div class="console">
+        <div class="bar"><span class="label">delete_privilegios.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- só DELETE: apaga tudo sem filtro</span>
+<span class="kw">DELETE FROM</span> tb_logs;
+
+<span class="cmt">-- DELETE + SELECT: tem WHERE → precisa localizar as linhas</span>
+<span class="kw">DELETE FROM</span> tb_logs <span class="kw">WHERE</span> criado_em &lt; <span class="str">'2024-01-01'</span>;
+
+<span class="cmt">-- DELETE + SELECT nas duas: USING referencia outra tabela</span>
+<span class="kw">DELETE FROM</span> tb_pedidos p
+<span class="kw">USING</span>  tb_usuarios u
+<span class="kw">WHERE</span>  u.id = p.usuario_id <span class="kw">AND</span> u.ativo = false;</pre>
+        <div class="result"><div class="result-inner"><span class="msg">ℹ️ Mesma regra do UPDATE: WHERE ou USING exigem SELECT além de DELETE.</span></div></div>
+      </div>
+
+      <!-- INSERT -->
+      <h3 class="subhead" style="font-size:.8rem; margin-top:1.4rem;">INSERT</h3>
+      <div class="console">
+        <div class="bar"><span class="label">insert_privilegios.sql</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- só INSERT: valores fixos, sem ler nada</span>
+<span class="kw">INSERT INTO</span> tb_produtos (nome, preco) <span class="kw">VALUES</span> (<span class="str">'Caneta'</span>, <span class="num">2.50</span>);
+
+<span class="cmt">-- INSERT + SELECT: origem dos dados é outra tabela</span>
+<span class="kw">INSERT INTO</span> tb_backup <span class="kw">SELECT</span> * <span class="kw">FROM</span> tb_pedidos;
+
+<span class="cmt">-- INSERT + UPDATE + SELECT: upsert com ON CONFLICT</span>
+<span class="kw">INSERT INTO</span> tb_produtos (id, preco)
+<span class="kw">VALUES</span> (<span class="num">1</span>, <span class="num">99.90</span>)
+<span class="kw">ON CONFLICT</span> (id) <span class="kw">DO UPDATE SET</span> preco = EXCLUDED.preco;
+
+<span class="cmt">-- INSERT + SELECT: RETURNING lê as colunas geradas</span>
+<span class="kw">INSERT INTO</span> tb_usuarios (nome) <span class="kw">VALUES</span> (<span class="str">'Carlos'</span>) <span class="kw">RETURNING</span> id;</pre>
+        <div class="result"><div class="result-inner"><span class="msg">ℹ️ Upsert é a situação que exige mais privilégios: INSERT + UPDATE + SELECT ao mesmo tempo.</span></div></div>
+      </div>
+
+      <!-- TABELA RESUMO -->
+      <h3 class="subhead" style="font-size:.8rem; margin-top:1.4rem;">Resumo — o que conceder junto</h3>
+      <div class="result" style="margin-top:.5rem"><div class="result-inner">
+        <table>
+          <thead><tr><th>Caso de uso</th><th>Privilégios necessários</th></tr></thead>
+          <tbody>
+            <tr><td>Só leitura</td><td><code class="inline">SELECT</code></td></tr>
+            <tr><td>Inserção simples com VALUES</td><td><code class="inline">INSERT</code></td></tr>
+            <tr><td>Inserção a partir de outra tabela</td><td><code class="inline">INSERT</code> + <code class="inline">SELECT</code></td></tr>
+            <tr><td>Upsert (ON CONFLICT DO UPDATE)</td><td><code class="inline">INSERT</code> + <code class="inline">UPDATE</code> + <code class="inline">SELECT</code></td></tr>
+            <tr><td>Update com WHERE ou RETURNING</td><td><code class="inline">UPDATE</code> + <code class="inline">SELECT</code></td></tr>
+            <tr><td>Delete com WHERE ou USING</td><td><code class="inline">DELETE</code> + <code class="inline">SELECT</code></td></tr>
+            <tr><td>CRUD completo</td><td><code class="inline">SELECT</code> + <code class="inline">INSERT</code> + <code class="inline">UPDATE</code> + <code class="inline">DELETE</code></td></tr>
+            <tr><td>Esvaziar tabela inteira</td><td><code class="inline">TRUNCATE</code></td></tr>
+          </tbody>
+        </table>
+      </div></div>
+
+      <!-- RLS -->
+      <h3 class="subhead" style="font-size:.8rem; margin-top:1.4rem;">RLS adiciona mais uma camada</h3>
+      <p class="chapter-intro">Com <b>Row Level Security</b> ativo, mesmo que a role tenha os privilégios certos, as <b>políticas</b> decidem quais linhas ela enxerga por operação. Se existir política de <code class="inline">UPDATE</code> mas não de <code class="inline">SELECT</code>, o update executa com 0 linhas afetadas — sem erro.</p>
+      <div class="console">
+        <div class="bar"><span class="label">rls.sql — políticas por operação</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- ativar RLS na tabela</span>
+<span class="kw">ALTER TABLE</span> tb_pedidos <span class="kw">ENABLE ROW LEVEL SECURITY</span>;
+
+<span class="cmt">-- política de SELECT: define quais linhas a role consegue ler</span>
+<span class="kw">CREATE POLICY</span> ver_proprios <span class="kw">ON</span> tb_pedidos
+  <span class="kw">FOR SELECT USING</span> (usuario_id = current_user);
+
+<span class="cmt">-- sem a política abaixo, UPDATE não acha as linhas — mesmo com privilégio</span>
+<span class="kw">CREATE POLICY</span> editar_proprios <span class="kw">ON</span> tb_pedidos
+  <span class="kw">FOR UPDATE USING</span> (usuario_id = current_user);
+
+<span class="cmt">-- política que cobre SELECT e UPDATE de uma vez (FOR ALL)</span>
+<span class="kw">CREATE POLICY</span> acesso_proprio <span class="kw">ON</span> tb_pedidos
+  <span class="kw">FOR ALL USING</span> (usuario_id = current_user);</pre>
+        <div class="result"><div class="result-inner"><span class="msg">ℹ️ Cada política é por operação (SELECT, INSERT, UPDATE, DELETE, ALL). Sem a política de SELECT ativa, nenhuma outra operação com filtro funciona.</span></div></div>
+      </div>
+      <div class="note warn"><span>⚠️</span><div>O comportamento silencioso (0 linhas afetadas sem erro) é o ponto mais perigoso do DCL. Sempre teste os privilégios com o usuário real, não com o superusuário.</div></div>
     </section>
 
     <!-- CAP INSERT -->
