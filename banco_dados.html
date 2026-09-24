@@ -775,7 +775,38 @@ footer .dot { color: var(--amber); }
     <!-- CAP DCL -->
     <section class="chapter" id="cap-dcl">
       <div class="chapter-header"><span class="chap-num"></span><h2>DCL na prática: permissões e acesso</h2></div>
-      <p class="chapter-intro">O <b>DCL</b> decide <b>quem pode fazer o quê</b> no banco. Sem ele, todo usuário conectado teria acesso total a tudo.</p>
+      <p class="chapter-intro">O <b>DCL</b> decide <b>quem pode fazer o quê</b> no banco. Sem ele, todo usuário conectado teria acesso total a tudo. Os três pilares do DCL no PostgreSQL são: <b>roles</b> (quem é), <b>GRANT</b> (o que pode fazer) e <b>REVOKE</b> (o que deixa de poder fazer).</p>
+
+      <!-- ROLES -->
+      <h3 class="subhead">O que é uma Role?</h3>
+      <p class="chapter-intro">No PostgreSQL não existe separação entre "usuário" e "grupo" — tudo é <b>role</b>. A diferença está nas opções de configuração: uma role com <code class="inline">LOGIN</code> age como usuário; uma sem LOGIN age como grupo de permissões. Roles podem herdar permissões umas das outras.</p>
+      <div class="grid cols-3">
+        <div class="card"><h3>👤 Role com LOGIN</h3><p>Age como um usuário que se conecta ao banco. Precisa de senha. Ex: <code>CREATE ROLE ana WITH LOGIN PASSWORD '…'</code></p></div>
+        <div class="card"><h3>👥 Role sem LOGIN</h3><p>Age como grupo — agrupa permissões que são repassadas a outros. Ex: <code>CREATE ROLE perfil_leitura</code></p></div>
+        <div class="card"><h3>🔗 Herança</h3><p>Adicionar um usuário a um grupo via <code>GRANT perfil TO usuario</code> faz ele herdar todas as permissões do grupo.</p></div>
+      </div>
+      <div class="console">
+        <div class="bar"><span class="label">roles.sql — usuário, grupo e herança</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- role sem login: age como grupo de permissões</span>
+<span class="kw">CREATE ROLE</span> perfil_leitura;
+<span class="kw">CREATE ROLE</span> perfil_operador;
+
+<span class="cmt">-- role com login: usuário real que conecta ao banco</span>
+<span class="kw">CREATE ROLE</span> ana <span class="kw">WITH LOGIN PASSWORD</span> <span class="str">'senha_ana'</span>;
+<span class="kw">CREATE ROLE</span> carlos <span class="kw">WITH LOGIN PASSWORD</span> <span class="str">'senha_carlos'</span>;
+
+<span class="cmt">-- adicionar usuários aos grupos (herança de permissões)</span>
+<span class="kw">GRANT</span> perfil_leitura <span class="kw">TO</span> ana;
+<span class="kw">GRANT</span> perfil_operador <span class="kw">TO</span> carlos;
+
+<span class="cmt">-- remover usuário de um grupo</span>
+<span class="kw">REVOKE</span> perfil_leitura <span class="kw">FROM</span> ana;</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ Grupos e usuários criados; ana herdará todas as permissões de perfil_leitura.</span></div></div>
+      </div>
+      <div class="note"><span>💡</span><div><b>Por que usar grupos?</b> Se 10 usuários precisam das mesmas permissões, você concede uma vez ao grupo e adiciona cada usuário — em vez de repetir o GRANT 10 vezes. Quando a regra muda, você altera só o grupo.</div></div>
+
+      <!-- PRIVILÉGIOS -->
+      <h3 class="subhead">Privilégios disponíveis</h3>
       <table class="priv-table">
         <thead><tr><th>Privilégio</th><th>Permite</th></tr></thead>
         <tbody>
@@ -789,23 +820,85 @@ footer .dot { color: var(--amber); }
         </tbody>
       </table>
 
-       <div class="grid cols-3">
-        <div class="card"><span class="tag ddl">GRANT</span><h3>Adiciona um privilégio</h3><p>Exemplo:</p> GRANT SELECT ON tabela TO joao;</div>
-        <div class="card"><span class="tag dml">REVOKE</span><h3>Remova um privilégio</h3><p>Exemplo:</p> REVOKE SELECT ON tabela TO joao;</div>
-        
-      </div>
-
+      <!-- GRANT -->
+      <h3 class="subhead">GRANT — concedendo permissões</h3>
+      <p class="chapter-intro">O <code class="inline">GRANT</code> adiciona um privilégio a uma role. A sintaxe é sempre <code class="inline">GRANT &lt;privilégio&gt; ON &lt;objeto&gt; TO &lt;role&gt;</code>.</p>
       <div class="console">
-        <div class="bar"><span class="label">dcl.sql — criar role e conceder acesso</span><button class="run-btn">▶ Executar</button></div>
-        <pre><span class="kw">CREATE ROLE</span> app_leitura <span class="kw">WITH LOGIN PASSWORD</span> <span class="str">'senha_segura'</span>;
+        <div class="bar"><span class="label">grant.sql — formas de conceder acesso</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- só leitura em uma tabela</span>
+<span class="kw">GRANT SELECT ON</span> tb_usuarios <span class="kw">TO</span> perfil_leitura;
 
-<span class="kw">GRANT SELECT</span> <span class="kw">ON</span> tb_usuarios <span class="kw">TO</span> app_leitura;
-<span class="kw">GRANT SELECT, INSERT, UPDATE</span> <span class="kw">ON</span> tb_pedidos <span class="kw">TO</span> app_leitura;
+<span class="cmt">-- leitura e escrita em outra tabela</span>
+<span class="kw">GRANT SELECT, INSERT, UPDATE ON</span> tb_pedidos <span class="kw">TO</span> perfil_operador;
 
-<span class="cmt">-- revogar um privilégio específico</span>
-<span class="kw">REVOKE INSERT</span> <span class="kw">ON</span> tb_pedidos <span class="kw">FROM</span> app_leitura;</pre>
-        <div class="result"><div class="result-inner"><span class="msg">✓ Role criada, permissões concedidas e revogadas com sucesso.</span></div></div>
+<span class="cmt">-- tudo de uma vez</span>
+<span class="kw">GRANT ALL PRIVILEGES ON</span> tb_produtos <span class="kw">TO</span> perfil_operador;
+
+<span class="cmt">-- todas as tabelas existentes no schema public</span>
+<span class="kw">GRANT SELECT ON ALL TABLES IN SCHEMA</span> public <span class="kw">TO</span> perfil_leitura;
+
+<span class="cmt">-- tabelas criadas no futuro (DEFAULT PRIVILEGES)</span>
+<span class="kw">ALTER DEFAULT PRIVILEGES IN SCHEMA</span> public
+  <span class="kw">GRANT SELECT ON TABLES TO</span> perfil_leitura;</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ Permissões concedidas. DEFAULT PRIVILEGES garante acesso automático às tabelas futuras.</span></div></div>
       </div>
+
+      <!-- REVOKE -->
+      <h3 class="subhead">REVOKE — removendo permissões</h3>
+      <p class="chapter-intro">O <code class="inline">REVOKE</code> retira um privilégio previamente concedido. A sintaxe espelha o GRANT, mas usa <code class="inline">FROM</code> no lugar de <code class="inline">TO</code> — atenção a essa diferença.</p>
+      <div class="grid cols-2">
+        <div class="card"><h3>GRANT … <span style="color:var(--cyan)">TO</span></h3><p>Concede o privilégio <b>para</b> a role.</p></div>
+        <div class="card"><h3>REVOKE … <span style="color:var(--red)">FROM</span></h3><p>Remove o privilégio <b>de</b> a role.</p></div>
+      </div>
+      <div class="console">
+        <div class="bar"><span class="label">revoke.sql — removendo acessos</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- remover um privilégio específico</span>
+<span class="kw">REVOKE INSERT ON</span> tb_pedidos <span class="kw">FROM</span> perfil_operador;
+
+<span class="cmt">-- remover tudo de uma vez</span>
+<span class="kw">REVOKE ALL PRIVILEGES ON</span> tb_usuarios <span class="kw">FROM</span> perfil_operador;
+
+<span class="cmt">-- remover usuário de um grupo</span>
+<span class="kw">REVOKE</span> perfil_leitura <span class="kw">FROM</span> ana;</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ Privilégios revogados com sucesso.</span></div></div>
+      </div>
+
+      <!-- EXEMPLO COMPLETO -->
+      <h3 class="subhead">Exemplo completo — cenário real</h3>
+      <div class="console">
+        <div class="bar"><span class="label">dcl_completo.sql — fluxo de ponta a ponta</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="cmt">-- 1. criar grupos de permissão (sem login)</span>
+<span class="kw">CREATE ROLE</span> perfil_leitura;
+<span class="kw">CREATE ROLE</span> perfil_operador;
+
+<span class="cmt">-- 2. conceder permissões aos grupos</span>
+<span class="kw">GRANT SELECT ON ALL TABLES IN SCHEMA</span> public <span class="kw">TO</span> perfil_leitura;
+<span class="kw">GRANT SELECT, INSERT, UPDATE ON</span> tb_pedidos <span class="kw">TO</span> perfil_operador;
+<span class="kw">GRANT SELECT ON</span> tb_usuarios <span class="kw">TO</span> perfil_operador;
+
+<span class="cmt">-- 3. criar usuários reais com login</span>
+<span class="kw">CREATE ROLE</span> ana <span class="kw">WITH LOGIN PASSWORD</span> <span class="str">'senha_ana'</span>;
+<span class="kw">CREATE ROLE</span> carlos <span class="kw">WITH LOGIN PASSWORD</span> <span class="str">'senha_carlos'</span>;
+
+<span class="cmt">-- 4. adicionar usuários ao grupo adequado</span>
+<span class="kw">GRANT</span> perfil_leitura <span class="kw">TO</span> ana;      <span class="cmt">-- ana só lê</span>
+<span class="kw">GRANT</span> perfil_operador <span class="kw">TO</span> carlos;  <span class="cmt">-- carlos pode operar pedidos</span>
+
+<span class="cmt">-- 5. revogar um acesso que deixou de fazer sentido</span>
+<span class="kw">REVOKE UPDATE ON</span> tb_pedidos <span class="kw">FROM</span> perfil_operador;
+
+<span class="cmt">-- 6. consultar permissões de uma tabela (no psql: \dp tb_pedidos)</span>
+<span class="kw">SELECT</span> grantee, privilege_type, is_grantable
+<span class="kw">FROM</span>   information_schema.role_table_grants
+<span class="kw">WHERE</span>  table_name = <span class="str">'tb_pedidos'</span>
+<span class="kw">ORDER BY</span> grantee, privilege_type;</pre>
+        <div class="result"><div class="result-inner"><table><thead><tr><th>grantee</th><th>privilege_type</th><th>is_grantable</th></tr></thead><tbody>
+          <tr><td>perfil_leitura</td><td>SELECT</td><td>NO</td></tr>
+          <tr><td>perfil_operador</td><td>INSERT</td><td>NO</td></tr>
+          <tr><td>perfil_operador</td><td>SELECT</td><td>NO</td></tr>
+        </tbody></table></div></div>
+      </div>
+      <div class="note warn"><span>⚠️</span><div>Nunca conceda <code class="inline">ALL PRIVILEGES</code> para uma role usada por aplicação. Aplique o princípio do menor privilégio: dê só o que a aplicação precisa para funcionar — se ela só lê dados, só <code class="inline">SELECT</code>.</div></div>
     </section>
 
     <!-- CAP INSERT -->
