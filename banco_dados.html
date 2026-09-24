@@ -510,36 +510,37 @@ footer .dot { color: var(--amber); }
       <li><a href="#cap4" data-nav><span class="n">07</span>Criando tabelas</a></li>
       <li><a href="#cap5" data-nav><span class="n">08</span>DDL, DML e DCL</a></li>
       <li><a href="#cap-dcl" data-nav><span class="n">09</span>DCL na prática</a></li>
+      <li><a href="#cap-tcl" data-nav><span class="n">10</span>Transações e TCL</a></li>
     </ol>
     <div class="sidebar-section-label">Manipulação de dados</div>
     <ol>
-      <li><a href="#cap6" data-nav><span class="n">10</span>INSERT</a></li>
-      <li><a href="#cap10" data-nav><span class="n">11</span>SELECT</a></li>
-      <li><a href="#cap7" data-nav><span class="n">12</span>UPDATE</a></li>
-      <li><a href="#cap8" data-nav><span class="n">13</span>DELETE</a></li>
-      <li><a href="#cap9" data-nav><span class="n">14</span>ALTER TABLE</a></li>
+      <li><a href="#cap6" data-nav><span class="n">11</span>INSERT</a></li>
+      <li><a href="#cap10" data-nav><span class="n">12</span>SELECT</a></li>
+      <li><a href="#cap7" data-nav><span class="n">13</span>UPDATE</a></li>
+      <li><a href="#cap8" data-nav><span class="n">14</span>DELETE</a></li>
+      <li><a href="#cap9" data-nav><span class="n">15</span>ALTER TABLE</a></li>
     </ol>
     <div class="sidebar-section-label">Consultas avançadas</div>
     <ol>
-      <li><a href="#cap-filtros" data-nav><span class="n">15</span>Filtros essenciais</a></li>
-      <li><a href="#cap11" data-nav><span class="n">16</span>Funções de agregação</a></li>
-      <li><a href="#cap12" data-nav><span class="n">17</span>JOINs</a></li>
-      <li><a href="#cap13" data-nav><span class="n">18</span>Datas, textos e funções</a></li>
-      <li><a href="#cap23" data-nav><span class="n">19</span>WITH e subqueries</a></li>
+      <li><a href="#cap-filtros" data-nav><span class="n">16</span>Filtros essenciais</a></li>
+      <li><a href="#cap11" data-nav><span class="n">17</span>Funções de agregação</a></li>
+      <li><a href="#cap12" data-nav><span class="n">18</span>JOINs</a></li>
+      <li><a href="#cap13" data-nav><span class="n">19</span>Datas, textos e funções</a></li>
+      <li><a href="#cap23" data-nav><span class="n">20</span>WITH e subqueries</a></li>
     </ol>
     <div class="sidebar-section-label">Objetos do banco</div>
     <ol>
-      <li><a href="#cap15" data-nav><span class="n">20</span>VIEW</a></li>
-      <li><a href="#cap19" data-nav><span class="n">21</span>INDEX</a></li>
-      <li><a href="#cap20" data-nav><span class="n">22</span>EXPLAIN ANALYZE</a></li>
-      <li><a href="#cap18" data-nav><span class="n">23</span>SEQUENCE</a></li>
-      <li><a href="#cap17" data-nav><span class="n">24</span>FUNCTION</a></li>
-      <li><a href="#cap16" data-nav><span class="n">25</span>TRIGGER</a></li>
+      <li><a href="#cap15" data-nav><span class="n">21</span>VIEW</a></li>
+      <li><a href="#cap19" data-nav><span class="n">22</span>INDEX</a></li>
+      <li><a href="#cap20" data-nav><span class="n">23</span>EXPLAIN ANALYZE</a></li>
+      <li><a href="#cap18" data-nav><span class="n">24</span>SEQUENCE</a></li>
+      <li><a href="#cap17" data-nav><span class="n">25</span>FUNCTION</a></li>
+      <li><a href="#cap16" data-nav><span class="n">26</span>TRIGGER</a></li>
     </ol>
     <div class="sidebar-section-label">Manutenção</div>
     <ol>
-      <li><a href="#cap21" data-nav><span class="n">26</span>VACUUM</a></li>
-      <li><a href="#cap22" data-nav><span class="n">27</span>Backup e restauração</a></li>
+      <li><a href="#cap21" data-nav><span class="n">27</span>VACUUM</a></li>
+      <li><a href="#cap22" data-nav><span class="n">28</span>Backup e restauração</a></li>
     </ol>
   </nav>
 
@@ -1006,6 +1007,127 @@ footer .dot { color: var(--amber); }
         <div class="result"><div class="result-inner"><span class="msg">ℹ️ Cada política é por operação (SELECT, INSERT, UPDATE, DELETE, ALL). Sem a política de SELECT ativa, nenhuma outra operação com filtro funciona.</span></div></div>
       </div>
       <div class="note warn"><span>⚠️</span><div>O comportamento silencioso (0 linhas afetadas sem erro) é o ponto mais perigoso do DCL. Sempre teste os privilégios com o usuário real, não com o superusuário.</div></div>
+    </section>
+
+    <!-- CAP TCL -->
+    <section class="chapter" id="cap-tcl">
+      <div class="chapter-header"><span class="chap-num"></span><h2>Transações e TCL</h2></div>
+      <p class="chapter-intro">Uma <b>transação</b> é um bloco de operações tratado como uma unidade: ou tudo é salvo, ou nada é. O <b>TCL (Transaction Control Language)</b> controla esse comportamento com três comandos: <code class="inline">BEGIN</code>, <code class="inline">COMMIT</code> e <code class="inline">ROLLBACK</code>.</p>
+
+      <!-- POR QUE TRANSAÇÕES -->
+      <div class="grid cols-3">
+        <div class="card"><h3>🔒 Atomicidade</h3><p>Se qualquer operação dentro da transação falhar, nenhuma das outras é salva. Tudo ou nada.</p></div>
+        <div class="card"><h3>🔁 Consistência</h3><p>O banco sempre vai de um estado válido para outro válido. Regras de integridade nunca são violadas de forma permanente.</p></div>
+        <div class="card"><h3>🛡️ Isolamento</h3><p>Outras sessões não enxergam as mudanças feitas dentro de uma transação até ela ser confirmada com COMMIT.</p></div>
+      </div>
+
+      <!-- FLUXO VISUAL -->
+      <h3 class="subhead">Fluxo de uma transação</h3>
+      <div class="result" style="margin-bottom:1rem"><div class="result-inner" style="font-family:var(--font-mono); font-size:.8rem; line-height:2.2; color:var(--text)">
+        <span style="color:var(--cyan)">BEGIN</span> → operações SQL → <span style="color:var(--green)">COMMIT</span> (salva tudo)<br>
+        <span style="color:var(--cyan)">BEGIN</span> → operações SQL → <span style="color:var(--red)">ROLLBACK</span> (descarta tudo)<br>
+        <span style="color:var(--cyan)">BEGIN</span> → operações → <span style="color:var(--amber)">SAVEPOINT sp1</span> → mais operações → <span style="color:var(--amber)">ROLLBACK TO sp1</span> (volta ao ponto)
+      </div></div>
+
+      <!-- BEGIN / COMMIT -->
+      <h3 class="subhead">BEGIN e COMMIT — confirmando alterações</h3>
+      <p class="chapter-intro"><code class="inline">BEGIN</code> abre a transação. <code class="inline">COMMIT</code> confirma todas as operações feitas desde o BEGIN e as torna permanentes e visíveis para outras sessões.</p>
+      <div class="console">
+        <div class="bar"><span class="label">commit.sql — transferência entre contas</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">BEGIN</span>;
+
+<span class="cmt">-- débito na conta de origem</span>
+<span class="kw">UPDATE</span> tb_contas
+<span class="kw">SET</span>    saldo = saldo - <span class="num">500</span>
+<span class="kw">WHERE</span>  id = <span class="num">1</span>;
+
+<span class="cmt">-- crédito na conta de destino</span>
+<span class="kw">UPDATE</span> tb_contas
+<span class="kw">SET</span>    saldo = saldo + <span class="num">500</span>
+<span class="kw">WHERE</span>  id = <span class="num">2</span>;
+
+<span class="cmt">-- tudo certo: confirma as duas operações juntas</span>
+<span class="kw">COMMIT</span>;</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ COMMIT — transferência salva. As duas atualizações tornaram-se permanentes ao mesmo tempo.</span></div></div>
+      </div>
+      <div class="note"><span>💡</span><div>Sem o <code class="inline">BEGIN</code>, cada comando SQL já é uma transação automática (autocommit). Para agrupar operações, você precisa abrir a transação explicitamente.</div></div>
+
+      <!-- ROLLBACK -->
+      <h3 class="subhead">ROLLBACK — descartando alterações</h3>
+      <p class="chapter-intro"><code class="inline">ROLLBACK</code> desfaz todas as operações feitas desde o <code class="inline">BEGIN</code>, devolvendo o banco ao estado anterior. É usado quando algo dá errado — ou intencionalmente, para testar sem salvar.</p>
+      <div class="console">
+        <div class="bar"><span class="label">rollback.sql — erro no meio da transação</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">BEGIN</span>;
+
+<span class="kw">UPDATE</span> tb_contas
+<span class="kw">SET</span>    saldo = saldo - <span class="num">500</span>
+<span class="kw">WHERE</span>  id = <span class="num">1</span>;
+
+<span class="cmt">-- suponha que aqui acontece um erro de validação,</span>
+<span class="cmt">-- ou o código da aplicação detecta um problema</span>
+
+<span class="cmt">-- descarta tudo desde o BEGIN: nenhum saldo foi alterado</span>
+<span class="kw">ROLLBACK</span>;</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ ROLLBACK — banco voltou ao estado anterior ao BEGIN. Nenhuma alteração foi salva.</span></div></div>
+      </div>
+      <div class="note warn"><span>⚠️</span><div>Se a conexão cair no meio de uma transação aberta, o PostgreSQL executa o ROLLBACK automaticamente. Nada é perdido de forma silenciosa.</div></div>
+
+      <!-- SAVEPOINT -->
+      <h3 class="subhead">SAVEPOINT — pontos de retorno parcial</h3>
+      <p class="chapter-intro">Um <code class="inline">SAVEPOINT</code> marca um ponto dentro da transação. Com <code class="inline">ROLLBACK TO</code> você volta até esse ponto sem precisar desfazer tudo — as operações anteriores ao savepoint continuam válidas.</p>
+      <div class="console">
+        <div class="bar"><span class="label">savepoint.sql — desfazer só uma parte</span><button class="run-btn">▶ Executar</button></div>
+        <pre><span class="kw">BEGIN</span>;
+
+<span class="kw">INSERT INTO</span> tb_pedidos (cliente_id, valor) <span class="kw">VALUES</span> (<span class="num">10</span>, <span class="num">250.00</span>);
+
+<span class="cmt">-- marca um ponto de retorno</span>
+<span class="kw">SAVEPOINT</span> antes_desconto;
+
+<span class="cmt">-- tenta aplicar desconto</span>
+<span class="kw">UPDATE</span> tb_pedidos <span class="kw">SET</span> valor = valor * <span class="num">0.9</span> <span class="kw">WHERE</span> cliente_id = <span class="num">10</span>;
+
+<span class="cmt">-- desconto não deveria ser aplicado: volta ao savepoint</span>
+<span class="cmt">-- o INSERT ainda está válido, só o UPDATE é desfeito</span>
+<span class="kw">ROLLBACK TO</span> antes_desconto;
+
+<span class="cmt">-- libera o savepoint (opcional, boa prática)</span>
+<span class="kw">RELEASE SAVEPOINT</span> antes_desconto;
+
+<span class="cmt">-- confirma: INSERT salvo, UPDATE descartado</span>
+<span class="kw">COMMIT</span>;</pre>
+        <div class="result"><div class="result-inner"><span class="msg">✓ COMMIT — pedido inserido com valor original. O desconto foi desfeito pelo ROLLBACK TO, mas o INSERT foi preservado.</span></div></div>
+      </div>
+
+      <!-- REFERÊNCIA RÁPIDA -->
+      <h3 class="subhead">Referência rápida</h3>
+      <div class="result" style="margin-top:.5rem"><div class="result-inner">
+        <table>
+          <thead><tr><th>Comando</th><th>O que faz</th></tr></thead>
+          <tbody>
+            <tr><td><code class="inline">BEGIN</code></td><td>Abre uma transação manual. Tudo que vem depois faz parte do bloco.</td></tr>
+            <tr><td><code class="inline">COMMIT</code></td><td>Confirma e salva permanentemente todas as operações do bloco.</td></tr>
+            <tr><td><code class="inline">ROLLBACK</code></td><td>Descarta todas as operações desde o BEGIN.</td></tr>
+            <tr><td><code class="inline">SAVEPOINT nome</code></td><td>Marca um ponto de retorno dentro da transação.</td></tr>
+            <tr><td><code class="inline">ROLLBACK TO nome</code></td><td>Volta ao savepoint, preservando o que veio antes dele.</td></tr>
+            <tr><td><code class="inline">RELEASE SAVEPOINT nome</code></td><td>Remove o savepoint (libera memória; não desfaz nada).</td></tr>
+          </tbody>
+        </table>
+      </div></div>
+
+      <!-- AUTOCOMMIT -->
+      <h3 class="subhead">Autocommit — o comportamento padrão</h3>
+      <p class="chapter-intro">Sem <code class="inline">BEGIN</code>, cada comando SQL é tratado como uma transação própria e confirmado imediatamente. Isso é o <b>autocommit</b>.</p>
+      <div class="grid cols-2">
+        <div class="card"><h3>Com autocommit (padrão)</h3><pre style="font-family:var(--font-mono); font-size:.78rem; color:var(--text-muted); line-height:1.8"><span class="kw" style="color:var(--blue)">DELETE FROM</span> tb_logs;
+<span class="cmt" style="color:var(--text-subtle)">-- confirmado imediatamente</span>
+<span class="cmt" style="color:var(--text-subtle)">-- não há como desfazer</span></pre></div>
+        <div class="card"><h3>Com transação explícita</h3><pre style="font-family:var(--font-mono); font-size:.78rem; color:var(--text-muted); line-height:1.8"><span class="kw" style="color:var(--cyan)">BEGIN</span>;
+<span class="kw" style="color:var(--blue)">DELETE FROM</span> tb_logs;
+<span class="cmt" style="color:var(--text-subtle)">-- ainda pode fazer ROLLBACK</span>
+<span class="kw" style="color:var(--green)">COMMIT</span>; <span class="cmt" style="color:var(--text-subtle)">-- ou ROLLBACK</span></pre></div>
+      </div>
+      <div class="note warn"><span>⚠️</span><div>Operações destrutivas como <code class="inline">DELETE</code> sem <code class="inline">WHERE</code> ou <code class="inline">TRUNCATE</code> devem sempre ser executadas dentro de um <code class="inline">BEGIN</code> durante o desenvolvimento — assim você pode fazer <code class="inline">ROLLBACK</code> se errar.</div></div>
     </section>
 
     <!-- CAP INSERT -->
