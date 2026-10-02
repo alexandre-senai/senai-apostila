@@ -3787,8 +3787,7 @@ resumo_usuario <span class="kw">AS</span> (
         <div class="chapter-header"><span class="chap-num"></span>
           <h2>VIEW — consultas salvas</h2>
         </div>
-        <p class="chapter-intro">Uma <b>view</b> é uma consulta SQL salva com um nome, que se comporta como uma tabela
-          virtual — sem duplicar os dados. Toda vez que a view é consultada, a query original roda por trás.</p>
+        <p class="chapter-intro">Uma <b>view</b> é uma consulta SQL salva com um nome, que se comporta como uma tabela virtual — sem duplicar os dados. Toda vez que a view é consultada, a query original roda por trás.</p>
         <div class="console">
           <div class="bar"><span class="label">view.sql</span><button class="run-btn">▶ Executar</button></div>
           <pre><span class="kw">CREATE VIEW</span> vw_usuarios_ativos <span class="kw">AS</span>
@@ -3799,10 +3798,88 @@ resumo_usuario <span class="kw">AS</span> (
 <span class="cmt">-- uso: idêntico a consultar uma tabela</span>
 <span class="kw">SELECT</span> * <span class="kw">FROM</span> vw_usuarios_ativos;</pre>
           <div class="result">
-            <div class="result-inner"><span class="msg">✓ CREATE VIEW — "vw_usuarios_ativos" pronta para uso.</span>
-            </div>
+            <div class="result-inner"><span class="msg">✓ CREATE VIEW — "vw_usuarios_ativos" pronta para uso.</span></div>
           </div>
         </div>
+
+        <!-- MATERIALIZED VIEW -->
+        <h3 class="subhead">VIEW MATERIALIZADA</h3>
+        <p class="chapter-intro">Uma <b>Materialized View</b> também salva uma consulta com um nome — mas com uma diferença fundamental: ela <b>armazena o resultado fisicamente no disco</b>, como se fosse uma tabela real. A query só roda quando você manda atualizar com <code class="inline">REFRESH</code>.</p>
+
+        <div class="grid cols-2">
+          <div class="card">
+            <h3>VIEW normal</h3>
+            <p>Não armazena dados. A query roda do zero a cada consulta. Sempre mostra dados atuais, mas pode ser lenta em queries complexas ou tabelas grandes.</p>
+          </div>
+          <div class="card">
+            <h3>MATERIALIZED VIEW</h3>
+            <p>Armazena o resultado no disco. A leitura é muito rápida (não executa a query). Os dados ficam "congelados" até o próximo REFRESH.</p>
+          </div>
+        </div>
+
+        <div class="console">
+          <div class="bar"><span class="label">materialized_view.sql — criar e usar</span><button class="run-btn">▶ Executar</button></div>
+          <pre><span class="cmt">-- criar a materialized view</span>
+<span class="kw">CREATE MATERIALIZED VIEW</span> mvw_resumo_pedidos <span class="kw">AS</span>
+<span class="kw">SELECT</span>
+  u.tx_nome,
+  <span class="fn">COUNT</span>(p.id_pedido)  <span class="kw">AS</span> qt_pedidos,
+  <span class="fn">SUM</span>(p.vl_total)     <span class="kw">AS</span> vl_total
+<span class="kw">FROM</span>   tb_usuarios u
+<span class="kw">JOIN</span>   tb_pedidos  p <span class="kw">ON</span> p.cd_usuario = u.id_usuario
+<span class="kw">GROUP BY</span> u.tx_nome;
+
+<span class="cmt">-- consultar: leitura direta do disco, sem rodar a query</span>
+<span class="kw">SELECT</span> * <span class="kw">FROM</span> mvw_resumo_pedidos;
+
+<span class="cmt">-- atualizar os dados quando necessário</span>
+<span class="kw">REFRESH MATERIALIZED VIEW</span> mvw_resumo_pedidos;
+
+<span class="cmt">-- atualizar sem bloquear leituras simultâneas (precisa de índice único)</span>
+<span class="kw">REFRESH MATERIALIZED VIEW CONCURRENTLY</span> mvw_resumo_pedidos;
+
+<span class="cmt">-- remover</span>
+<span class="kw">DROP MATERIALIZED VIEW</span> mvw_resumo_pedidos;</pre>
+          <div class="result">
+            <div class="result-inner"><span class="msg">✓ MATERIALIZED VIEW criada. Dados armazenados em disco e prontos para leitura sem reprocessamento.</span></div>
+          </div>
+        </div>
+
+        <div class="note"><span>💡</span><div>O <code class="inline">REFRESH CONCURRENTLY</code> permite que outros usuários continuem lendo a view enquanto ela é atualizada. Sem <code class="inline">CONCURRENTLY</code>, a view fica bloqueada durante o refresh. Para usar CONCURRENTLY é necessário ter um índice único na materialized view.</div></div>
+
+        <!-- ÍNDICE EM MAT VIEW -->
+        <h3 class="subhead">Criando índice em uma Materialized View</h3>
+        <p class="chapter-intro">Diferente de uma view normal, a materialized view armazena dados reais — o que significa que você pode criar índices sobre ela para acelerar ainda mais as buscas.</p>
+        <div class="console">
+          <div class="bar"><span class="label">index_matview.sql</span><button class="run-btn">▶ Executar</button></div>
+          <pre><span class="cmt">-- índice único (necessário para REFRESH CONCURRENTLY)</span>
+<span class="kw">CREATE UNIQUE INDEX</span> idx_mvw_resumo_nome
+  <span class="kw">ON</span> mvw_resumo_pedidos (tx_nome);
+
+<span class="cmt">-- agora o REFRESH CONCURRENTLY funciona</span>
+<span class="kw">REFRESH MATERIALIZED VIEW CONCURRENTLY</span> mvw_resumo_pedidos;</pre>
+          <div class="result">
+            <div class="result-inner"><span class="msg">✓ Índice criado. REFRESH CONCURRENTLY disponível — leituras não são bloqueadas durante a atualização.</span></div>
+          </div>
+        </div>
+
+        <!-- TABELA COMPARATIVA -->
+        <h3 class="subhead">Quando usar cada uma</h3>
+        <div class="result" style="margin-top:.5rem"><div class="result-inner">
+          <table>
+            <thead><tr><th>Critério</th><th>VIEW</th><th>MATERIALIZED VIEW</th></tr></thead>
+            <tbody>
+              <tr><td>Armazena dados</td><td>Não — só a query</td><td>Sim — resultado no disco</td></tr>
+              <tr><td>Dados sempre atuais</td><td>✓ Sempre</td><td>Só após REFRESH</td></tr>
+              <tr><td>Velocidade de leitura</td><td>Depende da query</td><td>✓ Muito rápida</td></tr>
+              <tr><td>Suporta índices</td><td>Não</td><td>✓ Sim</td></tr>
+              <tr><td>Ocupa espaço em disco</td><td>Não</td><td>Sim</td></tr>
+              <tr><td>Ideal para</td><td>Dados que mudam sempre e queries simples</td><td>Relatórios, dashboards, queries pesadas com JOIN e agregação</td></tr>
+            </tbody>
+          </table>
+        </div></div>
+
+        <div class="note warn"><span>⚠️</span><div>Materialized views <b>não atualizam sozinhas</b>. Se os dados da tabela base mudarem e você não executar o REFRESH, a view continuará mostrando os dados antigos. Em produção, o REFRESH costuma ser agendado via <code class="inline">pg_cron</code> ou pelo próprio sistema.</div></div>
       </section>
 
       <!-- CAP INDEX -->
