@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -471,6 +470,68 @@
   }
   .nav-link.hidden { display: none; }
 
+  /* ── DEMOS (seção Styles) ── */
+  .demo {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    margin: .9rem 0 1.25rem;
+  }
+  .demo-label {
+    font-size: .68rem;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: .6rem;
+  }
+  .demo-item {
+    background: rgba(108,142,255,.15);
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    color: var(--accent);
+    font-family: var(--font-mono);
+    font-size: .8rem;
+    padding: .4rem .8rem;
+    text-align: center;
+  }
+  .demo-flex { display: flex; justify-content: space-between; align-items: center; gap: .5rem; }
+  .demo-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; }
+  .demo-grid .span2 { grid-column: span 2; }
+
+  .theme-demo {
+    --t-bg: #ffffff;
+    --t-text: #1a1a2e;
+    --t-primary: #4f46e5;
+    --t-border: #d4d4d8;
+    background: var(--t-bg);
+    color: var(--t-text);
+    border: 1px solid var(--t-border);
+    border-radius: 8px;
+    padding: 1rem 1.1rem;
+    margin: .9rem 0 1.25rem;
+    transition: background .2s, color .2s;
+  }
+  .theme-demo[data-theme="dark"] {
+    --t-bg: #1a1a2e;
+    --t-text: #f4f4f5;
+    --t-primary: #818cf8;
+    --t-border: #3f3f5a;
+  }
+  .theme-demo p, .theme-demo strong { color: var(--t-text); }
+  .theme-demo p { margin-bottom: .75rem; }
+  .theme-demo button {
+    background: var(--t-primary);
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+    padding: .4rem .9rem;
+    font-family: var(--font-sans);
+    font-size: .8rem;
+    cursor: pointer;
+  }
+
   @media (max-width: 768px) {
     #sidebar {
       width: 260px; min-width: 260px;
@@ -534,6 +595,15 @@
     <a class="nav-link" href="#dotenv"><span class="dot"></span>Variáveis de Ambiente (.env)</a>
     <a class="nav-link" href="#promise"><span class="dot"></span>Promise e async/await</a>
     <a class="nav-link" href="#rows"><span class="dot"></span>O que é rows</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-title">Styles</div>
+    <a class="nav-link" href="#styles"><span class="dot"></span>Visão geral</a>
+    <a class="nav-link" href="#styles-media-query"><span class="dot"></span>Media Query</a>
+    <a class="nav-link" href="#styles-responsividade"><span class="dot"></span>Responsividade</a>
+    <a class="nav-link" href="#styles-display"><span class="dot"></span>Displays</a>
+    <a class="nav-link" href="#styles-themes"><span class="dot"></span>Themes</a>
   </div>
 
   <div class="nav-group">
@@ -1606,6 +1676,522 @@ storage.<span class="fn">set</span>&lt;<span class="cls">Preferencias</span>&gt;
   </section>
 
 
+  <!-- ═══ STYLES ═══ -->
+  <section class="section" id="styles">
+    <div class="section-tag">Styles · CSS</div>
+    <h2>Styles</h2>
+
+    <p>O CSS controla a <strong>aparência</strong> e o <strong>comportamento visual</strong> de uma página. Esta seção reúne quatro tópicos que trabalham juntos para criar interfaces que funcionam bem em qualquer tela:</p>
+
+    <div class="card-grid">
+      <div class="card"><div class="card-label">Media Query</div><div class="card-value">Aplicar estilos conforme a tela ou o usuário</div></div>
+      <div class="card"><div class="card-label">Responsividade</div><div class="card-value">Layouts que se adaptam ao espaço</div></div>
+      <div class="card"><div class="card-label">Displays</div><div class="card-value">block, inline, flex, grid e none</div></div>
+      <div class="card"><div class="card-label">Themes</div><div class="card-value">Claro e escuro com variáveis CSS</div></div>
+    </div>
+  </section>
+
+
+  <!-- ═══ MEDIA QUERY ═══ -->
+  <section class="section" id="styles-media-query">
+    <div class="section-tag">Styles · CSS</div>
+    <h2>Media Query</h2>
+
+    <p>Uma <strong>media query</strong> é uma regra <code>@media</code> que aplica um bloco de estilos <strong>somente quando uma condição é verdadeira</strong> — largura da tela, orientação, preferência de tema do usuário, impressão, entre outras.</p>
+
+    <div class="card-grid">
+      <div class="card"><div class="card-label">Sintaxe</div><div class="card-value">@media tipo and (condição)</div></div>
+      <div class="card"><div class="card-label">Tipos</div><div class="card-value">all, screen, print</div></div>
+      <div class="card"><div class="card-label">Operadores</div><div class="card-value">and, not, only e vírgula (OU)</div></div>
+    </div>
+
+    <h3>Sintaxe básica</h3>
+    <pre><code><span class="file-tag">style.css</span>
+<span class="cm">/* Estilo base — vale para todas as telas */</span>
+<span class="cls">.container {</span>
+  <span class="fn">padding</span>: <span class="num">1rem</span>;
+  <span class="fn">background</span>: <span class="num">#ffffff</span>;
+}
+
+<span class="cm">/* A partir de 768px de largura */</span>
+<span class="kw">@media</span> (min-width: <span class="num">768px</span>) {
+  <span class="cls">.container {</span>
+    <span class="fn">padding</span>: <span class="num">2rem</span>;
+    <span class="fn">max-width</span>: <span class="num">720px</span>;
+  }
+}</code></pre>
+
+    <h3>Principais recursos</h3>
+
+    <table>
+      <tr><th>Recurso</th><th>Exemplo</th><th>Quando aplica</th></tr>
+      <tr><td>min-width</td><td><code>(min-width: 768px)</code></td><td>Largura igual ou maior que 768px</td></tr>
+      <tr><td>max-width</td><td><code>(max-width: 767px)</code></td><td>Largura igual ou menor que 767px</td></tr>
+      <tr><td>orientation</td><td><code>(orientation: landscape)</code></td><td>Tela deitada (largura maior que altura)</td></tr>
+      <tr><td>prefers-color-scheme</td><td><code>(prefers-color-scheme: dark)</code></td><td>Sistema do usuário está no modo escuro</td></tr>
+      <tr><td>prefers-reduced-motion</td><td><code>(prefers-reduced-motion: reduce)</code></td><td>Usuário pediu menos animações</td></tr>
+      <tr><td>hover</td><td><code>(hover: hover)</code></td><td>Dispositivo com mouse (não toque)</td></tr>
+      <tr><td>print</td><td><code>@media print</code></td><td>Página sendo impressa ou salva em PDF</td></tr>
+    </table>
+
+    <h3>Combinando condições</h3>
+    <pre><code><span class="cm">/* AND — as duas condições precisam ser verdadeiras (tablet) */</span>
+<span class="kw">@media</span> (min-width: <span class="num">768px</span>) and (max-width: <span class="num">1023px</span>) {
+  <span class="cls">.menu {</span>
+    <span class="fn">flex-direction</span>: row;
+  }
+}
+
+<span class="cm">/* OR — a vírgula separa condições alternativas */</span>
+<span class="kw">@media</span> (max-width: <span class="num">480px</span>), (orientation: portrait) {
+  <span class="cls">.banner {</span>
+    <span class="fn">display</span>: none;
+  }
+}
+
+<span class="cm">/* NOT — inverte a condição */</span>
+<span class="kw">@media</span> not print {
+  <span class="cls">.so-na-impressao {</span>
+    <span class="fn">display</span>: none;
+  }
+}
+
+<span class="cm">/* Sintaxe de intervalo (moderna) */</span>
+<span class="kw">@media</span> (<span class="num">768px</span> &lt;= width &lt; <span class="num">1024px</span>) {
+  <span class="cls">.menu {</span>
+    <span class="fn">gap</span>: <span class="num">1.5rem</span>;
+  }
+}</code></pre>
+
+    <h3>Breakpoints comuns</h3>
+
+    <table>
+      <tr><th>Faixa</th><th>Largura</th><th>Dispositivo típico</th></tr>
+      <tr><td>Pequeno</td><td>até 599px</td><td>Celulares</td></tr>
+      <tr><td>Médio</td><td>600px – 767px</td><td>Celulares grandes, tablets pequenos</td></tr>
+      <tr><td>Tablet</td><td>768px – 1023px</td><td>Tablets</td></tr>
+      <tr><td>Notebook</td><td>1024px – 1279px</td><td>Notebooks e telas pequenas</td></tr>
+      <tr><td>Desktop</td><td>1280px ou mais</td><td>Monitores</td></tr>
+    </table>
+
+    <div class="callout tip">
+      <strong>Dica:</strong> prefira breakpoints guiados pelo <strong>conteúdo</strong>. Redimensione a janela e crie uma media query no ponto em que o layout começa a quebrar — não em função de um aparelho específico.
+    </div>
+
+    <h3>Mobile-first vs Desktop-first</h3>
+
+    <table>
+      <tr><th>Abordagem</th><th>Estilo base</th><th>Query usada</th></tr>
+      <tr><td>Mobile-first</td><td>Celular</td><td><code>min-width</code> — adiciona estilos conforme a tela cresce</td></tr>
+      <tr><td>Desktop-first</td><td>Desktop</td><td><code>max-width</code> — remove ou ajusta estilos conforme a tela diminui</td></tr>
+    </table>
+
+    <h3>Exemplos práticos</h3>
+
+    <p><strong>1. Layout em coluna no celular e em linha no desktop:</strong></p>
+    <pre><code><span class="cls">.cards {</span>
+  <span class="fn">display</span>: flex;
+  <span class="fn">flex-direction</span>: column;   <span class="cm">/* celular: um embaixo do outro */</span>
+  <span class="fn">gap</span>: <span class="num">1rem</span>;
+}
+
+<span class="kw">@media</span> (min-width: <span class="num">768px</span>) {
+  <span class="cls">.cards {</span>
+    <span class="fn">flex-direction</span>: row;    <span class="cm">/* desktop: lado a lado */</span>
+  }
+}</code></pre>
+    <p><strong>2. Ajustando a página para impressão:</strong></p>
+    <pre><code><span class="kw">@media</span> print {
+  nav,
+  .sidebar,
+  <span class="cls">.btn-imprimir {</span>
+    <span class="fn">display</span>: none;          <span class="cm">/* esconde o que não faz sentido no papel */</span>
+  }
+
+  <span class="cls">body {</span>
+    <span class="fn">color</span>: <span class="num">#000000</span>;
+    <span class="fn">background</span>: <span class="num">#ffffff</span>;
+  }
+}</code></pre>
+    <p><strong>3. Respeitando quem prefere menos animação (acessibilidade):</strong></p>
+    <pre><code><span class="kw">@media</span> (prefers-reduced-motion: reduce) {
+  <span class="cls">* {</span>
+    <span class="fn">animation</span>: none !important;
+    <span class="fn">transition</span>: none !important;
+  }
+}</code></pre>
+    <p><strong>4. Carregando um arquivo CSS só para um contexto</strong> (atributo <code>media</code> do <code>&lt;link&gt;</code>):</p>
+    <pre><code><span class="file-tag">index.html</span>
+&lt;<span class="cls">link</span> <span class="fn">rel</span>=<span class="str">"stylesheet"</span> <span class="fn">href</span>=<span class="str">"base.css"</span> /&gt;
+&lt;<span class="cls">link</span> <span class="fn">rel</span>=<span class="str">"stylesheet"</span> <span class="fn">href</span>=<span class="str">"desktop.css"</span> <span class="fn">media</span>=<span class="str">"(min-width: 1024px)"</span> /&gt;
+&lt;<span class="cls">link</span> <span class="fn">rel</span>=<span class="str">"stylesheet"</span> <span class="fn">href</span>=<span class="str">"print.css"</span> <span class="fn">media</span>=<span class="str">"print"</span> /&gt;</code></pre>
+
+    <div class="callout info">
+      Você pode testar media queries no navegador: abra o DevTools (<code>F12</code>), ative o <strong>modo dispositivo</strong> com <code>Ctrl+Shift+M</code> e arraste a largura da janela.
+    </div>
+  </section>
+
+
+  <!-- ═══ RESPONSIVIDADE ═══ -->
+  <section class="section" id="styles-responsividade">
+    <div class="section-tag">Styles · CSS</div>
+    <h2>Responsividade</h2>
+
+    <p><strong>Design responsivo</strong> é a capacidade de uma página se adaptar a diferentes tamanhos de tela sem precisar de uma versão separada para cada aparelho. Ele se apoia em três pilares: <strong>layout fluido</strong>, <strong>imagens flexíveis</strong> e <strong>media queries</strong>.</p>
+
+    <div class="card-grid">
+      <div class="card"><div class="card-label">Viewport</div><div class="card-value">Informa ao celular a largura real da tela</div></div>
+      <div class="card"><div class="card-label">Unidades relativas</div><div class="card-value">%, rem, vw, fr em vez de px fixo</div></div>
+      <div class="card"><div class="card-label">Layout flexível</div><div class="card-value">Flexbox e Grid</div></div>
+      <div class="card"><div class="card-label">Abordagem</div><div class="card-value">Mobile-first</div></div>
+    </div>
+
+    <h3>1. Meta viewport</h3>
+
+    <p>Sem esta tag, o celular finge ter ~980px de largura e reduz a página inteira. Ela deve estar no <code>&lt;head&gt;</code> de todo projeto responsivo:</p>
+    <pre><code><span class="file-tag">index.html</span>
+&lt;<span class="cls">meta</span> <span class="fn">name</span>=<span class="str">"viewport"</span> <span class="fn">content</span>=<span class="str">"width=device-width, initial-scale=1.0"</span> /&gt;</code></pre>
+
+    <div class="callout warn">
+      <strong>Atenção:</strong> sem a meta viewport, as media queries de largura não funcionam como esperado no celular.
+    </div>
+
+    <h3>2. Unidades de medida</h3>
+
+    <table>
+      <tr><th>Unidade</th><th>Relativa a</th><th>Uso típico</th></tr>
+      <tr><td>%</td><td>Tamanho do elemento pai</td><td>Larguras fluidas</td></tr>
+      <tr><td>rem</td><td>Tamanho da fonte do <code>html</code></td><td>Fontes, espaçamentos</td></tr>
+      <tr><td>em</td><td>Tamanho da fonte do próprio elemento</td><td>Espaçamentos internos de componentes</td></tr>
+      <tr><td>vw / vh</td><td>1% da largura / altura da janela</td><td>Seções de tela cheia</td></tr>
+      <tr><td>dvh</td><td>Altura visível dinâmica (considera a barra do navegador no celular)</td><td>Hero em tela cheia no mobile</td></tr>
+      <tr><td>ch</td><td>Largura do caractere "0"</td><td>Limitar largura de texto (ex.: <code>65ch</code>)</td></tr>
+      <tr><td>fr</td><td>Fração do espaço livre no Grid</td><td>Colunas flexíveis</td></tr>
+      <tr><td>px</td><td>Valor fixo</td><td>Bordas, sombras, detalhes finos</td></tr>
+    </table>
+    <pre><code><span class="cls">.card {</span>
+  <span class="fn">width</span>: <span class="num">100%</span>;
+  <span class="fn">max-width</span>: <span class="num">600px</span>;      <span class="cm">/* nunca passa de 600px */</span>
+  <span class="fn">padding</span>: <span class="num">1.5rem</span>;
+  <span class="fn">margin-inline</span>: auto;   <span class="cm">/* centraliza horizontalmente */</span>
+}
+
+<span class="cls">.hero {</span>
+  <span class="fn">min-height</span>: <span class="num">100dvh</span>;    <span class="cm">/* ocupa a altura visível da tela */</span>
+}
+
+<span class="cls">.texto {</span>
+  <span class="fn">max-width</span>: <span class="num">65ch</span>;       <span class="cm">/* linha confortável de leitura */</span>
+}</code></pre>
+
+    <h3>3. Imagens e vídeos fluidos</h3>
+    <pre><code>img,
+<span class="cls">video {</span>
+  <span class="fn">max-width</span>: <span class="num">100%</span>;       <span class="cm">/* nunca ultrapassa o contêiner */</span>
+  <span class="fn">height</span>: auto;          <span class="cm">/* mantém a proporção */</span>
+}
+
+<span class="cls">.capa {</span>
+  <span class="fn">width</span>: <span class="num">100%</span>;
+  <span class="fn">aspect-ratio</span>: <span class="num">16</span> / <span class="num">9</span>;
+  <span class="fn">object-fit</span>: cover;     <span class="cm">/* recorta sem distorcer */</span>
+}</code></pre>
+
+    <h3>4. Tipografia fluida com clamp()</h3>
+
+    <p>A função <code>clamp(mínimo, ideal, máximo)</code> faz o tamanho crescer com a tela, mas dentro de limites:</p>
+    <pre><code><span class="cls">h1 {</span>
+  <span class="fn">font-size</span>: clamp(<span class="num">1.5rem</span>, <span class="num">4vw</span> + <span class="num">1rem</span>, <span class="num">3rem</span>);
+  <span class="cm">/* nunca menor que 1.5rem, nunca maior que 3rem */</span>
+}
+
+<span class="cls">.container {</span>
+  <span class="fn">padding</span>: clamp(<span class="num">1rem</span>, <span class="num">5vw</span>, <span class="num">3rem</span>);
+}</code></pre>
+
+    <h3>5. Grid responsivo sem media query</h3>
+
+    <p>Com <code>auto-fit</code> e <code>minmax()</code>, o navegador decide sozinho quantas colunas cabem:</p>
+    <pre><code><span class="cls">.cards {</span>
+  <span class="fn">display</span>: grid;
+  <span class="fn">grid-template-columns</span>: repeat(auto-fit, minmax(<span class="num">220px</span>, <span class="num">1fr</span>));
+  <span class="fn">gap</span>: <span class="num">1rem</span>;
+}</code></pre>
+
+    <div class="callout info">
+      Este mesmo truque é usado nos blocos <code>.card-grid</code> desta página: redimensione a janela e veja as colunas se reorganizarem.
+    </div>
+
+    <h3>6. Container Queries</h3>
+
+    <p>Enquanto a media query reage ao tamanho da <strong>tela</strong>, a container query reage ao tamanho do <strong>contêiner</strong> do componente — ideal para componentes reutilizáveis.</p>
+    <pre><code><span class="cls">.card-wrapper {</span>
+  <span class="fn">container-type</span>: inline-size;
+}
+
+<span class="cls">.card {</span>
+  <span class="fn">display</span>: block;
+}
+
+<span class="kw">@container</span> (min-width: <span class="num">400px</span>) {
+  <span class="cls">.card {</span>
+    <span class="fn">display</span>: flex;       <span class="cm">/* vira horizontal quando o contêiner for largo */</span>
+    <span class="fn">gap</span>: <span class="num">1rem</span>;
+  }
+}</code></pre>
+
+    <h3>Checklist de responsividade</h3>
+
+    <ul class="steps">
+      <li><span class="step-n">1</span>Declare a <strong>meta viewport</strong> no <code>&lt;head&gt;</code>.</li>
+      <li><span class="step-n">2</span>Comece pelo layout <strong>mobile</strong> e use <code>min-width</code> para ampliar.</li>
+      <li><span class="step-n">3</span>Use <strong>unidades relativas</strong> e <code>max-width</code> em vez de larguras fixas.</li>
+      <li><span class="step-n">4</span>Torne imagens fluidas com <code>max-width: 100%</code>.</li>
+      <li><span class="step-n">5</span>Teste em várias larguras com o modo dispositivo do DevTools (<code>Ctrl+Shift+M</code>).</li>
+    </ul>
+  </section>
+
+
+  <!-- ═══ DISPLAYS ═══ -->
+  <section class="section" id="styles-display">
+    <div class="section-tag">Styles · CSS</div>
+    <h2>Displays</h2>
+
+    <p>A propriedade <code>display</code> define <strong>como um elemento se comporta no fluxo da página</strong> e como seus filhos são organizados. É a base de todo layout em CSS.</p>
+
+    <table>
+      <tr><th>Valor</th><th>Comportamento</th><th>Exemplos de tags</th></tr>
+      <tr><td>block</td><td>Ocupa a linha inteira; aceita width, height e margin</td><td><code>div</code>, <code>p</code>, <code>h1</code>, <code>section</code></td></tr>
+      <tr><td>inline</td><td>Flui junto com o texto; ignora width, height e margin vertical</td><td><code>span</code>, <code>a</code>, <code>strong</code></td></tr>
+      <tr><td>inline-block</td><td>Flui em linha, mas aceita width, height e margin</td><td><code>button</code>, <code>img</code></td></tr>
+      <tr><td>none</td><td>Remove o elemento do layout — não ocupa espaço</td><td>Menus escondidos, modais</td></tr>
+      <tr><td>flex</td><td>Layout em <strong>uma dimensão</strong> (linha ou coluna)</td><td>Barras de navegação, alinhamentos</td></tr>
+      <tr><td>grid</td><td>Layout em <strong>duas dimensões</strong> (linhas e colunas)</td><td>Layout da página, galerias</td></tr>
+      <tr><td>contents</td><td>Remove a caixa do elemento; os filhos sobem um nível</td><td>Wrappers sem estilo</td></tr>
+    </table>
+
+    <h3>block, inline e inline-block</h3>
+    <pre><code><span class="cls">span {</span>
+  <span class="fn">display</span>: block;          <span class="cm">/* vira bloco: ocupa a linha toda */</span>
+}
+
+<span class="cls">a.botao {</span>
+  <span class="fn">display</span>: inline-block;   <span class="cm">/* fica na linha, mas aceita tamanho */</span>
+  <span class="fn">padding</span>: <span class="num">0.5rem</span> <span class="num">1rem</span>;
+  <span class="fn">width</span>: <span class="num">120px</span>;
+}
+
+<span class="cls">li.menu-item {</span>
+  <span class="fn">display</span>: inline;         <span class="cm">/* itens lado a lado, como texto */</span>
+}</code></pre>
+
+    <h3>Flexbox</h3>
+
+    <p>Distribui os itens em um <strong>eixo</strong> (linha ou coluna) e controla alinhamento e espaço entre eles:</p>
+
+    <div class="demo">
+      <div class="demo-label">Resultado — justify-content: space-between + align-items: center</div>
+      <div class="demo-flex">
+        <div class="demo-item">1</div>
+        <div class="demo-item" style="padding:1.1rem .8rem">2</div>
+        <div class="demo-item">3</div>
+      </div>
+    </div>
+    <pre><code><span class="cls">.container {</span>
+  <span class="fn">display</span>: flex;
+  <span class="fn">flex-direction</span>: row;              <span class="cm">/* row | column */</span>
+  <span class="fn">justify-content</span>: space-between;   <span class="cm">/* alinha no eixo principal */</span>
+  <span class="fn">align-items</span>: center;              <span class="cm">/* alinha no eixo cruzado */</span>
+  <span class="fn">gap</span>: <span class="num">0.5rem</span>;
+  <span class="fn">flex-wrap</span>: wrap;                  <span class="cm">/* quebra linha se faltar espaço */</span>
+}
+
+<span class="cls">.item {</span>
+  <span class="fn">flex</span>: <span class="num">1</span>;                          <span class="cm">/* divide o espaço igualmente */</span>
+}</code></pre>
+
+    <table>
+      <tr><th>Propriedade</th><th>O que faz</th></tr>
+      <tr><td>flex-direction</td><td>Define o eixo principal: <code>row</code> ou <code>column</code></td></tr>
+      <tr><td>justify-content</td><td>Alinha os itens no eixo principal (<code>center</code>, <code>space-between</code>, <code>flex-end</code>)</td></tr>
+      <tr><td>align-items</td><td>Alinha os itens no eixo cruzado (<code>center</code>, <code>stretch</code>, <code>flex-start</code>)</td></tr>
+      <tr><td>flex-wrap</td><td>Permite quebrar os itens em várias linhas</td></tr>
+      <tr><td>gap</td><td>Espaço entre os itens</td></tr>
+      <tr><td>flex</td><td>Quanto o item cresce e encolhe (<code>flex: 1</code> = divide o espaço)</td></tr>
+    </table>
+
+    <h3>Grid</h3>
+
+    <p>Organiza os itens em <strong>linhas e colunas</strong> ao mesmo tempo. Ótimo para o layout geral da página:</p>
+
+    <div class="demo">
+      <div class="demo-label">Resultado — 3 colunas, o primeiro item ocupa 2</div>
+      <div class="demo-grid">
+        <div class="demo-item span2">1 (span 2)</div>
+        <div class="demo-item">2</div>
+        <div class="demo-item">3</div>
+        <div class="demo-item">4</div>
+        <div class="demo-item">5</div>
+      </div>
+    </div>
+    <pre><code><span class="cls">.container {</span>
+  <span class="fn">display</span>: grid;
+  <span class="fn">grid-template-columns</span>: repeat(<span class="num">3</span>, <span class="num">1fr</span>);   <span class="cm">/* 3 colunas iguais */</span>
+  <span class="fn">gap</span>: <span class="num">0.5rem</span>;
+}
+
+<span class="cls">.destaque {</span>
+  <span class="fn">grid-column</span>: span <span class="num">2</span>;                     <span class="cm">/* ocupa 2 colunas */</span>
+}</code></pre>
+
+    <div class="callout tip">
+      <strong>Quando usar cada um?</strong> Use <strong>Flexbox</strong> para alinhar itens em uma direção (menus, barras, botões). Use <strong>Grid</strong> para estruturar áreas em duas direções (layout da página, galerias). Os dois podem ser combinados: um Grid para a página e Flexbox dentro de cada card.
+    </div>
+
+    <h3>Escondendo elementos — três técnicas</h3>
+
+    <table>
+      <tr><th>Técnica</th><th>Ocupa espaço?</th><th>Recebe cliques?</th><th>Leitor de tela?</th></tr>
+      <tr><td>display: none</td><td>Não</td><td>Não</td><td>Ignora</td></tr>
+      <tr><td>visibility: hidden</td><td>Sim</td><td>Não</td><td>Ignora</td></tr>
+      <tr><td>opacity: 0</td><td>Sim</td><td>Sim</td><td>Lê normalmente</td></tr>
+    </table>
+
+    <h3>Alternando displays com media query</h3>
+
+    <p>Um padrão muito comum: mostrar um menu no celular e outro no desktop.</p>
+    <pre><code><span class="cls">.menu-mobile {</span>
+  <span class="fn">display</span>: block;
+}
+
+<span class="cls">.menu-desktop {</span>
+  <span class="fn">display</span>: none;
+}
+
+<span class="kw">@media</span> (min-width: <span class="num">768px</span>) {
+  <span class="cls">.menu-mobile {</span>
+    <span class="fn">display</span>: none;
+  }
+
+  <span class="cls">.menu-desktop {</span>
+    <span class="fn">display</span>: flex;
+    <span class="fn">gap</span>: <span class="num">1.5rem</span>;
+  }
+}</code></pre>
+  </section>
+
+
+  <!-- ═══ THEMES ═══ -->
+  <section class="section" id="styles-themes">
+    <div class="section-tag">Styles · CSS</div>
+    <h2>Themes</h2>
+
+    <p>Um <strong>tema</strong> é um conjunto centralizado de cores, fontes e espaçamentos. Com ele, é possível trocar toda a aparência do site (por exemplo, claro e escuro) <strong>sem reescrever o CSS</strong>. A base são as <strong>variáveis CSS</strong> (custom properties).</p>
+
+    <h3>1. Variáveis CSS</h3>
+
+    <p>Declaradas com <code>--nome</code> e usadas com <code>var(--nome)</code>:</p>
+    <pre><code><span class="file-tag">style.css</span>
+<span class="cls">:root {</span>
+  <span class="fn">--bg</span>: <span class="num">#ffffff</span>;
+  <span class="fn">--text</span>: <span class="num">#1a1a2e</span>;
+  <span class="fn">--primary</span>: <span class="num">#4f46e5</span>;
+  <span class="fn">--radius</span>: <span class="num">8px</span>;
+}
+
+<span class="cls">body {</span>
+  <span class="fn">background</span>: var(--bg);
+  <span class="fn">color</span>: var(--text);
+}
+
+<span class="cls">.btn {</span>
+  <span class="fn">background</span>: var(--primary);
+  <span class="fn">border-radius</span>: var(--radius);
+}</code></pre>
+
+    <h3>2. Tema escuro com data-theme</h3>
+
+    <p>Basta redefinir as mesmas variáveis dentro de um seletor de atributo. Todo o CSS que usa <code>var()</code> muda automaticamente:</p>
+    <pre><code><span class="file-tag">style.css</span>
+:root,
+<span class="cls">[data-theme="light"] {</span>
+  <span class="fn">--bg</span>: <span class="num">#ffffff</span>;
+  <span class="fn">--text</span>: <span class="num">#1a1a2e</span>;
+  <span class="fn">--primary</span>: <span class="num">#4f46e5</span>;
+}
+
+<span class="cls">[data-theme="dark"] {</span>
+  <span class="fn">--bg</span>: <span class="num">#1a1a2e</span>;
+  <span class="fn">--text</span>: <span class="num">#f4f4f5</span>;
+  <span class="fn">--primary</span>: <span class="num">#818cf8</span>;
+}</code></pre>
+    <pre><code><span class="file-tag">index.html</span>
+&lt;<span class="cls">html</span> <span class="fn">lang</span>=<span class="str">"pt-BR"</span> <span class="fn">data-theme</span>=<span class="str">"dark"</span>&gt;</code></pre>
+
+    <h3>3. Respeitando a preferência do sistema</h3>
+
+    <p>A media query <code>prefers-color-scheme</code> detecta se o usuário usa modo escuro no sistema operacional. A propriedade <code>color-scheme</code> faz os componentes nativos (scrollbar, inputs) acompanharem o tema:</p>
+    <pre><code><span class="cls">:root {</span>
+  <span class="fn">color-scheme</span>: light dark;
+}
+
+<span class="kw">@media</span> (prefers-color-scheme: dark) {
+  <span class="cls">:root:not([data-theme="light"]) {</span>
+    <span class="fn">--bg</span>: <span class="num">#1a1a2e</span>;
+    <span class="fn">--text</span>: <span class="num">#f4f4f5</span>;
+    <span class="fn">--primary</span>: <span class="num">#818cf8</span>;
+  }
+}</code></pre>
+
+    <h3>Demonstração ao vivo</h3>
+
+    <p>O cartão abaixo usa variáveis CSS. O botão apenas troca o atributo <code>data-theme</code>:</p>
+
+    <div class="theme-demo" id="theme-demo" data-theme="light">
+      <p><strong>Cartão de exemplo</strong> — as cores vêm de variáveis CSS.</p>
+      <button type="button" data-toggle-theme>Alternar tema</button>
+    </div>
+
+    <h3>4. Alternando com JavaScript e localStorage</h3>
+
+    <p>Combina tudo: usa a escolha salva pelo usuário e, se não houver, a preferência do sistema.</p>
+    <pre><code><span class="file-tag">index.html</span>
+&lt;<span class="cls">button</span> <span class="fn">id</span>=<span class="str">"btn-tema"</span> <span class="fn">type</span>=<span class="str">"button"</span>&gt;Alternar tema&lt;/<span class="cls">button</span>&gt;</code></pre>
+    <pre><code><span class="file-tag">tema.js</span>
+<span class="kw">const</span> raiz = <span class="cls">document</span>.documentElement;
+<span class="kw">const</span> salvo = <span class="cls">localStorage</span>.<span class="fn">getItem</span>(<span class="str">'tema'</span>);
+<span class="kw">const</span> sistema = <span class="cls">window</span>.<span class="fn">matchMedia</span>(<span class="str">'(prefers-color-scheme: dark)'</span>).matches
+  ? <span class="str">'dark'</span>
+  : <span class="str">'light'</span>;
+
+<span class="cm">// Aplica o tema salvo ou o do sistema</span>
+raiz.dataset.theme = salvo ?? sistema;
+
+<span class="kw">function</span> <span class="fn">alternarTema</span>() {
+  <span class="kw">const</span> novo = raiz.dataset.theme === <span class="str">'dark'</span> ? <span class="str">'light'</span> : <span class="str">'dark'</span>;
+  raiz.dataset.theme = novo;
+  <span class="cls">localStorage</span>.<span class="fn">setItem</span>(<span class="str">'tema'</span>, novo);   <span class="cm">// lembra a escolha</span>
+}
+
+<span class="cls">document</span>.<span class="fn">querySelector</span>(<span class="str">'#btn-tema'</span>).<span class="fn">addEventListener</span>(<span class="str">'click'</span>, alternarTema);</code></pre>
+
+    <div class="callout warn">
+      <strong>Flash de tema errado:</strong> se o script que aplica o tema rodar no fim da página, o usuário vê o tema claro por um instante antes de mudar para o escuro. Para evitar, coloque a parte que lê o <code>localStorage</code> e define o <code>data-theme</code> em um <code>&lt;script&gt;</code> no <strong>início do <code>&lt;head&gt;</code></strong>.
+    </div>
+
+    <h3>Boas práticas</h3>
+
+    <table>
+      <tr><th>✅ Boa prática</th><th>❌ Evitar</th></tr>
+      <tr><td>Nomes semânticos: <code>--bg</code>, <code>--text</code>, <code>--primary</code></td><td>Nomes pela cor: <code>--azul</code>, <code>--cinza2</code></td></tr>
+      <tr><td>Todas as cores em variáveis, definidas em um só lugar</td><td>Cores hexadecimais espalhadas pelo CSS</td></tr>
+      <tr><td>Contraste mínimo de 4.5:1 entre texto e fundo (WCAG AA)</td><td>Texto cinza claro sobre fundo branco</td></tr>
+      <tr><td>Respeitar <code>prefers-color-scheme</code> como padrão</td><td>Forçar sempre um único tema</td></tr>
+      <tr><td>Testar os dois temas em todos os componentes</td><td>Testar apenas o tema claro</td></tr>
+    </table>
+  </section>
+
+
   <!-- ═══ HERANÇA ═══ -->
   <section class="section" id="ts-heranca">
     <div class="section-tag">TypeScript · POO</div>
@@ -2218,6 +2804,14 @@ app.<span class="fn">get</span>(<span class="str">'/usuarios/:id'</span>, <span 
     backTop.classList.toggle('visible', window.scrollY > 400);
   }, { passive: true });
   backTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+  // ── Theme demo toggle ────────────────────────────
+  document.querySelectorAll('[data-toggle-theme]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const demo = document.getElementById('theme-demo');
+      demo.dataset.theme = demo.dataset.theme === 'dark' ? 'light' : 'dark';
+    });
+  });
 
   // ── Sidebar search filter ────────────────────────
   const searchInput = document.getElementById('nav-search');
