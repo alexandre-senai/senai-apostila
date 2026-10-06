@@ -3985,22 +3985,114 @@ resumo_usuario <span class="kw">AS</span> (
         <div class="chapter-header"><span class="chap-num"></span>
           <h2>FUNCTION — código reutilizável no banco</h2>
         </div>
-        <p class="chapter-intro">Uma <b>function</b> é um bloco de lógica reutilizável armazenado dentro do banco:
-          recebe parâmetros, executa comandos SQL ou PL/pgSQL e pode retornar um valor ou conjunto de linhas.</p>
+        <p class="chapter-intro">Uma <b>function</b> é um bloco de lógica salvo dentro do banco com um nome. Você passa parâmetros, ela executa e devolve um resultado — igual a uma função em qualquer linguagem de programação, mas rodando direto no banco.</p>
+
+        <!-- O QUE É PL/pgSQL -->
+        <h3 class="subhead">O que é PL/pgSQL?</h3>
+        <p class="chapter-intro">SQL puro só executa consultas — ele não tem <code class="inline">IF</code>, <code class="inline">FOR</code>, variáveis nem tratamento de erro. O <b>PL/pgSQL</b> é a linguagem procedural nativa do PostgreSQL: ele adiciona estruturas de programação ao SQL, permitindo escrever lógica real dentro do banco.</p>
+        <div class="grid cols-3">
+          <div class="card"><h3>📦 Variáveis</h3><p>Você declara variáveis na seção <code>DECLARE</code> e as usa dentro do bloco para guardar valores intermediários.</p></div>
+          <div class="card"><h3>🔀 Condicionais</h3><p><code>IF / ELSIF / ELSE</code> para tomar decisões com base nos dados ou nos parâmetros recebidos.</p></div>
+          <div class="card"><h3>🔁 Laços</h3><p><code>FOR</code>, <code>WHILE</code> e <code>LOOP</code> para iterar sobre resultados de queries ou repetir lógica.</p></div>
+        </div>
+        <div class="note"><span>💡</span><div>O bloco PL/pgSQL fica sempre entre <code class="inline">$$</code> e <code class="inline">$$</code> (delimitadores de string) e termina com <code class="inline">LANGUAGE plpgsql</code>. A seção <code class="inline">DECLARE</code> é opcional — só aparece quando há variáveis.</div></div>
+
+        <!-- ANATOMIA -->
+        <h3 class="subhead">Anatomia de uma function</h3>
         <div class="console">
-          <div class="bar"><span class="label">function.sql</span><button class="run-btn">▶ Executar</button></div>
-          <pre><span class="kw">CREATE FUNCTION</span> fn_atualizar_timestamp()
-<span class="kw">RETURNS TRIGGER AS</span> $$
+          <div class="bar"><span class="label">anatomia.sql — estrutura base</span></div>
+          <pre><span class="kw">CREATE OR REPLACE FUNCTION</span> nome_da_funcao(parametro tipo)
+<span class="kw">RETURNS</span> tipo_de_retorno
+<span class="kw">LANGUAGE</span> plpgsql
+<span class="kw">AS</span> $$
+<span class="kw">DECLARE</span>
+  variavel tipo; <span class="cmt">-- opcional: declare variáveis aqui</span>
 <span class="kw">BEGIN</span>
-    NEW.dt_criacao = NOW();
-    <span class="kw">RETURN</span> NEW;
+  <span class="cmt">-- lógica da função aqui</span>
+  <span class="kw">RETURN</span> valor;
 <span class="kw">END</span>;
-$$ <span class="kw">LANGUAGE</span> plpgsql;</pre>
+$$;</pre>
+        </div>
+
+        <!-- EXEMPLO 1: RETORNA VALOR SIMPLES -->
+        <h3 class="subhead">Exemplo 1 — retorna um valor simples</h3>
+        <p class="chapter-intro">Calcula o total de pedidos de um usuário. Recebe o ID e devolve um número inteiro.</p>
+        <div class="console">
+          <div class="bar"><span class="label">fn_total_pedidos.sql</span><button class="run-btn">▶ Executar</button></div>
+          <pre><span class="kw">CREATE OR REPLACE FUNCTION</span> fn_total_pedidos(p_id_usuario <span class="kw">INT</span>)
+<span class="kw">RETURNS INT</span>
+<span class="kw">LANGUAGE</span> plpgsql
+<span class="kw">AS</span> $$
+<span class="kw">DECLARE</span>
+  total <span class="kw">INT</span>;
+<span class="kw">BEGIN</span>
+  <span class="kw">SELECT COUNT</span>(*) <span class="kw">INTO</span> total
+  <span class="kw">FROM</span>  tb_pedidos
+  <span class="kw">WHERE</span> cd_usuario = p_id_usuario;
+
+  <span class="kw">RETURN</span> total;
+<span class="kw">END</span>;
+$$;
+
+<span class="cmt">-- chamada da função</span>
+<span class="kw">SELECT</span> fn_total_pedidos(<span class="num">42</span>);</pre>
           <div class="result">
-            <div class="result-inner"><span class="msg">✓ CREATE FUNCTION — "fn_atualizar_timestamp" disponível para uso
-                em triggers.</span></div>
+            <div class="result-inner"><table><thead><tr><th>fn_total_pedidos</th></tr></thead><tbody><tr><td>7</td></tr></tbody></table></div>
           </div>
         </div>
+
+        <!-- EXEMPLO 2: IF/ELSE -->
+        <h3 class="subhead">Exemplo 2 — lógica com IF/ELSE</h3>
+        <p class="chapter-intro">Classifica um pedido como "Pequeno", "Médio" ou "Grande" com base no valor total.</p>
+        <div class="console">
+          <div class="bar"><span class="label">fn_classificar_pedido.sql</span><button class="run-btn">▶ Executar</button></div>
+          <pre><span class="kw">CREATE OR REPLACE FUNCTION</span> fn_classificar_pedido(p_valor <span class="kw">NUMERIC</span>)
+<span class="kw">RETURNS VARCHAR</span>
+<span class="kw">LANGUAGE</span> plpgsql
+<span class="kw">AS</span> $$
+<span class="kw">BEGIN</span>
+  <span class="kw">IF</span> p_valor &lt; <span class="num">100</span> <span class="kw">THEN</span>
+    <span class="kw">RETURN</span> <span class="str">'Pequeno'</span>;
+  <span class="kw">ELSIF</span> p_valor &lt; <span class="num">1000</span> <span class="kw">THEN</span>
+    <span class="kw">RETURN</span> <span class="str">'Médio'</span>;
+  <span class="kw">ELSE</span>
+    <span class="kw">RETURN</span> <span class="str">'Grande'</span>;
+  <span class="kw">END IF</span>;
+<span class="kw">END</span>;
+$$;
+
+<span class="cmt">-- usar dentro de uma consulta</span>
+<span class="kw">SELECT</span> id_pedido, vl_total, fn_classificar_pedido(vl_total) <span class="kw">AS</span> porte
+<span class="kw">FROM</span>  tb_pedidos;</pre>
+          <div class="result">
+            <div class="result-inner"><table><thead><tr><th>id_pedido</th><th>vl_total</th><th>porte</th></tr></thead><tbody>
+              <tr><td>1</td><td>49.90</td><td>Pequeno</td></tr>
+              <tr><td>2</td><td>580.00</td><td>Médio</td></tr>
+              <tr><td>3</td><td>2100.00</td><td>Grande</td></tr>
+            </tbody></table></div>
+          </div>
+        </div>
+
+        <!-- EXEMPLO 3: TRIGGER FUNCTION -->
+        <h3 class="subhead">Exemplo 3 — function para trigger (timestamp automático)</h3>
+        <p class="chapter-intro">Um tipo especial de function que retorna <code class="inline">TRIGGER</code> em vez de um valor. Ela é chamada automaticamente pelo banco — nunca pelo programador. As variáveis especiais <code class="inline">NEW</code> e <code class="inline">OLD</code> representam a linha nova e a linha antiga respectivamente.</p>
+        <div class="console">
+          <div class="bar"><span class="label">fn_atualizar_timestamp.sql</span><button class="run-btn">▶ Executar</button></div>
+          <pre><span class="kw">CREATE OR REPLACE FUNCTION</span> fn_atualizar_timestamp()
+<span class="kw">RETURNS TRIGGER</span>
+<span class="kw">LANGUAGE</span> plpgsql
+<span class="kw">AS</span> $$
+<span class="kw">BEGIN</span>
+  <span class="cmt">-- NEW = a linha que está sendo inserida ou atualizada</span>
+  NEW.dt_atualizacao = <span class="fn">NOW</span>();
+  <span class="kw">RETURN</span> NEW; <span class="cmt">-- obrigatório em BEFORE triggers: retorna a linha modificada</span>
+<span class="kw">END</span>;
+$$;</pre>
+          <div class="result">
+            <div class="result-inner"><span class="msg">✓ Function criada — disponível para ser associada a um trigger.</span></div>
+          </div>
+        </div>
+        <div class="note"><span>💡</span><div><code class="inline">CREATE OR REPLACE</code> cria a function se não existir, ou substitui se já existir — evita erro ao reexecutar o script.</div></div>
       </section>
 
       <!-- CAP TRIGGER -->
@@ -4008,21 +4100,153 @@ $$ <span class="kw">LANGUAGE</span> plpgsql;</pre>
         <div class="chapter-header"><span class="chap-num"></span>
           <h2>TRIGGER — reações automáticas</h2>
         </div>
-        <p class="chapter-intro">Uma <b>trigger</b> executa uma function automaticamente antes (<code
-            class="inline">BEFORE</code>) ou depois (<code class="inline">AFTER</code>) de um evento (<code
-            class="inline">INSERT</code>, <code class="inline">UPDATE</code> ou <code class="inline">DELETE</code>)
-          acontecer em uma tabela.</p>
+        <p class="chapter-intro">Um <b>trigger</b> é um "gatilho" que o banco dispara automaticamente quando algo acontece em uma tabela — sem que ninguém precise chamar nada. Você define <b>quando</b> dispara, <b>em qual evento</b> e <b>qual function</b> executar.</p>
+
+        <!-- ANALOGIA -->
+        <div class="note"><span>💡</span><div><b>Analogia:</b> pense num trigger como uma câmera de segurança com alarme. Você configura uma vez: "se alguém abrir esta porta (evento), dispare o alarme (function)". Depois disso, funciona sozinha — sem intervenção.</div></div>
+
+        <!-- ANATOMIA -->
+        <h3 class="subhead">Anatomia de um trigger</h3>
         <div class="console">
-          <div class="bar"><span class="label">trigger.sql</span><button class="run-btn">▶ Executar</button></div>
-          <pre><span class="kw">CREATE TRIGGER</span> trg_atualiza_data
+          <div class="bar"><span class="label">anatomia_trigger.sql</span></div>
+          <pre><span class="kw">CREATE TRIGGER</span> nome_do_trigger
+<span class="kw">BEFORE</span> | <span class="kw">AFTER</span>                   <span class="cmt">-- quando dispara</span>
+<span class="kw">INSERT</span> | <span class="kw">UPDATE</span> | <span class="kw">DELETE</span>        <span class="cmt">-- qual evento</span>
+<span class="kw">ON</span> nome_da_tabela                <span class="cmt">-- em qual tabela</span>
+<span class="kw">FOR EACH ROW</span>                     <span class="cmt">-- uma vez por linha afetada</span>
+<span class="kw">EXECUTE FUNCTION</span> nome_da_funcao(); <span class="cmt">-- qual function chamar</span></pre>
+        </div>
+
+        <div class="result" style="margin-bottom:1rem"><div class="result-inner">
+          <table>
+            <thead><tr><th>Opção</th><th>O que significa</th></tr></thead>
+            <tbody>
+              <tr><td><code class="inline">BEFORE</code></td><td>Roda antes da operação. Pode modificar ou cancelar a linha antes de salvar.</td></tr>
+              <tr><td><code class="inline">AFTER</code></td><td>Roda depois que a operação já foi salva. Ideal para log e notificações.</td></tr>
+              <tr><td><code class="inline">FOR EACH ROW</code></td><td>Dispara uma vez por linha afetada. Um UPDATE que afeta 10 linhas dispara 10 vezes.</td></tr>
+              <tr><td><code class="inline">FOR EACH STATEMENT</code></td><td>Dispara uma única vez por comando, independente de quantas linhas foram afetadas.</td></tr>
+              <tr><td><code class="inline">NEW</code></td><td>A linha nova (disponível em INSERT e UPDATE).</td></tr>
+              <tr><td><code class="inline">OLD</code></td><td>A linha antes da mudança (disponível em UPDATE e DELETE).</td></tr>
+            </tbody>
+          </table>
+        </div></div>
+
+        <!-- EXEMPLO 1: TIMESTAMP -->
+        <h3 class="subhead">Exemplo 1 — atualizar timestamp automaticamente</h3>
+        <p class="chapter-intro">Sempre que um usuário for atualizado, o campo <code class="inline">dt_atualizacao</code> é preenchido automaticamente — sem depender do sistema que fez o UPDATE.</p>
+        <div class="console">
+          <div class="bar"><span class="label">trg_timestamp.sql</span><button class="run-btn">▶ Executar</button></div>
+          <pre><span class="cmt">-- 1. a function (já criada na seção anterior)</span>
+<span class="kw">CREATE OR REPLACE FUNCTION</span> fn_atualizar_timestamp()
+<span class="kw">RETURNS TRIGGER LANGUAGE</span> plpgsql <span class="kw">AS</span> $$
+<span class="kw">BEGIN</span>
+  NEW.dt_atualizacao = <span class="fn">NOW</span>();
+  <span class="kw">RETURN</span> NEW;
+<span class="kw">END</span>;
+$$;
+
+<span class="cmt">-- 2. o trigger que chama a function</span>
+<span class="kw">CREATE TRIGGER</span> trg_atualiza_data
 <span class="kw">BEFORE UPDATE ON</span> tb_usuarios
 <span class="kw">FOR EACH ROW</span>
-<span class="kw">EXECUTE FUNCTION</span> fn_atualizar_timestamp();</pre>
+<span class="kw">EXECUTE FUNCTION</span> fn_atualizar_timestamp();
+
+<span class="cmt">-- agora qualquer UPDATE em tb_usuarios preenche dt_atualizacao</span>
+<span class="kw">UPDATE</span> tb_usuarios <span class="kw">SET</span> tx_nome = <span class="str">'Ana Lima'</span> <span class="kw">WHERE</span> id_usuario = <span class="num">1</span>;</pre>
           <div class="result">
-            <div class="result-inner"><span class="msg">✓ CREATE TRIGGER — a cada UPDATE em tb_usuarios, a função é
-                disparada automaticamente.</span></div>
+            <div class="result-inner"><span class="msg">✓ UPDATE executado. dt_atualizacao preenchida automaticamente pelo trigger — sem precisar passar o valor no UPDATE.</span></div>
           </div>
         </div>
+
+        <!-- EXEMPLO 2: LOG -->
+        <h3 class="subhead">Exemplo 2 — registrar log de exclusão</h3>
+        <p class="chapter-intro">Guarda um histórico de tudo que foi deletado da tabela de pedidos — útil para auditoria. Usa <code class="inline">OLD</code> para acessar os dados da linha antes de ser removida.</p>
+        <div class="console">
+          <div class="bar"><span class="label">trg_log_delete.sql</span><button class="run-btn">▶ Executar</button></div>
+          <pre><span class="cmt">-- tabela de log (criada separadamente)</span>
+<span class="kw">CREATE TABLE</span> tb_log_pedidos (
+  id_log      <span class="kw">SERIAL PRIMARY KEY</span>,
+  id_pedido   <span class="kw">INT</span>,
+  vl_total    <span class="kw">NUMERIC</span>,
+  dt_exclusao <span class="kw">TIMESTAMP DEFAULT NOW</span>()
+);
+
+<span class="cmt">-- function que grava no log</span>
+<span class="kw">CREATE OR REPLACE FUNCTION</span> fn_log_exclusao_pedido()
+<span class="kw">RETURNS TRIGGER LANGUAGE</span> plpgsql <span class="kw">AS</span> $$
+<span class="kw">BEGIN</span>
+  <span class="cmt">-- OLD = dados da linha que está sendo deletada</span>
+  <span class="kw">INSERT INTO</span> tb_log_pedidos (id_pedido, vl_total)
+  <span class="kw">VALUES</span> (OLD.id_pedido, OLD.vl_total);
+
+  <span class="kw">RETURN</span> OLD;
+<span class="kw">END</span>;
+$$;
+
+<span class="cmt">-- trigger AFTER DELETE: roda depois que a linha já foi removida</span>
+<span class="kw">CREATE TRIGGER</span> trg_log_delete_pedido
+<span class="kw">AFTER DELETE ON</span> tb_pedidos
+<span class="kw">FOR EACH ROW</span>
+<span class="kw">EXECUTE FUNCTION</span> fn_log_exclusao_pedido();</pre>
+          <div class="result">
+            <div class="result-inner"><span class="msg">✓ Trigger criado. Todo DELETE em tb_pedidos será registrado automaticamente em tb_log_pedidos.</span></div>
+          </div>
+        </div>
+
+        <!-- EXEMPLO 3: VALIDAÇÃO -->
+        <h3 class="subhead">Exemplo 3 — bloquear operação com RAISE EXCEPTION</h3>
+        <p class="chapter-intro">Um trigger <code class="inline">BEFORE</code> pode impedir que uma linha inválida seja salva. Se a function lançar uma exceção, a operação inteira é cancelada.</p>
+        <div class="console">
+          <div class="bar"><span class="label">trg_validacao.sql</span><button class="run-btn">▶ Executar</button></div>
+          <pre><span class="kw">CREATE OR REPLACE FUNCTION</span> fn_validar_pedido()
+<span class="kw">RETURNS TRIGGER LANGUAGE</span> plpgsql <span class="kw">AS</span> $$
+<span class="kw">BEGIN</span>
+  <span class="kw">IF</span> NEW.vl_total &lt;= <span class="num">0</span> <span class="kw">THEN</span>
+    <span class="cmt">-- cancela o INSERT/UPDATE e exibe mensagem de erro</span>
+    <span class="kw">RAISE EXCEPTION</span> <span class="str">'Valor do pedido deve ser maior que zero. Recebido: %'</span>, NEW.vl_total;
+  <span class="kw">END IF</span>;
+
+  <span class="kw">RETURN</span> NEW;
+<span class="kw">END</span>;
+$$;
+
+<span class="kw">CREATE TRIGGER</span> trg_valida_pedido
+<span class="kw">BEFORE INSERT OR UPDATE ON</span> tb_pedidos
+<span class="kw">FOR EACH ROW</span>
+<span class="kw">EXECUTE FUNCTION</span> fn_validar_pedido();
+
+<span class="cmt">-- isso será bloqueado pelo trigger</span>
+<span class="kw">INSERT INTO</span> tb_pedidos (cd_usuario, vl_total) <span class="kw">VALUES</span> (<span class="num">1</span>, <span class="num">-50</span>);</pre>
+          <div class="result">
+            <div class="result-inner"><span class="msg" style="color:var(--red)">ERROR: Valor do pedido deve ser maior que zero. Recebido: -50</span></div>
+          </div>
+        </div>
+
+        <!-- GERENCIAR TRIGGERS -->
+        <h3 class="subhead">Gerenciar triggers</h3>
+        <div class="console">
+          <div class="bar"><span class="label">gerenciar_triggers.sql</span><button class="run-btn">▶ Executar</button></div>
+          <pre><span class="cmt">-- desativar temporariamente</span>
+<span class="kw">ALTER TABLE</span> tb_usuarios <span class="kw">DISABLE TRIGGER</span> trg_atualiza_data;
+
+<span class="cmt">-- reativar</span>
+<span class="kw">ALTER TABLE</span> tb_usuarios <span class="kw">ENABLE TRIGGER</span> trg_atualiza_data;
+
+<span class="cmt">-- remover</span>
+<span class="kw">DROP TRIGGER</span> trg_atualiza_data <span class="kw">ON</span> tb_usuarios;
+
+<span class="cmt">-- listar triggers de uma tabela</span>
+<span class="kw">SELECT</span> trigger_name, event_manipulation, action_timing
+<span class="kw">FROM</span>   information_schema.triggers
+<span class="kw">WHERE</span>  event_object_table = <span class="str">'tb_usuarios'</span>;</pre>
+          <div class="result">
+            <div class="result-inner"><table><thead><tr><th>trigger_name</th><th>event_manipulation</th><th>action_timing</th></tr></thead><tbody>
+              <tr><td>trg_atualiza_data</td><td>UPDATE</td><td>BEFORE</td></tr>
+            </tbody></table></div>
+          </div>
+        </div>
+
+        <div class="note warn"><span>⚠️</span><div>Triggers rodam de forma invisível — quem faz o UPDATE não vê que a function foi chamada. Use com moderação: muitos triggers encadeados tornam o comportamento do banco difícil de rastrear e debugar.</div></div>
       </section>
 
       <!-- CAP VACUUM -->
