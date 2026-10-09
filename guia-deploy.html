@@ -1,0 +1,2616 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guia de Deploy: do código ao servidor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d1117;
+      --bg-panel: #161b22;
+      --bg-panel-alt: #1c2230;
+      --bg-card: #161b22;
+      --border: #21293a;
+      --border-mid: #2d3748;
+      --text: #e2e8f0;
+      --text-muted: #718096;
+      --text-subtle: #4a5568;
+      --cyan: #4dd9c0;
+      --cyan-dim: rgba(77, 217, 192, .12);
+      --amber: #f6ad55;
+      --amber-dim: rgba(246, 173, 85, .12);
+      --green: #68d391;
+      --green-dim: rgba(104, 211, 145, .12);
+      --red: #fc8181;
+      --red-dim: rgba(252, 129, 129, .12);
+      --blue: #63b3ed;
+      --blue-dim: rgba(99, 179, 237, .12);
+      --purple: #b794f4;
+      --purple-dim: rgba(183, 148, 244, .12);
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --radius: 8px;
+      --radius-lg: 12px;
+      --sidebar-w: 256px;
+      --header-h: 56px;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 15px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      line-height: 1.65;
+      min-height: 100vh;
+    }
+
+    a {
+      color: var(--cyan);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    ::selection {
+      background: var(--cyan);
+      color: #04140f;
+    }
+
+    /* ── TOP BAR ── */
+    #topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 200;
+      height: var(--header-h);
+      background: rgba(13, 17, 23, .95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 16px;
+    }
+
+    #topbar .brand {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-size: .9rem;
+      color: var(--cyan);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    #topbar .brand .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--amber);
+      box-shadow: 0 0 6px var(--amber);
+      animation: blink 1.8s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: .2;
+      }
+    }
+
+    #topbar .search-wrap {
+      flex: 1;
+      max-width: 420px;
+      margin-left: auto;
+      position: relative;
+    }
+
+    #topbar .search-wrap input {
+      width: 100%;
+      background: var(--bg-panel-alt);
+      border: 1px solid var(--border-mid);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: .85rem;
+      padding: 7px 12px 7px 34px;
+      border-radius: var(--radius);
+      outline: none;
+      transition: border-color .15s;
+    }
+
+    #topbar .search-wrap input:focus {
+      border-color: var(--cyan);
+    }
+
+    #topbar .search-wrap input::placeholder {
+      color: var(--text-subtle);
+    }
+
+    #topbar .search-wrap .ico {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-subtle);
+      font-size: .85rem;
+      pointer-events: none;
+    }
+
+    #progress {
+      position: fixed;
+      top: var(--header-h);
+      left: 0;
+      height: 2px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--cyan), var(--blue));
+      z-index: 300;
+      transition: width .08s linear;
+    }
+
+    /* ── LAYOUT ── */
+    .layout {
+      display: grid;
+      grid-template-columns: var(--sidebar-w) 1fr;
+      max-width: 1240px;
+      margin: 0 auto;
+      padding-top: var(--header-h);
+      min-height: 100vh;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      nav.sidebar {
+        display: none;
+      }
+    }
+
+    /* ── SIDEBAR ── */
+    nav.sidebar {
+      position: sticky;
+      top: var(--header-h);
+      height: calc(100vh - var(--header-h));
+      overflow-y: auto;
+      border-right: 1px solid var(--border);
+      padding: 20px 0;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border-mid) transparent;
+    }
+
+    .sidebar-section-label {
+      font-family: var(--font-mono);
+      font-size: .62rem;
+      font-weight: 600;
+      color: var(--text-subtle);
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      padding: 14px 18px 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sidebar-section-label::before {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    nav.sidebar ol {
+      list-style: none;
+    }
+
+    nav.sidebar li {
+      position: relative;
+    }
+
+    nav.sidebar a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: .8rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 5px 18px;
+      border-left: 2px solid transparent;
+      transition: all .12s ease;
+      line-height: 1.35;
+    }
+
+    nav.sidebar a .n {
+      font-family: var(--font-mono);
+      font-size: .65rem;
+      color: var(--border-mid);
+      min-width: 22px;
+      flex-shrink: 0;
+    }
+
+    nav.sidebar a:hover {
+      color: var(--text);
+      background: var(--cyan-dim);
+    }
+
+    nav.sidebar a.active {
+      color: var(--cyan);
+      border-left-color: var(--cyan);
+      background: var(--cyan-dim);
+    }
+
+    nav.sidebar a.active .n {
+      color: var(--cyan);
+    }
+
+    /* ── MAIN ── */
+    main {
+      padding: 0 52px 120px;
+      min-width: 0;
+      max-width: 880px;
+      counter-reset: chapnum;
+    }
+
+    @media (max-width: 900px) {
+      main {
+        padding: 0 20px 80px;
+      }
+    }
+
+    /* ── HERO ── */
+    .hero {
+      padding: 72px 0 60px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hero .eyebrow {
+      font-family: var(--font-mono);
+      font-size: .75rem;
+      color: var(--amber);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .hero .eyebrow::before {
+      content: "›";
+      color: var(--cyan);
+    }
+
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -.02em;
+      margin-bottom: 16px;
+    }
+
+    .hero h1 em {
+      color: var(--cyan);
+      font-style: normal;
+    }
+
+    .hero .lead {
+      color: var(--text-muted);
+      font-size: 1rem;
+      max-width: 540px;
+      line-height: 1.75;
+    }
+
+    /* ── CHAPTER ── */
+    section.chapter {
+      padding: 60px 0 8px;
+      border-top: 1px solid var(--border);
+      scroll-margin-top: calc(var(--header-h) + 24px);
+      counter-increment: chapnum;
+    }
+
+    section.chapter:first-of-type {
+      border-top: none;
+    }
+
+    .chapter-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    .chap-num {
+      font-family: var(--font-mono);
+      font-size: .68rem;
+      font-weight: 600;
+      color: var(--cyan);
+      background: var(--cyan-dim);
+      border: 1px solid rgba(77, 217, 192, .25);
+      padding: 4px 10px;
+      border-radius: 5px;
+      flex-shrink: 0;
+      margin-top: 7px;
+      min-width: 46px;
+      text-align: center;
+    }
+
+    .chap-num::before {
+      content: counter(chapnum, decimal-leading-zero);
+    }
+
+    .chapter-header h2 {
+      font-family: var(--font-display);
+      font-size: 1.7rem;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    .chapter-intro {
+      color: var(--text-muted);
+      font-size: .95rem;
+      max-width: 700px;
+      margin-bottom: 24px;
+      line-height: 1.8;
+    }
+
+    .chapter-intro b,
+    .chapter-intro strong {
+      color: var(--text);
+    }
+
+    h3.subhead {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 32px 0 10px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h3.subhead::before {
+      content: "";
+      display: inline-block;
+      width: 3px;
+      height: 14px;
+      background: var(--cyan);
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    /* ── CARDS ── */
+    .grid {
+      display: grid;
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .grid.cols-2 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .grid.cols-3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .grid.cols-4 {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    @media (max-width: 720px) {
+
+      .grid.cols-2,
+      .grid.cols-3,
+      .grid.cols-4 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      transition: border-color .15s, transform .15s;
+    }
+
+    .card:hover {
+      border-color: var(--border-mid);
+      transform: translateY(-2px);
+    }
+
+    .card h3 {
+      font-family: var(--font-display);
+      font-size: .95rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .card p {
+      color: var(--text-muted);
+      font-size: .85rem;
+      line-height: 1.6;
+    }
+
+    /* ── TAGS ── */
+    .tag {
+      font-family: var(--font-mono);
+      font-size: .6rem;
+      padding: 2px 8px;
+      border-radius: 20px;
+      display: inline-block;
+      margin-bottom: 8px;
+      letter-spacing: .06em;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .tag.blue {
+      background: var(--blue-dim);
+      color: var(--blue);
+      border: 1px solid rgba(99, 179, 237, .2);
+    }
+
+    .tag.green {
+      background: var(--green-dim);
+      color: var(--green);
+      border: 1px solid rgba(104, 211, 145, .2);
+    }
+
+    .tag.purple {
+      background: var(--purple-dim);
+      color: var(--purple);
+      border: 1px solid rgba(183, 148, 244, .2);
+    }
+
+    .tag.amber {
+      background: var(--amber-dim);
+      color: var(--amber);
+      border: 1px solid rgba(246, 173, 85, .2);
+    }
+
+    /* ── CONSOLE ── */
+    .console {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-mid);
+      border-radius: var(--radius-lg);
+      margin: 16px 0;
+      overflow: hidden;
+    }
+
+    .console .bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-panel-alt);
+    }
+
+    .console .bar .label {
+      font-family: var(--font-mono);
+      font-size: .7rem;
+      color: var(--text-subtle);
+      letter-spacing: .04em;
+    }
+
+    .console .bar button {
+      font-family: var(--font-mono);
+      font-size: .7rem;
+      color: #04140f;
+      background: var(--cyan);
+      border: none;
+      padding: 4px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: background .12s;
+      white-space: nowrap;
+    }
+
+    .console .bar button:hover {
+      background: #74e8d6;
+    }
+
+    .console pre {
+      padding: 16px 18px;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: .84rem;
+      line-height: 1.75;
+      tab-size: 2;
+    }
+
+    .console pre .kw {
+      color: var(--blue);
+      font-weight: 600;
+    }
+
+    .console pre .fn {
+      color: var(--amber);
+    }
+
+    .console pre .str {
+      color: var(--green);
+    }
+
+    .console pre .cmt {
+      color: var(--text-subtle);
+      font-style: italic;
+    }
+
+    .console pre .num {
+      color: var(--purple);
+    }
+
+    .console .result {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height .3s ease;
+      border-top: 1px solid transparent;
+    }
+
+    .console .result.open {
+      max-height: 320px;
+      border-top: 1px solid var(--border);
+    }
+
+    .console .result-inner {
+      padding: 12px 18px;
+      font-family: var(--font-mono);
+      font-size: .8rem;
+      overflow-x: auto;
+    }
+
+    .console .result table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .console .result th {
+      text-align: left;
+      color: var(--cyan);
+      font-weight: 600;
+      padding: 3px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .console .result td {
+      padding: 3px 10px;
+      color: var(--text-muted);
+    }
+
+    .console .result .msg {
+      color: var(--green);
+      font-weight: 600;
+    }
+
+    /* ── TABELA GENÉRICA ── */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: .88rem;
+    }
+
+    .data-table th {
+      text-align: left;
+      padding: 9px 14px;
+      border-bottom: 2px solid var(--border-mid);
+      font-family: var(--font-mono);
+      color: var(--cyan);
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+    }
+
+    .data-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    .data-table tr:hover td {
+      background: var(--bg-panel);
+    }
+
+    .data-table td.desc {
+      color: var(--text-muted);
+    }
+
+    /* ── INLINE CODE ── */
+    code.inline {
+      font-family: var(--font-mono);
+      background: var(--bg-panel-alt);
+      color: var(--amber);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: .82em;
+    }
+
+    /* ── NOTE ── */
+    .note {
+      display: flex;
+      gap: 12px;
+      background: var(--bg-panel);
+      border-left: 3px solid var(--cyan);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 12px 16px;
+      margin: 16px 0;
+      font-size: .88rem;
+      color: var(--text-muted);
+    }
+
+    .note b {
+      color: var(--text);
+    }
+
+    .note.warn {
+      border-left-color: var(--amber);
+    }
+
+    .note.danger {
+      border-left-color: var(--red);
+    }
+
+    /* ── SEARCH HIGHLIGHT ── */
+    mark.search-match {
+      background: rgba(246, 173, 85, .35);
+      color: var(--text);
+      border-radius: 2px;
+      padding: 0 2px;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 56px 20px 40px;
+      color: var(--text-subtle);
+      font-size: .8rem;
+      border-top: 1px solid var(--border);
+      margin-top: 48px;
+      font-family: var(--font-mono);
+    }
+
+    footer .dot {
+      color: var(--amber);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+      *,
+      *::before,
+      *::after {
+        animation-duration: .001ms !important;
+        transition-duration: .001ms !important;
+      }
+
+      html {
+        scroll-behavior: auto;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- TOP BAR -->
+  <header id="topbar">
+    <div class="brand"><span class="dot"></span>deploy://guia</div>
+    <div class="search-wrap">
+      <span class="ico">⌕</span>
+      <input type="text" id="searchInput" placeholder="Buscar no guia…" autocomplete="off" spellcheck="false">
+    </div>
+  </header>
+
+  <div id="progress"></div>
+
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <nav class="sidebar" aria-label="Sumário">
+      <div class="sidebar-section-label">Fundamentos</div>
+      <ol>
+        <li><a href="#visao" data-nav><span class="n">01</span>Visão geral e roteiro</a></li>
+        <li><a href="#linux" data-nav><span class="n">02</span>Linux e terminal</a></li>
+        <li><a href="#redes" data-nav><span class="n">03</span>Redes e network</a></li>
+      </ol>
+      <div class="sidebar-section-label">Servidor e acesso</div>
+      <ol>
+        <li><a href="#servidores" data-nav><span class="n">04</span>Servidores</a></li>
+        <li><a href="#ssh" data-nav><span class="n">05</span>SSH e chaves</a></li>
+        <li><a href="#seguranca" data-nav><span class="n">06</span>Segurança inicial</a></li>
+      </ol>
+      <div class="sidebar-section-label">Docker</div>
+      <ol>
+        <li><a href="#docker" data-nav><span class="n">07</span>Conceitos do Docker</a></li>
+        <li><a href="#comandos" data-nav><span class="n">08</span>Comandos essenciais</a></li>
+        <li><a href="#dockerfile" data-nav><span class="n">09</span>Dockerfile</a></li>
+        <li><a href="#compose" data-nav><span class="n">10</span>Docker Compose</a></li>
+        <li><a href="#dockernet" data-nav><span class="n">11</span>Redes e volumes</a></li>
+      </ol>
+      <div class="sidebar-section-label">Produção</div>
+      <ol>
+        <li><a href="#proxy" data-nav><span class="n">12</span>Domínio, proxy e HTTPS</a></li>
+        <li><a href="#segredos" data-nav><span class="n">13</span>Variáveis e segredos</a></li>
+        <li><a href="#cicd" data-nav><span class="n">14</span>Deploy e CI/CD</a></li>
+        <li><a href="#escala" data-nav><span class="n">15</span>Escala horizontal</a></li>
+        <li><a href="#observa" data-nav><span class="n">16</span>Logs, monitoramento, backup</a></li>
+        <li><a href="#checklist" data-nav><span class="n">17</span>Checklist final</a></li>
+      </ol>
+    </nav>
+
+    <main>
+      <!-- HERO -->
+      <section class="hero">
+        <div class="eyebrow">guia prático de infraestrutura</div>
+        <h1>Do código ao servidor: <em>subindo seu projeto</em> em produção</h1>
+        <p class="lead">Redes, Linux, SSH, chaves, Docker, Compose, proxy reverso, HTTPS, CI/CD e escala horizontal, na
+          ordem em que você precisa aprender para colocar uma aplicação no ar com segurança.</p>
+      </section>
+
+      <!-- 01 VISÃO GERAL -->
+      <section class="chapter" id="visao">
+        <div class="chapter-header"><span class="chap-num"></span>
+          <h2>Visão geral e roteiro</h2>
+        </div>
+        <p class="chapter-intro">Subir um projeto é <b>encadear peças</b>: um computador remoto (servidor), um jeito
+          seguro de entrar nele (SSH), um jeito padronizado de empacotar a aplicação (Docker), um jeito de expô-la
+          para a internet (rede, DNS, proxy, HTTPS) e um jeito de repetir tudo isso sem dor (CI/CD). Este guia segue
+          essa ordem.</p>
+
+        <h3 class="subhead">O caminho de uma requisição</h3>
+        <div class="console">
+          <div class="bar"><span class="label">fluxo.txt</span></div>
+          <pre><span class="cmt"># do navegador até o seu código</span>
+Usuário → <span class="fn">DNS</span> (meuapp.com → 203.0.113.10)
+        → <span class="fn">Firewall</span> do servidor (portas 80/443)
+        → <span class="fn">Proxy reverso</span> (Nginx / Caddy / Traefik) + HTTPS
+        → <span class="fn">Container</span> da aplicação (porta 8080)
+        → <span class="fn">Container</span> do banco (rede interna, sem exposição pública)</pre>
+        </div>
+
+        <h3 class="subhead">Roteiro em ordem de conhecimento</h3>
+        <div class="grid cols-3">
+          <div class="card"><span class="tag blue">Base</span>
+            <h3>1. Linux + Redes</h3>
+            <p>Terminal, permissões, processos, IP, porta, DNS, TCP, HTTP, firewall. Sem isso, nada do resto faz
+              sentido.</p>
+          </div>
+          <div class="card"><span class="tag green">Acesso</span>
+            <h3>2. Servidor + SSH</h3>
+            <p>Contratar uma VPS, entrar por chave SSH, criar usuário sem root e fechar portas desnecessárias.</p>
+          </div>
+          <div class="card"><span class="tag purple">Empacotar</span>
+            <h3>3. Docker + Compose</h3>
+            <p>Transformar a aplicação em imagem, orquestrar app + banco + proxy em um único arquivo.</p>
+          </div>
+          <div class="card"><span class="tag amber">Expor</span>
+            <h3>4. Domínio + HTTPS</h3>
+            <p>Apontar DNS, configurar proxy reverso e certificado Let's Encrypt.</p>
+          </div>
+          <div class="card"><span class="tag blue">Automatizar</span>
+            <h3>5. CI/CD</h3>
+            <p>Build e deploy automáticos a cada push, com registry de imagens.</p>
+          </div>
+          <div class="card"><span class="tag green">Crescer</span>
+            <h3>6. Escala + Observabilidade</h3>
+            <p>Várias réplicas atrás de um load balancer, logs, métricas, backup.</p>
+          </div>
+        </div>
+
+        <div class="note"><span>💡</span>
+          <div><b>Dica:</b> faça o primeiro deploy do jeito mais simples possível (1 VPS + Docker Compose). Só pense em
+            Kubernetes ou múltiplos servidores quando houver um problema real de carga ou disponibilidade.</div>
+        </div>
+      </section>
+
+      <!-- 02 LINUX -->
+      <section class="chapter" id="linux">
+        <div class="chapter-header"><span class="chap-num"></span>
+          <h2>Linux e terminal</h2>
+        </div>
+        <p class="chapter-intro">Quase todo servidor roda <b>Linux</b> (Ubuntu Server e Debian são as escolhas mais
+          comuns). Você vai administrá-lo por terminal, sem interface gráfica.</p>
+
+        <h3 class="subhead">Comandos de navegação e arquivos</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Comando</th>
+              <th>Para que serve</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code class="inline">pwd</code></td>
+              <td class="desc">Mostra o diretório atual.</td>
+            </tr>
+            <tr>
+              <td><code class="inline">ls -lah</code></td>
+              <td class="desc">Lista arquivos com permissões, tamanho legível e ocultos.</td>
+            </tr>
+            <tr>
+              <td><code class="inline">cd /caminho</code></td>
+              <td class="desc">Entra em um diretório. <code class="inline">cd ~</code> vai para a home.</td>
+            </tr>
+            <tr>
+              <td><code class="inline">mkdir -p a/b/c</code></td>
+              <td class="desc">Cria diretórios (e os pais, se faltarem).</td>
+            </tr>
+            <tr>
+              <td><code class="inline">cp -r origem destino</code></td>
+              <td class="desc">Copia arquivos ou pastas.</td>
+            </tr>
+            <tr>
+              <td><code class="inline">mv origem destino</code></td>
+              <td class="desc">Move ou renomeia.</td>
+            </tr>
+            <tr>
+              <td><code class="inline">rm -rf pasta</code></td>
+              <td class="desc">Apaga sem perguntar. <b>Cuidado:</b> não tem lixeira.</td>
+            </tr>
+            <tr>
+              <td><code class="inline">cat</code>, <code class="inline">less</code>, <code
+                  class="inline">tail -f</code></td>
+              <td class="desc">Ler arquivos; <code class="inline">tail -f</code> acompanha um log em tempo real.</td>
+            </tr>
+            <tr>
+              <td><code class="inline">grep -rn "texto" .</code></td>
+              <td class="desc">Busca texto dentro de arquivos.</td>
+            </tr>
+            <tr>
+              <td><code class="inline">nano arquivo</code></td>
+              <td class="desc">Editor simples de terminal (Ctrl+O salva, Ctrl+X sai).</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 class="subhead">Usuários, permissões e sudo</h3>
+        <p class="chapter-intro">Cada arquivo tem dono, grupo e permissões de <b>leitura (r=4)</b>, <b>escrita
+            (w=2)</b> e <b>execução (x=1)</b> para dono, grupo e outros. <code class="inline">chmod 640</code> = dono
+          lê/escreve, grupo lê, outros nada.</p>
+        <div class="console">
+          <div class="bar"><span class="label">terminal</span><button class="run-btn">▶ Executar</button></div>
+          <pre><span class="fn">ls</span> -l id_ed25519
+<span class="fn">chmod</span> <span class="num">600</span> id_ed25519     <span class="cmt"># só o dono lê e escreve</span>
+<span class="fn">chown</span> deploy:deploy app/ -R  <span class="cmt"># troca dono e grupo</span>
+<span class="fn">sudo</span> apt update            <span class="cmt"># executa como administrador</span></pre>
+          <div class="result">
+            <div class="result-inner"><span class="msg">-rw------- 1 deploy deploy 411 out 9 15:00 id_ed25519</span>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="subhead">Processos, serviços, disco e pacotes</h3>
+        <div class="console">
+          <div class="bar"><span class="label">terminal</span></div>
+          <pre><span class="fn">ps</span> aux | <span class="fn">grep</span> java       <span class="cmt"># processos</span>
+<span class="fn">top</span> / <span class="fn">htop</span>                 <span class="cmt"># uso de CPU e memória</span>
+<span class="fn">df</span> -h                     <span class="cmt"># espaço em disco</span>
+<span class="fn">free</span> -h                   <span class="cmt"># memória RAM</span>
+<span class="fn">systemctl</span> status docker   <span class="cmt"># estado de um serviço</span>
+<span class="fn">systemctl</span> enable --now docker
+<span class="fn">journalctl</span> -u docker -f   <span class="cmt"># logs de um serviço</span>
+<span class="fn">sudo apt</span> update &amp;&amp; <span class="fn">sudo apt</span> upgrade -y</pre>
+        </div>
+
+        <div class="note"><span>💡</span>
+          <div><b>Regra de ouro:</b> nunca rode a aplicação como <code class="inline">root</code>. Crie um usuário
+            comum, dê <code class="inline">sudo</code> só se precisar e use esse usuário no dia a dia.</div>
+        </div>
+      </section>
+
+      <!-- 03 REDES -->
+      <section class="chapter" id="redes">
+        <div class="chapter-header"><span class="chap-num"></span>
+          <h2>Redes e network</h2>
+        </div>
+        <p class="chapter-intro">Entender rede é o que separa "copiei um tutorial" de "sei por que não está
+          funcionando". Estes são os conceitos que aparecem em <b>todo</b> deploy.</p>
+
+        <div class="grid cols-2">
+          <div class="card"><span class="tag blue">Endereço</span>
+            <h3>IP</h3>
+            <p>Identifica uma máquina na rede. <b>IPv4</b> (203.0.113.10) ou <b>IPv6</b>. Pode ser <b>público</b>
+              (alcançável da internet) ou <b>privado</b> (10.x, 172.16–31.x, 192.168.x, só dentro da rede).</p>
+          </div>
+          <div class="card"><span class="tag green">Porta</span>
+            <h3>Porta</h3>
+            <p>Número de 0 a 65535 que identifica <i>qual serviço</i> na máquina. IP é o prédio, porta é o
+              apartamento.</p>
+          </div>
+          <div class="card"><span class="tag purple">Nomes</span>
+            <h3>DNS</h3>
+            <p>Traduz <code class="inline">meuapp.com</code> em IP. Registros comuns: A (IPv4), AAAA (IPv6), CNAME
+              (alias), MX (e-mail), TXT (verificações).</p>
+          </div>
+          <div class="card"><span class="tag amber">Transporte</span>
+            <h3>TCP e UDP</h3>
+            <p>TCP garante entrega e ordem (HTTP, SSH, bancos). UDP é mais rápido e sem garantias (DNS, vídeo,
+              jogos).</p>
+          </div>
+        </div>
+
+        <h3 class="subhead">Portas que você vai usar</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Porta</th>
+              <th>Serviço</th>
+              <th>Expor à internet?</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code class="inline">22</code></td>
+              <td class="desc">SSH (acesso administrativo)</td>
+              <td class="desc">Sim, mas restrito (chave, sem senha, idealmente por IP)</td>
+            </tr>
+            <tr>
+              <td><code class="inline">80</code></td>
+              <td class="desc">HTTP</td>
+              <td class="desc">Sim (redireciona para 443)</td>
+            </tr>
+            <tr>
+              <td><code class="inline">443</code></td>
+              <td class="desc">HTTPS</td>
+              <td class="desc">Sim</td>
+            </tr>
+            <tr>
+              <td><code class="inline">5432</code></td>
+              <td class="desc">PostgreSQL</td>
+              <td class="desc"><b>Não.</b> Só rede interna</td>
+            </tr>
+            <tr>
+              <td><code class="inline">3306</code></td>
+              <td class="desc">MySQL / MariaDB</td>
+              <td class="desc"><b>Não.</b> Só rede interna</td>
+            </tr>
+            <tr>
+              <td><code class="inline">6379</code></td>
+              <td class="desc">Redis</td>
+              <td class="desc"><b>Não.</b> Só rede interna</td>
+            </tr>
+            <tr>
+              <td><code class="inline">8080</code></td>
+              <td class="desc">Porta comum de apps (Quarkus, Spring)</td>
+              <td class="desc">Não direto: atrás do proxy</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 class="subhead">Conceitos de rede que causam dúvida</h3>
+        <div class="grid cols-3">
+          <div class="card">
+            <h3>Firewall</h3>
+            <p>Regras que decidem quais portas aceitam conexão. Princípio: bloqueie tudo e libere só o necessário.
+            </p>
+          </div>
+          <div class="card">
+            <h3>NAT</h3>
+            <p>Permite que vários dispositivos de uma rede privada saiam para a internet com um único IP público.
+              O Docker usa NAT para os containers.</p>
+          </div>
+          <div class="card">
+            <h3>Proxy reverso</h3>
+            <p>Fica na frente das aplicações, recebe as requisições e as repassa ao container certo, cuidando de
+              HTTPS.</p>
+          </div>
+          <div class="card">
+            <h3>Load balancer</h3>
+            <p>Distribui requisições entre várias instâncias da mesma aplicação (ver capítulo de escala).</p>
+          </div>
+          <div class="card">
+            <h3>CIDR / sub-rede</h3>
+            <p><code class="inline">10.0.0.0/24</code> significa 256 endereços (10.0.0.0 a 10.0.0.255). Usado em
+              redes privadas e no Docker.</p>
+          </div>
+          <div class="card">
+            <h3>Latência e banda</h3>
+            <p>Latência é o tempo de ida e volta; banda é a quantidade por segundo. Servidor longe do usuário =
+              mais latência.</p>
+          </div>
+        </div>
+
+        <h3 class="subhead">Comandos de diagnóstico de rede</h3>
+        <div class="console">
+          <div class="bar"><span class="label">terminal</span><button class="run-btn">▶ Executar</button></div>
+          <pre><span class="fn">ip</span> a                          <span class="cmt"># interfaces e IPs da máquina</span>
+<span class="fn">ping</span> -c 3 meuapp.com           <span class="cmt"># o host responde?</span>
+<span class="fn">dig</span> +short meuapp.com          <span class="cmt"># qual IP o DNS devolve?</span>
+<span class="fn">ss</span> -tulpn                      <span class="cmt"># quais portas estão escutando e quem escuta</span>
+<span class="fn">curl</span> -I https://meuapp.com     <span class="cmt"># cabeçalhos HTTP</span>
+<span class="fn">nc</span> -zv servidor <span class="num">5432</span>          <span class="cmt"># a porta está acessível?</span>
+<span class="fn">traceroute</span> meuapp.com          <span class="cmt"># caminho até o destino</span></pre>
+          <div class="result">
+            <div class="result-inner"><span class="msg">$ dig +short meuapp.com</span><br>203.0.113.10<br><br><span
+                class="msg">$ curl -I https://meuapp.com</span><br>HTTP/2 200<br>server: nginx<br>content-type:
+              application/json</div>
+          </div>
+        </div>
+
+        <div class="note warn"><span>⚠️</span>
+          <div><b>Atenção:</b> "a porta está aberta no servidor" não é o mesmo que "a porta está acessível da
+            internet". Podem existir três camadas bloqueando: firewall do provedor (security group), firewall do
+            sistema (ufw) e o próprio serviço escutando só em <code class="inline">127.0.0.1</code>.</div>
+        </div>
+      </section>
+
+      <!-- 04 SERVIDORES -->
+      <section class="chapter" id="servidores">
+        <div class="chapter-header"><span class="chap-num"></span>
+          <h2>Servidores</h2>
+        </div>
+        <p class="chapter-intro">Servidor é só um computador ligado 24h com IP fixo. Você pode alugar um pedaço dele
+          (<b>VPS</b>), usar serviços gerenciados na nuvem ou até manter um físico.</p>
+
+        <div class="grid cols-2">
+          <div class="card"><span class="tag blue">Mais simples</span>
+            <h3>VPS</h3>
+            <p>Máquina virtual com acesso total (root). Exemplos: Hetzner, DigitalOcean, Contabo, Hostinger,
+              Locaweb. Ótima para começar: preço fixo e controle completo.</p>
+          </div>
+          <div class="card"><span class="tag green">Escalável</span>
+            <h3>Nuvem (IaaS)</h3>
+            <p>AWS EC2, Google Compute Engine, Azure VM, Oracle Cloud. Mais recursos (load balancer, redes
+              privadas, autoscaling), curva de aprendizado e cobrança por uso.</p>
+          </div>
+          <div class="card"><span class="tag purple">Menos trabalho</span>
+            <h3>PaaS / gerenciados</h3>
+            <p>Render, Railway, Fly.io, Cloud Run, Heroku. Você envia a imagem ou o código e eles cuidam do
+              servidor. Mais caro em escala e menos controle.</p>
+          </div>
+          <div class="card"><span class="tag amber">Hardware próprio</span>
+            <h3>On-premise</h3>
+            <p>Servidor físico na empresa. Exige IP fixo, no-break, backup e segurança por sua conta.</p>
+          </div>
+        </div>
+
+        <h3 class="subhead">Como escolher o tamanho</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Recurso</th>
+              <th>O que observar</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>CPU (vCPU)</b></td>
+              <td class="desc">Processamento. APIs simples funcionam bem com 1–2 vCPUs.</td>
+            </tr>
+            <tr>
+              <td><b>RAM</b></td>
+              <td class="desc">Principal gargalo em apps Java: considere 1 GB+ por JVM, mais o banco. Com
+                Quarkus nativo o consumo cai bastante. Comece com 2–4 GB para app + banco.</td>
+            </tr>
+            <tr>
+              <td><b>Disco</b></td>
+              <td class="desc">SSD/NVMe. Imagens Docker, logs e dados do banco crescem: 40 GB+ é um começo
+                razoável.</td>
+            </tr>
+            <tr>
+              <td><b>Região</b></td>
+              <td class="desc">Escolha perto dos usuários (latência) e atenda requisitos da LGPD.</td>
+            </tr>
+            <tr>
+              <td><b>Tráfego</b></td>
+              <td class="desc">Veja a franquia mensal de transferência e o preço do excedente.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 class="subhead">Escala vertical x horizontal (prévia)</h3>
+        <p class="chapter-intro"><b>Vertical:</b> trocar por uma máquina maior (mais CPU/RAM). Simples, mas tem
+          teto e exige reinício. <b>Horizontal:</b> adicionar mais máquinas/instâncias e dividir a carga. Mais
+          complexa, mas sem teto prático e tolera falhas. Veja o capítulo 15.</p>
+
+        <div class="note"><span>💡</span>
+          <div><b>Ao criar a VPS:</b> escolha Ubuntu LTS (22.04 ou 24.04), adicione sua <b>chave pública SSH</b> no
+            painel do provedor e anote o IP público. Isso já deixa o servidor pronto para o próximo capítulo.</div>
+        </div>
+      </section>
+
+      <!-- 05 SSH -->
+      <section class="chapter" id="ssh">
+        <div class="chapter-header"><span class="chap-num"></span>
+          <h2>SSH e chaves pública/privada</h2>
+        </div>
+        <p class="chapter-intro"><b>SSH</b> (Secure Shell) é o protocolo para controlar um servidor remoto por
+          terminal, com tráfego criptografado. Em vez de senha, o padrão profissional é usar <b>um par de
+            chaves</b>.</p>
+
+        <h3 class="subhead">Como funciona o par de chaves</h3>
+        <div class="grid cols-2">
+          <div class="card"><span class="tag red" style="background:var(--red-dim);color:var(--red)">Secreta</span>
+            <h3>Chave privada</h3>
+            <p>Fica <b>somente</b> no seu computador (<code class="inline">~/.ssh/id_ed25519</code>). Nunca
+              envie, nunca commite, nunca cole em chat. Quem a tem, entra como você.</p>
+          </div>
+          <div class="card"><span class="tag green">Compartilhável</span>
+            <h3>Chave pública</h3>
+            <p>Arquivo <code class="inline">.pub</code>. Você a coloca no servidor, em <code
+                class="inline">~/.ssh/authorized_keys</code>. Pode ser divulgada sem risco.</p>
+          </div>
+        </div>
+        <p class="chapter-intro">Ao conectar, o servidor desafia o cliente: só quem tem a chave privada
+          correspondente à pública cadastrada consegue provar quem é, <b>sem a chave privada trafegar pela
+            rede</b>.</p>
+
+        <div class="console">
+          <div class="bar"><span class="label">fluxo-ssh.txt</span></div>
+          <pre>1. Cliente  → Servidor: "quero entrar como <span class="fn">deploy</span>"
+2. Servidor → Cliente: "prove que tem a chave privada da pública que eu conheço" (desafio)
+3. Cliente  → assina o desafio com a <span class="fn">chave privada</span>
+4. Servidor → verifica a assinatura com a <span class="fn">chave pública</span> → acesso liberado</pre>
+        </div>
+
+        <h3 class="subhead">Gerando e instalando a chave</h3>
+        <div class="console">
+          <div class="bar"><span class="label">no seu computador</span><button class="run-btn">▶ Executar</button>
+          </div>
+          <pre><span class="cmt"># 1) gerar o par (Ed25519 é o algoritmo recomendado hoje)</span>
+<span class="fn">ssh-keygen</span> -t ed25519 -C <span class="str">"meu-notebook"</span>
+
+<span class="cmt"># 2) copiar a pública para o servidor</span>
+<span class="fn">ssh-copy-id</span> -i ~/.ssh/id_ed25519.pub deploy@203.0.113.10
+
+<span class="cmt"># 3) entrar</span>
+<span class="fn">ssh</span> deploy@203.0.113.10</pre>
+          <div class="result">
+            <div class="result-inner"><span class="msg">Generating public/private ed25519 key pair.</span><br>Enter
+              passphrase (empty for no passphrase): ********<br>Your identification has been saved in
+              /home/voce/.ssh/id_ed25519<br>Your public key has been saved in
+              /home/voce/.ssh/id_ed25519.pub<br><br><span class="msg">deploy@servidor:~$</span> conectado ✓</div>
+          </div>
+        </div>
+
+        <div class="note warn"><span>⚠️</span>
+          <div><b>Use passphrase</b> na chave privada. Se o notebook for roubado, a passphrase é a última barreira.
+            Use <code class="inline">ssh-agent</code> para digitá-la uma vez por sessão.</div>
+        </div>
+
+        <h3 class="subhead">Arquivo ~/.ssh/config: atalhos</h3>
+        <div class="console">
+          <div class="bar"><span class="label">~/.ssh/config</span></div>
+          <pre><span class="kw">Host</span> producao
+  <span class="kw">HostName</span> <span class="num">203.0.113.10</span>
+  <span class="kw">User</span> deploy
+  <span class="kw">Port</span> <span class="num">22</span>
+  <span class="kw">IdentityFile</span> ~/.ssh/id_ed25519
+
+<span class="cmt"># agora basta:  ssh producao</span></pre>
+        </div>
+
+        <h3 class="subhead">Comandos úteis com SSH</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Comando</th>
+              <th>Função</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code class="inline">ssh producao "docker ps"</code></td>
+              <td class="desc">Executa um comando remoto e volta.</td>
+            </tr>
+            <tr>
+              <td><code class="inline">scp arquivo.jar producao:/home/deploy/</code></td>
+              <td class="desc">Copia arquivo para o servidor.</td>
+            </tr>
+            <tr>
+              <td><code class="inline">rsync -avz ./dist/ producao:/srv/app/</code></td>
+              <td class="desc">Sincroniza pastas, enviando só o que mudou.</td>
+            </tr>
+            <tr>
+              <td><code class="inline">ssh -L 5433:localhost:5432 producao</code></td>
+              <td class="desc"><b>Túnel SSH:</b> acessa o Postgres do servidor em <code
+                  class="inline">localhost:5433</code> sem expor a porta 5432 na internet.</td>
+            </tr>
+            <tr>
+              <td><code class="inline">ssh-keyscan host &gt;&gt; ~/.ssh/known_hosts</code></td>
+              <td class="desc">Registra a identidade do servidor (útil em CI).</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="note danger"><span>🚫</span>
+          <div><b>Nunca</b> commite chaves privadas, <code class="inline">.env</code> ou tokens no Git. Se isso
+            acontecer, considere a chave comprometida: gere outra, remova a antiga do servidor e revogue o que foi
+            exposto.</div>
+        </div>
+
+        <h3 class="subhead">Chaves em deploy automatizado</h3>
+        <p class="chapter-intro">Para o GitHub Actions entrar no servidor, crie uma <b>chave exclusiva para
+            deploy</b> (sem passphrase, só para isso), instale a pública no servidor e guarde a privada como
+          <i>secret</i> do repositório. Se vazar, você revoga só essa chave.</p>
+      </section>
+
+      <!-- 06 SEGURANÇA -->
+      <section class="chapter" id="seguranca">
+        <div class="chapter-header"><span class="chap-num"></span>
+          <h2>Segurança inicial do servidor</h2>
+        </div>
+        <p class="chapter-intro">Um servidor novo na internet começa a receber tentativas de invasão em
+          <b>minutos</b>. Faça este "endurecimento" antes de instalar qualquer coisa.</p>
+
+        <h3 class="subhead">Passo a passo</h3>
+        <div class="console">
+          <div class="bar"><span class="label">primeiro acesso (como root)</span></div>
+          <pre><span class="cmt"># 1) atualizar o sistema</span>
+<span class="fn">apt</span> update &amp;&amp; <span class="fn">apt</span> upgrade -y
+
+<span class="cmt"># 2) criar usuário comum com sudo</span>
+<span class="fn">adduser</span> deploy
+<span class="fn">usermod</span> -aG sudo deploy
+
+<span class="cmt"># 3) copiar sua chave pública para esse usuário</span>
+<span class="fn">rsync</span> --archive --chown=deploy:deploy ~/.ssh /home/deploy
+
+<span class="cmt"># 4) firewall: liberar SSH, HTTP e HTTPS; bloquear o resto</span>
+<span class="fn">ufw</span> allow OpenSSH
+<span class="fn">ufw</span> allow <span class="num">80</span>/tcp
+<span class="fn">ufw</span> allow <span class="num">443</span>/tcp
+<span class="fn">ufw</span> enable
+
+<span class="cmt"># 5) proteger contra força bruta</span>
+<span class="fn">apt</span> install -y fail2ban unattended-upgrades</pre>
+        </div>
+
+        <h3 class="subhead">Endurecendo o SSH</h3>
+        <p class="chapter-intro">Edite <code class="inline">/etc/ssh/sshd_config</code> (teste a chave em outra
+          janela <b>antes</b> de desativar a senha, para não se trancar para fora):</p>
+        <div class="console">
+          <div class="bar"><span class="label">/etc/ssh/sshd_config</span></div>
+          <pre><span class="kw">PermitRootLogin</span> no
+<span class="kw">PasswordAuthentication</span> no
+<span class="kw">PubkeyAuthentication</span> yes
+<span class="cmt"># depois:  sudo systemctl restart ssh</span></pre>
+        </div>
+
+        <div class="note warn"><span>⚠️</span>
+          <div><b>Docker e ufw:</b> portas publicadas pelo Docker (<code class="inline">-p 5432:5432</code>)
+            <b>ignoram o ufw</b>, porque o Docker mexe direto no iptables. Se publicar uma porta, ela fica aberta
+            ao mundo. Publique só 80/443 (via proxy) ou use <code class="inline">127.0.0.1:5432:5432</code>.</div>
+        </div>
+
+        <h3 class="subhead">Checklist rápido de segurança</h3>
+        <div class="grid cols-2">
+          <div class="card">
+            <h3>✅ Faça</h3>
+            <p>Login só por chave · usuário sem root · firewall ativo · atualizações automáticas · banco sem porta
+              pública · backups testados · senhas longas e únicas.</p>
+          </div>
+          <div class="card">
+            <h3>❌ Evite</h3>
+            <p>Rodar app como root · expor banco/Redis · senhas padrão · deixar painéis administrativos abertos ·
+              guardar segredos no Git.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 07 DOCKER CONCEITOS -->
+      <section class="chapter" id="docker">
+        <div class="chapter-header"><span class="chap-num"></span>
+          <h2>Conceitos do Docker</h2>
+        </div>
+        <p class="chapter-intro"><b>Docker</b> empacota a aplicação com tudo o que ela precisa (runtime, libs,
+          configuração) em uma <b>imagem</b>. Quem roda essa imagem obtém o mesmo comportamento em qualquer lugar,
+          acabando com o "na minha máquina funciona".</p>
+
+        <div class="grid cols-2">
+          <div class="card"><span class="tag blue">Receita</span>
+            <h3>Imagem</h3>
+            <p>Modelo imutável e em camadas (aplicação + dependências). É o "molde". Identificada por <code
+                class="inline">nome:tag</code>, ex.: <code class="inline">postgres:16</code>.</p>
+          </div>
+          <div class="card"><span class="tag green">Em execução</span>
+            <h3>Container</h3>
+            <p>Instância em execução de uma imagem, isolada do resto. Descartável: se morrer, sobe outro igual.</p>
+          </div>
+          <div class="card"><span class="tag purple">Armazém</span>
+            <h3>Registry</h3>
+            <p>Repositório de imagens: Docker Hub, GitHub Container Registry (ghcr.io), AWS ECR, etc. Você faz
+              <code class="inline">push</code> do build e o servidor faz <code class="inline">pull</code>.</p>
+          </div>
+          <div class="card"><span class="tag amber">Dados</span>
+            <h3>Volume</h3>
+            <p>Armazenamento que sobrevive ao container. Tudo que está dentro do container e fora de um volume é
+              perdido ao recriá-lo.</p>
+          </div>
+        </div>
+
+        <h3 class="subhead">Container x máquina virtual</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th>Máquina virtual</th>
+              <th>Container</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Isolamento</b></td>
+              <td class="desc">SO completo por VM</td>
+              <td class="desc">Compartilha o kernel do host</td>
+            </tr>
+            <tr>
+              <td><b>Tamanho</b></td>
+              <td class="desc">GBs</td>
+              <td class="desc">MBs</td>
+            </tr>
+            <tr>
+              <td><b>Inicialização</b></td>
+              <td class="desc">Minutos</td>
+              <td class="desc">Segundos ou menos</td>
+            </tr>
+            <tr>
+              <td><b>Uso típico</b></td>
+              <td class="desc">Servidor inteiro</td>
+              <td class="desc">Uma aplicação ou serviço</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 class="subhead">Instalando o Docker no Ubuntu</h3>
+        <div class="console">
+          <div class="bar"><span class="label">servidor</span></div>
+          <pre><span class="cmt"># script oficial (confira em docs.docker.com antes de usar em produção)</span>
+<span class="fn">curl</span> -fsSL https://get.docker.com | <span class="fn">sudo</span> sh
+
+<span class="cmt"># usar docker sem sudo (relogue depois)</span>
+<span class="fn">sudo usermod</span> -aG docker deploy
+
+<span class="fn">docker</span> --version
+<span class="fn">docker</span> compose version</pre>
+        </div>
+
+        <div class="note warn"><span>⚠️</span>
+          <div>Estar no grupo <code class="inline">docker</code> equivale, na prática, a ter acesso root à máquina.
+            Dê esse acesso só a quem precisa.</div>
+        </div>
+      </section>
+
+      <!-- 08 COMANDOS -->
+      <section class="chapter" id="comandos">
+        <div class="chapter-header"><span class="chap-num"></span>
+          <h2>Comandos essenciais do Docker</h2>
+        </div>
+        <p class="chapter-intro">Estes comandos cobrem 90% do dia a dia. Aprenda-os na ordem: <b>rodar → inspecionar
+            → entrar → limpar</b>.</p>
+
+        <h3 class="subhead">Rodar containers</h3>
+        <div class="console">
+          <div class="bar"><span class="label">terminal</span><button class="run-btn">▶ Executar</button></div>
+          <pre><span class="fn">docker run</span> -d \
+  --name meu-postgres \
+  -e POSTGRES_PASSWORD=<span class="str">segredo</span> \
+  -p <span class="num">127.0.0.1:5432:5432</span> \
+  -v pgdata:/var/lib/postgresql/data \
+  --restart unless-stopped \
+  postgres:<span class="num">16</span></pre>
+          <div class="result">
+            <div class="result-inner"><span class="msg">Unable to find image 'postgres:16' locally</span><br>16:
+              Pulling from library/postgres<br>Status: Downloaded newer image for postgres:16<br>3f9a1c2b7d4e...
+              (ID do container)</div>
+          </div>
+        </div>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Flag</th>
+              <th>Significado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code class="inline">-d</code></td>
+              <td class="desc">Roda em segundo plano (detached).</td>
+            </tr>
+            <tr>
+              <td><code class="inline">--name</code></td>
+              <td class="desc">Nome do container, para referenciá-lo.</td>
+            </tr>
+            <tr>
+              <td><code class="inline">-p host:container</code></td>
+              <td class="desc">Publica porta. <code class="inline">127.0.0.1:5432:5432</code> expõe só
+                localmente.</td>
+            </tr>
+            <tr>
+              <td><code class="inline">-e CHAVE=valor</code></td>
+              <td class="desc">Define variável de ambiente.</td>
+            </tr>
+            <tr>
+              <td><code class="inline">-v origem:destino</code></td>
+              <td class="desc">Monta volume ou pasta do host.</td>
+            </tr>
+            <tr>
+              <td><code class="inline">--restart unless-stopped</code></td>
+              <td class="desc">Sobe de novo após queda ou reboot do servidor.</td>
+            </tr>
+            <tr>
+              <td><code class="inline">--network</code></td>
+              <td class="desc">Conecta a uma rede Docker específica.</td>
+            </tr>
+            <tr>
+              <td><code class="inline">--rm</code></td>
+              <td class="desc">Remove o container ao terminar (bom para tarefas pontuais).</td>
+            </tr>
+            <tr>
+              <td><code class="inline">-m 512m --cpus 1</code></td>
+              <td class="desc">Limita memória e CPU.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 class="subhead">Inspecionar e depurar</h3>
+        <div class="console">
+          <div class="bar"><span class="label">terminal</span></div>
+          <pre><span class="fn">docker ps</span>                      <span class="cmt"># containers rodando (-a: todos)</span>
+<span class="fn">docker logs</span> -f --tail <span class="num">100</span> app   <span class="cmt"># acompanhar logs</span>
+<span class="fn">docker exec</span> -it app sh          <span class="cmt"># abrir um shell dentro do container</span>
+<span class="fn">docker inspect</span> app              <span class="cmt"># detalhes completos (IP, mounts, env)</span>
+<span class="fn">docker stats</span>                    <span class="cmt"># CPU/RAM em tempo real</span>
+<span class="fn">docker top</span> app                  <span class="cmt"># processos do container</span></pre>
+        </div>
+
+        <h3 class="subhead">Ciclo de vida</h3>
+        <div class="console">
+          <div class="bar"><span class="label">terminal</span></div>
+          <pre><span class="fn">docker stop</span> app   &amp;&amp; <span class="fn">docker start</span> app
+<span class="fn">docker restart</span> app
+<span class="fn">docker rm</span> -f app               <span class="cmt"># remove container</span>
+<span class="fn">docker pull</span> nginx:<span class="num">stable</span>        <span class="cmt"># baixa imagem</span>
+<span class="fn">docker images</span>                  <span class="cmt"># lista imagens locais</span>
+<span class="fn">docker rmi</span> imagem:tag          <span class="cmt"># remove imagem</span>
+<span class="fn">docker build</span> -t meuapp:<span class="num">1.0</span> .    <span class="cmt"># constrói imagem a partir do Dockerfile</span>
+<span class="fn">docker login</span> ghcr.io
+<span class="fn">docker tag</span> meuapp:<span class="num">1.0</span> ghcr.io/usuario/meuapp:<span class="num">1.0</span>
+<span class="fn">docker push</span> ghcr.io/usuario/meuapp:<span class="num">1.0</span></pre>
+        </div>
+
+        <h3 class="subhead">Limpeza</h3>
+        <div class="console">
+          <div class="bar"><span class="label">terminal</span></div>
+          <pre><span class="fn">docker system df</span>                 <span class="cmt"># quanto espaço o Docker usa</span>
+<span class="fn">docker container prune</span>            <span class="cmt"># remove containers parados</span>
+<span class="fn">docker image prune</span> -a             <span class="cmt"># remove imagens sem uso</span>
+<span class="fn">docker volume prune</span>               <span class="cmt"># CUIDADO: apaga volumes sem container</span></pre>
+        </div>
+
+        <div class="note danger"><span>🚫</span>
+          <div><code class="inline">docker volume prune</code> e <code class="inline">docker system prune
+              --volumes</code> podem apagar dados de banco que estavam em volumes de containers parados. Confira
+            antes.</div>
+        </div>
+      </section>
+
+      <!-- 09 DOCKERFILE -->
+      <section class="chapter" id="dockerfile">
+        <div class="chapter-header"><span class="chap-num"></span>
+          <h2>Dockerfile: empacotando a aplicação</h2>
+        </div>
+        <p class="chapter-intro">O <b>Dockerfile</b> é a receita para construir a imagem. Cada instrução cria uma
+          <b>camada</b> com cache: ordene do que muda <b>menos</b> (dependências) para o que muda <b>mais</b> (seu
+          código) para builds rápidos.</p>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Instrução</th>
+              <th>Função</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code class="inline">FROM</code></td>
+              <td class="desc">Imagem base.</td>
+            </tr>
+            <tr>
+              <td><code class="inline">WORKDIR</code></td>
+              <td class="desc">Diretório de trabalho dentro da imagem.</td>
+            </tr>
+            <tr>
+              <td><code class="inline">COPY</code></td>
+              <td class="desc">Copia arquivos do projeto para a imagem.</td>
+            </tr>
+            <tr>
+              <td><code class="inline">RUN</code></td>
+              <td class="desc">Executa comando durante o <b>build</b> (instalar, compilar).</td>
+            </tr>
+            <tr>
+              <td><code class="inline">ENV</code></td>
+              <td class="desc">Define variáveis de ambiente padrão.</td>
+            </tr>
+            <tr>
+              <td><code class="inline">EXPOSE</code></td>
+              <td class="desc">Documenta a porta usada (não publica por si só).</td>
+            </tr>
+            <tr>
+              <td><code class="inline">USER</code></td>
+              <td class="desc">Usuário que executa o processo (evite root).</td>
+            </tr>
+            <tr>
+              <td><code class="inline">CMD</code> / <code class="inline">ENTRYPOINT</code></td>
+              <td class="desc">Comando executado ao iniciar o container.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 class="subhead">Exemplo: API Java/Quarkus com multi-stage build</h3>
+        <p class="chapter-intro">O <b>multi-stage</b> compila em uma imagem pesada (JDK + Maven) e copia só o
+          resultado para uma imagem final leve. A imagem de produção não carrega ferramentas de build.</p>
+        <div class="console">
+          <div class="bar"><span class="label">Dockerfile</span></div>
+          <pre><span class="cmt"># ---------- Estágio 1: build ----------</span>
+<span class="kw">FROM</span> maven:<span class="num">3.9-eclipse-temurin-21</span> <span class="kw">AS</span> build
+<span class="kw">WORKDIR</span> /build
+<span class="kw">COPY</span> pom.xml .
+<span class="kw">RUN</span> mvn -B dependency:go-offline        <span class="cmt"># camada de dependências (cacheada)</span>
+<span class="kw">COPY</span> src ./src
+<span class="kw">RUN</span> mvn -B package -DskipTests
+
+<span class="cmt"># ---------- Estágio 2: runtime ----------</span>
+<span class="kw">FROM</span> eclipse-temurin:<span class="num">21-jre</span>
+<span class="kw">WORKDIR</span> /app
+<span class="kw">RUN</span> useradd -r -u <span class="num">1001</span> appuser
+<span class="kw">COPY</span> --from=build --chown=appuser /build/target/quarkus-app/ ./
+<span class="kw">USER</span> appuser
+<span class="kw">EXPOSE</span> <span class="num">8080</span>
+<span class="kw">ENTRYPOINT</span> [<span class="str">"java"</span>, <span class="str">"-jar"</span>, <span class="str">"quarkus-run.jar"</span>]</pre>
+        </div>
+
+        <h3 class="subhead">Outro exemplo: front-end React servido por Nginx</h3>
+        <div class="console">
+          <div class="bar"><span class="label">Dockerfile</span></div>
+          <pre><span class="kw">FROM</span> node:<span class="num">22-alpine</span> <span class="kw">AS</span> build
+<span class="kw">WORKDIR</span> /app
+<span class="kw">COPY</span> package*.json ./
+<span class="kw">RUN</span> npm ci
+<span class="kw">COPY</span> . .
+<span class="kw">RUN</span> npm run build
+
+<span class="kw">FROM</span> nginx:<span class="num">stable-alpine</span>
+<span class="kw">COPY</span> --from=build /app/dist /usr/share/nginx/html
+<span class="kw">EXPOSE</span> <span class="num">80</span></pre>
+        </div>
+
+        <h3 class="subhead">.dockerignore</h3>
+        <p class="chapter-intro">Evita enviar arquivos desnecessários (e <b>segredos</b>) ao build:</p>
+        <div class="console">
+          <div class="bar"><span class="label">.dockerignore</span></div>
+          <pre>.git
+node_modules
+target
+.env
+*.log</pre>
+        </div>
+
+        <div class="note"><span>💡</span>
+          <div><b>Boas práticas:</b> fixe versões de imagem (<code class="inline">postgres:16</code>, não <code
+              class="inline">latest</code>) · prefira imagens slim/alpine · rode como usuário sem root · uma
+            responsabilidade por container · nunca coloque senhas no Dockerfile.</div>
+        </div>
+      </section>
+
+      <!-- 10 COMPOSE -->
+      <section class="chapter" id="compose">
+        <div class="chapter-header"><span class="chap-num"></span>
+          <h2>Docker Compose</h2>
+        </div>
+        <p class="chapter-intro">Aplicações reais têm vários serviços (app, banco, cache, proxy). O <b>Compose</b>
+          descreve todos em um arquivo <code class="inline">compose.yaml</code> e sobe tudo com um comando.</p>
+
+        <div class="console">
+          <div class="bar"><span class="label">compose.yaml</span></div>
+          <pre><span class="kw">services</span>:
+  <span class="fn">api</span>:
+    <span class="kw">image</span>: ghcr.io/usuario/minha-api:<span class="num">1.0</span>
+    <span class="kw">restart</span>: unless-stopped
+    <span class="kw">env_file</span>: .env
+    <span class="kw">depends_on</span>:
+      <span class="kw">db</span>:
+        <span class="kw">condition</span>: service_healthy
+    <span class="kw">networks</span>: [backend, web]
+    <span class="kw">healthcheck</span>:
+      <span class="kw">test</span>: [<span class="str">"CMD"</span>, <span class="str">"curl"</span>, <span class="str">"-f"</span>, <span class="str">"http://localhost:8080/q/health/ready"</span>]
+      <span class="kw">interval</span>: 30s
+      <span class="kw">retries</span>: <span class="num">3</span>
+
+  <span class="fn">db</span>:
+    <span class="kw">image</span>: postgres:<span class="num">16</span>
+    <span class="kw">restart</span>: unless-stopped
+    <span class="kw">environment</span>:
+      <span class="kw">POSTGRES_USER</span>: app
+      <span class="kw">POSTGRES_PASSWORD</span>: ${DB_PASSWORD}
+      <span class="kw">POSTGRES_DB</span>: appdb
+    <span class="kw">volumes</span>:
+      - pgdata:/var/lib/postgresql/data
+    <span class="kw">networks</span>: [backend]            <span class="cmt"># sem ports: não fica exposto</span>
+    <span class="kw">healthcheck</span>:
+      <span class="kw">test</span>: [<span class="str">"CMD-SHELL"</span>, <span class="str">"pg_isready -U app -d appdb"</span>]
+      <span class="kw">interval</span>: 10s
+      <span class="kw">retries</span>: <span class="num">5</span>
+
+<span class="kw">networks</span>:
+  <span class="kw">backend</span>:
+  <span class="kw">web</span>:
+
+<span class="kw">volumes</span>:
+  <span class="kw">pgdata</span>:</pre>
+        </div>
+
+        <h3 class="subhead">Comandos do Compose</h3>
+        <div class="console">
+          <div class="bar"><span class="label">terminal</span><button class="run-btn">▶ Executar</button></div>
+          <pre><span class="fn">docker compose</span> up -d                <span class="cmt"># sobe tudo em segundo plano</span>
+<span class="fn">docker compose</span> ps                   <span class="cmt"># estado dos serviços</span>
+<span class="fn">docker compose</span> logs -f api          <span class="cmt"># logs de um serviço</span>
+<span class="fn">docker compose</span> pull &amp;&amp; <span class="fn">docker compose</span> up -d   <span class="cmt"># atualizar imagens</span>
+<span class="fn">docker compose</span> exec db psql -U app appdb
+<span class="fn">docker compose</span> down                 <span class="cmt"># derruba (mantém volumes)</span>
+<span class="fn">docker compose</span> down -v              <span class="cmt"># derruba e APAGA volumes</span>
+<span class="fn">docker compose</span> config               <span class="cmt"># valida e mostra o arquivo final</span></pre>
+          <div class="result">
+            <div class="result-inner"><span class="msg">[+] Running 3/3</span><br> ✔ Network app_backend Created<br>
+              ✔ Container app-db-1 Healthy<br> ✔ Container app-api-1 Started</div>
+          </div>
+        </div>
+
+        <div class="note warn"><span>⚠️</span>
+          <div><b>depends_on</b> sozinho só controla a ordem de <i>início</i>, não se o banco está <i>pronto</i>.
+            Combine com <code class="inline">healthcheck</code> + <code class="inline">condition:
+              service_healthy</code>, como acima.</div>
+        </div>
+      </section>
+
+      <!-- 11 REDES E VOLUMES DOCKER -->
+      <section class="chapter" id="dockernet">
+        <div class="chapter-header"><span class="chap-num"></span>
+          <h2>Redes e volumes no Docker</h2>
+        </div>
+        <p class="chapter-intro">Aqui os conceitos de rede do capítulo 3 aparecem na prática. Entender isso evita
+          o erro clássico <code class="inline">connection refused</code> entre containers.</p>
+
+        <h3 class="subhead">Tipos de rede</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Driver</th>
+              <th>Como funciona</th>
+              <th>Quando usar</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code class="inline">bridge</code></td>
+              <td class="desc">Rede privada virtual no host, com NAT e DNS interno por nome de container.</td>
+              <td class="desc">Padrão, para um único servidor.</td>
+            </tr>
+            <tr>
+              <td><code class="inline">host</code></td>
+              <td class="desc">Container usa diretamente a rede do host, sem isolamento.</td>
+              <td class="desc">Casos raros de performance ou portas dinâmicas.</td>
+            </tr>
+            <tr>
+              <td><code class="inline">none</code></td>
+              <td class="desc">Sem rede.</td>
+              <td class="desc">Tarefas totalmente isoladas.</td>
+            </tr>
+            <tr>
+              <td><code class="inline">overlay</code></td>
+              <td class="desc">Rede que atravessa <b>vários servidores</b> (Swarm/Kubernetes).</td>
+              <td class="desc">Escala horizontal em múltiplos hosts.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 class="subhead">Regras que resolvem 90% dos problemas</h3>
+        <div class="grid cols-2">
+          <div class="card"><span class="tag blue">Regra 1</span>
+            <h3>Container fala com container pelo nome</h3>
+            <p>Na mesma rede, a API acessa o banco em <code class="inline">jdbc:postgresql://db:5432/appdb</code>.
+              Use o <b>nome do serviço</b>, nunca <code class="inline">localhost</code>.</p>
+          </div>
+          <div class="card"><span class="tag green">Regra 2</span>
+            <h3>localhost é o próprio container</h3>
+            <p>Dentro do container, <code class="inline">localhost</code> é ele mesmo, não o host nem outros
+              containers.</p>
+          </div>
+          <div class="card"><span class="tag purple">Regra 3</span>
+            <h3>Porta interna x publicada</h3>
+            <p><code class="inline">ports: "8081:8080"</code> → de fora, 8081; dentro da rede Docker, continua
+              8080. Containers entre si usam a porta <b>interna</b>.</p>
+          </div>
+          <div class="card"><span class="tag amber">Regra 4</span>
+            <h3>Só publique o necessário</h3>
+            <p>Banco e cache ficam sem <code class="inline">ports</code>. Só o proxy publica 80/443.</p>
+          </div>
+        </div>
+
+        <h3 class="subhead">Comandos de rede e volume</h3>
+        <div class="console">
+          <div class="bar"><span class="label">terminal</span></div>
+          <pre><span class="fn">docker network</span> ls
+<span class="fn">docker network</span> create web
+<span class="fn">docker network</span> inspect app_backend
+<span class="fn">docker volume</span> ls
+<span class="fn">docker volume</span> inspect pgdata
+
+<span class="cmt"># backup simples de um volume</span>
+<span class="fn">docker run</span> --rm -v pgdata:/dados -v $(pwd):/backup alpine \
+  tar czf /backup/pgdata.tar.gz -C /dados .</pre>
+        </div>
+
+        <h3 class="subhead">Volume nomeado x bind mount</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>Exemplo</th>
+              <th>Uso</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Volume nomeado</b></td>
+              <td class="desc"><code class="inline">pgdata:/var/lib/postgresql/data</code></td>
+              <td class="desc">Dados persistentes gerenciados pelo Docker (bancos).</td>
+            </tr>
+            <tr>
+              <td><b>Bind mount</b></td>
+              <td class="desc"><code class="inline">./nginx.conf:/etc/nginx/nginx.conf:ro</code></td>
+              <td class="desc">Arquivo/pasta do host (configurações, desenvolvimento).</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- 12 PROXY, DOMÍNIO, HTTPS -->
+      <section class="chapter" id="proxy">
+        <div class="chapter-header"><span class="chap-num"></span>
+          <h2>Domínio, proxy reverso e HTTPS</h2>
+        </div>
+        <p class="chapter-intro">Para usuários acessarem <code class="inline">https://api.meuapp.com</code> você
+          precisa de três coisas: <b>DNS apontando para o servidor</b>, um <b>proxy reverso</b> recebendo 80/443 e
+          um <b>certificado TLS</b>.</p>
+
+        <h3 class="subhead">1. Apontar o DNS</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>Nome</th>
+              <th>Valor</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code class="inline">A</code></td>
+              <td class="desc">api</td>
+              <td class="desc">203.0.113.10 (IP do servidor)</td>
+            </tr>
+            <tr>
+              <td><code class="inline">A</code></td>
+              <td class="desc">@ (raiz)</td>
+              <td class="desc">203.0.113.10</td>
+            </tr>
+            <tr>
+              <td><code class="inline">CNAME</code></td>
+              <td class="desc">www</td>
+              <td class="desc">meuapp.com</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="chapter-intro">A propagação pode levar de minutos a horas. Confira com <code
+            class="inline">dig +short api.meuapp.com</code>.</p>
+
+        <h3 class="subhead">2. Proxy reverso: a opção mais simples é o Caddy</h3>
+        <p class="chapter-intro">O <b>Caddy</b> obtém e renova certificados Let's Encrypt <b>sozinho</b>. Alternativas:
+          <b>Nginx</b> (clássico, mais configuração + Certbot) e <b>Traefik</b> (descobre containers por labels,
+          bom com Docker).</p>
+        <div class="console">
+          <div class="bar"><span class="label">Caddyfile</span></div>
+          <pre>api.meuapp.com {
+    <span class="kw">reverse_proxy</span> api:<span class="num">8080</span>
+}
+
+meuapp.com {
+    <span class="kw">reverse_proxy</span> frontend:<span class="num">80</span>
+}</pre>
+        </div>
+        <div class="console">
+          <div class="bar"><span class="label">compose.yaml (trecho)</span></div>
+          <pre>  <span class="fn">caddy</span>:
+    <span class="kw">image</span>: caddy:<span class="num">2</span>
+    <span class="kw">restart</span>: unless-stopped
+    <span class="kw">ports</span>: [<span class="str">"80:80"</span>, <span class="str">"443:443"</span>]
+    <span class="kw">volumes</span>:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    <span class="kw">networks</span>: [web]</pre>
+        </div>
+
+        <h3 class="subhead">Equivalente em Nginx</h3>
+        <div class="console">
+          <div class="bar"><span class="label">nginx.conf</span></div>
+          <pre><span class="kw">server</span> {
+    <span class="kw">listen</span> <span class="num">80</span>;
+    <span class="kw">server_name</span> api.meuapp.com;
+    <span class="kw">location</span> / {
+        <span class="kw">proxy_pass</span> http://api:8080;
+        <span class="kw">proxy_set_header</span> Host $host;
+        <span class="kw">proxy_set_header</span> X-Real-IP $remote_addr;
+        <span class="kw">proxy_set_header</span> X-Forwarded-For $proxy_add_x_forwarded_for;
+        <span class="kw">proxy_set_header</span> X-Forwarded-Proto $scheme;
+    }
+}</pre>
+        </div>
+
+        <h3 class="subhead">3. Como o HTTPS funciona</h3>
+        <div class="grid cols-3">
+          <div class="card">
+            <h3>TLS</h3>
+            <p>Criptografa a conexão entre navegador e servidor, evitando leitura e alteração no caminho.</p>
+          </div>
+          <div class="card">
+            <h3>Certificado</h3>
+            <p>Prova que o domínio é seu. A <b>Let's Encrypt</b> emite de graça, válido por 90 dias, com renovação
+              automática.</p>
+          </div>
+          <div class="card">
+            <h3>Desafio HTTP-01</h3>
+            <p>A Let's Encrypt acessa a porta 80 do seu domínio para validar. Por isso DNS e porta 80 precisam
+              estar corretos.</p>
+          </div>
+        </div>
+
+        <div class="note warn"><span>⚠️</span>
+          <div>Atrás de um proxy, a aplicação enxerga o IP do proxy, não o do usuário. Configure o uso dos
+            cabeçalhos <code class="inline">X-Forwarded-*</code> (no Quarkus: <code
+              class="inline">quarkus.http.proxy.proxy-address-forwarding=true</code>).</div>
+        </div>
+      </section>
+
+      <!-- 13 VARIÁVEIS E SEGREDOS -->
+      <section class="chapter" id="segredos">
+        <div class="chapter-header"><span class="chap-num"></span>
+          <h2>Variáveis de ambiente e segredos</h2>
+        </div>
+        <p class="chapter-intro">A mesma imagem deve rodar em dev, teste e produção, mudando apenas a
+          <b>configuração</b>, que vem de fora via variáveis de ambiente (princípio dos 12-factor apps).</p>
+
+        <div class="console">
+          <div class="bar"><span class="label">.env (no servidor, fora do Git)</span></div>
+          <pre><span class="kw">DB_PASSWORD</span>=<span class="str">uma-senha-longa-e-aleatoria</span>
+<span class="kw">QUARKUS_DATASOURCE_JDBC_URL</span>=<span class="str">jdbc:postgresql://db:5432/appdb</span>
+<span class="kw">QUARKUS_DATASOURCE_USERNAME</span>=<span class="str">app</span>
+<span class="kw">QUARKUS_DATASOURCE_PASSWORD</span>=<span class="str">${DB_PASSWORD}</span></pre>
+        </div>
+
+        <div class="console">
+          <div class="bar"><span class="label">terminal</span></div>
+          <pre><span class="cmt"># gerar senha aleatória forte</span>
+<span class="fn">openssl</span> rand -base64 <span class="num">32</span>
+
+<span class="cmt"># proteger o arquivo</span>
+<span class="fn">chmod</span> <span class="num">600</span> .env</pre>
+        </div>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Nível</th>
+              <th>Onde guardar</th>
+              <th>Observação</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Básico</b></td>
+              <td class="desc">Arquivo <code class="inline">.env</code> no servidor, <code
+                  class="inline">chmod 600</code></td>
+              <td class="desc">Suficiente para começar. Nunca no Git.</td>
+            </tr>
+            <tr>
+              <td><b>CI/CD</b></td>
+              <td class="desc">GitHub Actions Secrets</td>
+              <td class="desc">Criptografados, expostos só no pipeline.</td>
+            </tr>
+            <tr>
+              <td><b>Docker</b></td>
+              <td class="desc">Docker secrets (<code class="inline">/run/secrets/</code>)</td>
+              <td class="desc">Evita segredo em variável visível no <code class="inline">docker inspect</code>.
+              </td>
+            </tr>
+            <tr>
+              <td><b>Avançado</b></td>
+              <td class="desc">Vault, AWS Secrets Manager, GCP Secret Manager</td>
+              <td class="desc">Rotação, auditoria e controle de acesso.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="note danger"><span>🚫</span>
+          <div>Variável de ambiente <b>não é cofre</b>: aparece em <code class="inline">docker inspect</code>, em
+            dumps de erro e pode vazar em logs. Nunca registre senhas, tokens ou chaves de API em log.</div>
+        </div>
+      </section>
+
+      <!-- 14 CI/CD -->
+      <section class="chapter" id="cicd">
+        <div class="chapter-header"><span class="chap-num"></span>
+          <h2>Deploy e CI/CD</h2>
+        </div>
+        <p class="chapter-intro"><b>CI</b> (integração contínua) compila e testa a cada push. <b>CD</b> (entrega
+          contínua) publica automaticamente. Resultado: deploy vira "dar merge na main".</p>
+
+        <h3 class="subhead">Estratégias de deploy</h3>
+        <div class="grid cols-2">
+          <div class="card"><span class="tag blue">Manual</span>
+            <h3>SSH + git pull + build</h3>
+            <p>Entra no servidor e roda os comandos. Serve para aprender, mas é lento e sujeito a erro.</p>
+          </div>
+          <div class="card"><span class="tag green">Recomendado</span>
+            <h3>Build no CI + registry + pull</h3>
+            <p>O pipeline constrói a imagem, envia ao registry e o servidor só baixa e reinicia. Rápido e
+              reproduzível.</p>
+          </div>
+          <div class="card"><span class="tag purple">Zero downtime</span>
+            <h3>Rolling update</h3>
+            <p>Sobe a nova versão, espera ficar saudável e só então derruba a antiga.</p>
+          </div>
+          <div class="card"><span class="tag amber">Cuidadoso</span>
+            <h3>Blue/Green e Canary</h3>
+            <p>Blue/green mantém dois ambientes e troca o tráfego. Canary libera a versão nova para uma fração
+              pequena dos usuários primeiro.</p>
+          </div>
+        </div>
+
+        <h3 class="subhead">Exemplo: GitHub Actions</h3>
+        <div class="console">
+          <div class="bar"><span class="label">.github/workflows/deploy.yml</span></div>
+          <pre><span class="kw">name</span>: deploy
+<span class="kw">on</span>:
+  <span class="kw">push</span>:
+    <span class="kw">branches</span>: [main]
+
+<span class="kw">jobs</span>:
+  <span class="fn">build-and-deploy</span>:
+    <span class="kw">runs-on</span>: ubuntu-latest
+    <span class="kw">permissions</span>: { contents: read, packages: write }
+    <span class="kw">steps</span>:
+      - <span class="kw">uses</span>: actions/checkout@v4
+
+      - <span class="kw">uses</span>: docker/login-action@v3
+        <span class="kw">with</span>:
+          <span class="kw">registry</span>: ghcr.io
+          <span class="kw">username</span>: ${{ github.actor }}
+          <span class="kw">password</span>: ${{ secrets.GITHUB_TOKEN }}
+
+      - <span class="kw">uses</span>: docker/build-push-action@v6
+        <span class="kw">with</span>:
+          <span class="kw">push</span>: true
+          <span class="kw">tags</span>: ghcr.io/${{ github.repository }}:${{ github.sha }}
+
+      - <span class="kw">name</span>: Deploy via SSH
+        <span class="kw">env</span>:
+          <span class="kw">KEY</span>: ${{ secrets.DEPLOY_SSH_KEY }}
+          <span class="kw">HOST</span>: ${{ secrets.DEPLOY_HOST }}
+        <span class="kw">run</span>: |
+          install -m 600 /dev/null key
+          echo "$KEY" &gt; key
+          ssh -i key -o StrictHostKeyChecking=accept-new deploy@$HOST \
+            "cd /srv/app &amp;&amp; docker compose pull &amp;&amp; docker compose up -d"</pre>
+        </div>
+
+        <div class="note"><span>💡</span>
+          <div><b>Tag por commit:</b> use o SHA (ou versão) como tag da imagem em vez de só <code
+              class="inline">latest</code>. Assim você sabe exatamente o que está no ar e consegue fazer
+            <b>rollback</b> trocando a tag e rodando <code class="inline">docker compose up -d</code>.</div>
+        </div>
+
+        <h3 class="subhead">Pipeline saudável</h3>
+        <div class="grid cols-4">
+          <div class="card">
+            <h3>1. Test</h3>
+            <p>Testes unitários e de integração.</p>
+          </div>
+          <div class="card">
+            <h3>2. Build</h3>
+            <p>Imagem Docker com tag única.</p>
+          </div>
+          <div class="card">
+            <h3>3. Push</h3>
+            <p>Envia ao registry.</p>
+          </div>
+          <div class="card">
+            <h3>4. Deploy</h3>
+            <p>Servidor baixa, sobe e verifica o health check.</p>
+          </div>
+        </div>
+
+        <div class="note warn"><span>⚠️</span>
+          <div><b>Migrações de banco:</b> a nova versão do código pode rodar enquanto a antiga ainda existe. Faça
+            migrações <b>compatíveis com as duas versões</b> (adicione colunas antes de remover). Ferramentas:
+            Flyway, Liquibase.</div>
+        </div>
+      </section>
+
+      <!-- 15 ESCALA -->
+      <section class="chapter" id="escala">
+        <div class="chapter-header"><span class="chap-num"></span>
+          <h2>Escala horizontal</h2>
+        </div>
+        <p class="chapter-intro">Escalar é lidar com mais carga sem cair. Existem dois caminhos, e quase sempre
+          você começa pelo mais simples.</p>
+
+        <div class="grid cols-2">
+          <div class="card"><span class="tag blue">Vertical (scale up)</span>
+            <h3>Máquina maior</h3>
+            <p>Mais CPU, RAM, disco. <b>Prós:</b> zero mudança de código, simples. <b>Contras:</b> tem teto,
+              exige reinício e continua sendo um único ponto de falha.</p>
+          </div>
+          <div class="card"><span class="tag green">Horizontal (scale out)</span>
+            <h3>Mais instâncias</h3>
+            <p>Várias cópias da aplicação dividindo a carga. <b>Prós:</b> quase sem teto, tolera falha de uma
+              instância. <b>Contras:</b> exige aplicação preparada e infraestrutura extra.</p>
+          </div>
+        </div>
+
+        <h3 class="subhead">Arquitetura típica</h3>
+        <div class="console">
+          <div class="bar"><span class="label">arquitetura.txt</span></div>
+          <pre>                    ┌──► <span class="fn">API réplica 1</span> ──┐
+Usuários → <span class="kw">Load Balancer</span> ──► <span class="fn">API réplica 2</span> ──┼──► <span class="fn">Banco</span> (primário + réplicas de leitura)
+                    └──► <span class="fn">API réplica 3</span> ──┤──► <span class="fn">Cache</span> (Redis)
+                                              └──► <span class="fn">Fila</span> (RabbitMQ / Kafka)</pre>
+        </div>
+
+        <h3 class="subhead">Pré-requisito: aplicação stateless</h3>
+        <p class="chapter-intro">Para escalar horizontalmente, <b>qualquer réplica precisa atender qualquer
+            requisição</b>. Isso significa que a aplicação <b>não guarda estado local</b>:</p>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Estado local (problema)</th>
+              <th>Solução externa</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="desc">Sessão de usuário na memória</td>
+              <td class="desc">JWT (token) ou sessão no Redis</td>
+            </tr>
+            <tr>
+              <td class="desc">Arquivos enviados gravados em disco local</td>
+              <td class="desc">Object storage (S3, MinIO, R2)</td>
+            </tr>
+            <tr>
+              <td class="desc">Cache em memória da JVM compartilhado entre usuários</td>
+              <td class="desc">Cache distribuído (Redis)</td>
+            </tr>
+            <tr>
+              <td class="desc">Tarefas agendadas (@Scheduled / cron) dentro do app</td>
+              <td class="desc">Executar só em 1 instância, lock distribuído (ex.: Quartz clusterizado) ou job
+                separado</td>
+            </tr>
+            <tr>
+              <td class="desc">Filas e processamento em memória</td>
+              <td class="desc">Broker externo (RabbitMQ, Kafka, SQS)</td>
+            </tr>
+            <tr>
+              <td class="desc">Configuração fixa no código</td>
+              <td class="desc">Variáveis de ambiente / serviço de configuração</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="note warn"><span>⚠️</span>
+          <div><b>Tarefas agendadas duplicam:</b> com 3 réplicas, um job "a cada minuto" roda 3 vezes por minuto.
+            Isso causa envios duplicados (e-mails, notificações push, cobranças). Decida qual instância executa o
+            job ou use lock distribuído.</div>
+        </div>
+
+        <h3 class="subhead">Balanceamento de carga</h3>
+        <div class="grid cols-3">
+          <div class="card">
+            <h3>Round robin</h3>
+            <p>Revezamento simples entre as instâncias.</p>
+          </div>
+          <div class="card">
+            <h3>Least connections</h3>
+            <p>Envia para quem tem menos conexões ativas. Bom para requisições de duração variável.</p>
+          </div>
+          <div class="card">
+            <h3>IP hash / sticky</h3>
+            <p>Mesmo cliente → mesma instância. Muleta para apps com estado; prefira ser stateless.</p>
+          </div>
+        </div>
+        <div class="console">
+          <div class="bar"><span class="label">nginx.conf (upstream)</span></div>
+          <pre><span class="kw">upstream</span> api_pool {
+    <span class="kw">least_conn</span>;
+    <span class="kw">server</span> <span class="num">10.0.0.11</span>:8080 max_fails=3 fail_timeout=30s;
+    <span class="kw">server</span> <span class="num">10.0.0.12</span>:8080 max_fails=3 fail_timeout=30s;
+    <span class="kw">server</span> <span class="num">10.0.0.13</span>:8080 backup;
+}
+<span class="kw">server</span> {
+    <span class="kw">listen</span> 80;
+    <span class="kw">location</span> / { <span class="kw">proxy_pass</span> http://api_pool; }
+}</pre>
+        </div>
+
+        <h3 class="subhead">Escalando com Docker</h3>
+        <p class="chapter-intro">No <b>Compose</b>, é possível rodar várias réplicas no <i>mesmo</i> servidor (útil
+          para aproveitar CPU e ter zero-downtime). Para <i>vários servidores</i>, você precisa de um orquestrador.
+        </p>
+        <div class="console">
+          <div class="bar"><span class="label">terminal</span><button class="run-btn">▶ Executar</button></div>
+          <pre><span class="cmt"># 3 réplicas da API no mesmo host (remova container_name e ports fixos)</span>
+<span class="fn">docker compose</span> up -d --scale api=<span class="num">3</span>
+
+<span class="cmt"># Docker Swarm: orquestração simples em vários servidores</span>
+<span class="fn">docker swarm</span> init
+<span class="fn">docker stack</span> deploy -c compose.yaml app
+<span class="fn">docker service</span> scale app_api=<span class="num">5</span></pre>
+          <div class="result">
+            <div class="result-inner"><span class="msg">[+] Running 3/3</span><br> ✔ Container app-api-1 Started<br>
+              ✔ Container app-api-2 Started<br> ✔ Container app-api-3 Started</div>
+          </div>
+        </div>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Orquestrador</th>
+              <th>Quando faz sentido</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Docker Compose</b></td>
+              <td class="desc">1 servidor. Começo e a maioria dos projetos pequenos/médios.</td>
+            </tr>
+            <tr>
+              <td><b>Docker Swarm</b></td>
+              <td class="desc">Poucos servidores, equipe pequena, curva de aprendizado baixa.</td>
+            </tr>
+            <tr>
+              <td><b>Kubernetes</b></td>
+              <td class="desc">Muitos serviços, autoscaling, equipes grandes. Poderoso, porém complexo (versões
+                gerenciadas: GKE, EKS, AKS, DOKS).</td>
+            </tr>
+            <tr>
+              <td><b>Serverless / Cloud Run</b></td>
+              <td class="desc">Você entrega a imagem; a plataforma escala (inclusive a zero).</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 class="subhead">E o banco de dados?</h3>
+        <p class="chapter-intro">O banco costuma ser o <b>verdadeiro gargalo</b>. Em ordem de esforço: otimizar
+          queries e índices → pool de conexões (cuidado: N réplicas × pool = muitas conexões) → cache (Redis) →
+          réplicas de leitura → particionamento/sharding. Só use banco clusterizado quando as etapas anteriores
+          não bastarem.</p>
+
+        <div class="note"><span>💡</span>
+          <div><b>Quando escalar?</b> Meça antes: CPU sustentada acima de ~70%, memória no limite, latência p95
+            subindo, filas crescendo. Escalar sem medir é gastar dinheiro no lugar errado. Ferramentas de teste de
+            carga: k6, JMeter, Gatling.</div>
+        </div>
+
+        <h3 class="subhead">Alta disponibilidade</h3>
+        <div class="grid cols-2">
+          <div class="card">
+            <h3>Elimine pontos únicos de falha</h3>
+            <p>2+ instâncias da app, load balancer redundante, banco com réplica e failover, backups em outro
+              local.</p>
+          </div>
+          <div class="card">
+            <h3>Health checks</h3>
+            <p>O load balancer só envia tráfego a instâncias saudáveis (<code
+                class="inline">/q/health/live</code> e <code class="inline">/ready</code> no Quarkus).</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 16 OBSERVABILIDADE -->
+      <section class="chapter" id="observa">
+        <div class="chapter-header"><span class="chap-num"></span>
+          <h2>Logs, monitoramento e backup</h2>
+        </div>
+        <p class="chapter-intro">Colocar no ar é metade do trabalho. A outra metade é <b>saber quando algo
+            quebra</b> antes do usuário e conseguir <b>recuperar</b> quando o pior acontecer.</p>
+
+        <h3 class="subhead">Logs</h3>
+        <div class="console">
+          <div class="bar"><span class="label">compose.yaml (limitar tamanho dos logs)</span></div>
+          <pre>  <span class="fn">api</span>:
+    <span class="kw">logging</span>:
+      <span class="kw">driver</span>: json-file
+      <span class="kw">options</span>:
+        <span class="kw">max-size</span>: <span class="str">"10m"</span>
+        <span class="kw">max-file</span>: <span class="str">"5"</span></pre>
+        </div>
+        <div class="note danger"><span>🚫</span>
+          <div>Sem limite, os logs do Docker <b>enchem o disco</b> e derrubam o servidor. Configure rotação.
+            Em produção com várias réplicas, centralize os logs (Loki, ELK, Datadog, CloudWatch).</div>
+        </div>
+
+        <h3 class="subhead">Monitoramento</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>O que medir</th>
+              <th>Exemplos</th>
+              <th>Ferramentas</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Disponibilidade</b></td>
+              <td class="desc">O site responde? O certificado expira em breve?</td>
+              <td class="desc">UptimeRobot, Uptime Kuma, Better Stack</td>
+            </tr>
+            <tr>
+              <td><b>Infraestrutura</b></td>
+              <td class="desc">CPU, RAM, disco, rede</td>
+              <td class="desc">Prometheus + Grafana, Netdata</td>
+            </tr>
+            <tr>
+              <td><b>Aplicação</b></td>
+              <td class="desc">Latência, taxa de erro, requisições/s, pool de conexões</td>
+              <td class="desc">Micrometer (Quarkus) + Prometheus</td>
+            </tr>
+            <tr>
+              <td><b>Erros</b></td>
+              <td class="desc">Exceções com stack trace</td>
+              <td class="desc">Sentry, GlitchTip</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 class="subhead">Backup: regra 3-2-1</h3>
+        <div class="grid cols-3">
+          <div class="card"><span class="tag blue">3</span>
+            <h3>Três cópias</h3>
+            <p>Os dados originais mais duas cópias.</p>
+          </div>
+          <div class="card"><span class="tag green">2</span>
+            <h3>Duas mídias</h3>
+            <p>Ex.: disco do servidor + armazenamento de objetos.</p>
+          </div>
+          <div class="card"><span class="tag purple">1</span>
+            <h3>Uma fora do local</h3>
+            <p>Outro provedor ou região, protegida contra o mesmo desastre.</p>
+          </div>
+        </div>
+        <div class="console">
+          <div class="bar"><span class="label">backup-db.sh</span></div>
+          <pre><span class="cmt">#!/usr/bin/env bash</span>
+<span class="fn">set</span> -euo pipefail
+STAMP=$(<span class="fn">date</span> +%F_%H%M)
+<span class="fn">docker compose</span> exec -T db pg_dump -U app appdb | <span class="fn">gzip</span> &gt; /backups/appdb_$STAMP.sql.gz
+<span class="fn">find</span> /backups -name <span class="str">'*.sql.gz'</span> -mtime +<span class="num">14</span> -delete   <span class="cmt"># retenção de 14 dias</span>
+<span class="cmt"># depois: enviar para fora do servidor (rclone / rsync / aws s3 cp)</span>
+
+<span class="cmt"># agendar no cron (crontab -e):  todo dia às 03:00</span>
+<span class="cmt"># 0 3 * * * /srv/app/backup-db.sh</span></pre>
+        </div>
+        <div class="note warn"><span>⚠️</span>
+          <div><b>Backup que nunca foi restaurado não é backup.</b> Teste a restauração periodicamente, em um
+            ambiente separado.</div>
+        </div>
+      </section>
+
+      <!-- 17 CHECKLIST -->
+      <section class="chapter" id="checklist">
+        <div class="chapter-header"><span class="chap-num"></span>
+          <h2>Checklist final: do zero ao ar</h2>
+        </div>
+        <p class="chapter-intro">A sequência prática, em ordem. Marque mentalmente cada item antes de passar ao
+          próximo.</p>
+
+        <h3 class="subhead">Fase 1: preparar o servidor</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Tarefa</th>
+              <th>Comando / ação</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td class="desc">Criar VPS Ubuntu LTS com sua chave pública</td>
+              <td class="desc">Painel do provedor</td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td class="desc">Entrar por SSH e atualizar</td>
+              <td class="desc"><code class="inline">ssh root@IP</code> · <code class="inline">apt update &amp;&amp;
+                  apt upgrade -y</code></td>
+            </tr>
+            <tr>
+              <td>3</td>
+              <td class="desc">Criar usuário <code class="inline">deploy</code> com sudo</td>
+              <td class="desc"><code class="inline">adduser</code> · <code class="inline">usermod -aG sudo</code>
+              </td>
+            </tr>
+            <tr>
+              <td>4</td>
+              <td class="desc">Desativar login root e senha no SSH</td>
+              <td class="desc"><code class="inline">sshd_config</code></td>
+            </tr>
+            <tr>
+              <td>5</td>
+              <td class="desc">Ativar firewall (22, 80, 443) e fail2ban</td>
+              <td class="desc"><code class="inline">ufw</code> · <code class="inline">fail2ban</code></td>
+            </tr>
+            <tr>
+              <td>6</td>
+              <td class="desc">Instalar Docker e Compose</td>
+              <td class="desc">Capítulo 07</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 class="subhead">Fase 2: empacotar e subir</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Tarefa</th>
+              <th>Comando / ação</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>7</td>
+              <td class="desc">Escrever Dockerfile (multi-stage, sem root) e .dockerignore</td>
+              <td class="desc">Capítulo 09</td>
+            </tr>
+            <tr>
+              <td>8</td>
+              <td class="desc">Escrever <code class="inline">compose.yaml</code> com app, banco, proxy, volumes e
+                redes</td>
+              <td class="desc">Capítulos 10 e 11</td>
+            </tr>
+            <tr>
+              <td>9</td>
+              <td class="desc">Criar <code class="inline">.env</code> no servidor (chmod 600)</td>
+              <td class="desc">Capítulo 13</td>
+            </tr>
+            <tr>
+              <td>10</td>
+              <td class="desc">Apontar o DNS (registro A) para o IP</td>
+              <td class="desc"><code class="inline">dig +short seu.dominio</code></td>
+            </tr>
+            <tr>
+              <td>11</td>
+              <td class="desc">Subir tudo e conferir HTTPS</td>
+              <td class="desc"><code class="inline">docker compose up -d</code> · <code
+                  class="inline">curl -I https://seu.dominio</code></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 class="subhead">Fase 3: automatizar e proteger</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Tarefa</th>
+              <th>Comando / ação</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>12</td>
+              <td class="desc">Pipeline CI/CD com chave SSH de deploy própria</td>
+              <td class="desc">Capítulo 14</td>
+            </tr>
+            <tr>
+              <td>13</td>
+              <td class="desc">Health checks, limite de logs, monitoramento de uptime</td>
+              <td class="desc">Capítulo 16</td>
+            </tr>
+            <tr>
+              <td>14</td>
+              <td class="desc">Backup automático + teste de restauração</td>
+              <td class="desc">Capítulo 16</td>
+            </tr>
+            <tr>
+              <td>15</td>
+              <td class="desc">Teste de carga e definição de quando escalar</td>
+              <td class="desc">Capítulo 15</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 class="subhead">Problemas comuns e onde olhar</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Sintoma</th>
+              <th>Causa provável</th>
+              <th>Diagnóstico</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Site não abre</td>
+              <td class="desc">DNS errado, firewall ou proxy parado</td>
+              <td class="desc"><code class="inline">dig</code>, <code class="inline">ufw status</code>, <code
+                  class="inline">docker ps</code></td>
+            </tr>
+            <tr>
+              <td>502 Bad Gateway</td>
+              <td class="desc">Proxy não alcança a app (nome/porta errada, app caiu)</td>
+              <td class="desc"><code class="inline">docker compose logs api</code></td>
+            </tr>
+            <tr>
+              <td>App não conecta no banco</td>
+              <td class="desc">Usou <code class="inline">localhost</code> em vez do nome do serviço; redes
+                diferentes; banco ainda iniciando</td>
+              <td class="desc"><code class="inline">docker network inspect</code>, healthcheck</td>
+            </tr>
+            <tr>
+              <td>Container reinicia em loop</td>
+              <td class="desc">Erro de config, falta de memória (OOM) ou variável ausente</td>
+              <td class="desc"><code class="inline">docker logs</code>, <code class="inline">docker inspect</code>
+              </td>
+            </tr>
+            <tr>
+              <td>Certificado não emite</td>
+              <td class="desc">DNS não propagou ou porta 80 bloqueada</td>
+              <td class="desc">Logs do Caddy/Certbot</td>
+            </tr>
+            <tr>
+              <td>Disco cheio</td>
+              <td class="desc">Logs, imagens antigas, backups locais</td>
+              <td class="desc"><code class="inline">df -h</code>, <code class="inline">docker system df</code>
+              </td>
+            </tr>
+            <tr>
+              <td>Permission denied (publickey)</td>
+              <td class="desc">Chave errada, permissão do <code class="inline">~/.ssh</code> ou usuário incorreto
+              </td>
+              <td class="desc"><code class="inline">ssh -v</code>, <code class="inline">chmod 700 ~/.ssh</code>
+                · <code class="inline">600 authorized_keys</code></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="note"><span>🎯</span>
+          <div><b>Próximos estudos:</b> Infrastructure as Code (Terraform, Ansible), Kubernetes, observabilidade
+            avançada (OpenTelemetry), WAF/CDN (Cloudflare), políticas de backup e recuperação de desastres.</div>
+        </div>
+      </section>
+
+      <footer>fim do guia <span class="dot">●</span> servidor no ar, com segurança e sem pressa</footer>
+    </main>
+  </div>
+
+  <script>
+    // ── BARRA DE PROGRESSO ──
+    const bar = document.getElementById('progress');
+    window.addEventListener('scroll', () => {
+      const h = document.documentElement;
+      bar.style.width = (h.scrollTop / (h.scrollHeight - h.clientHeight) * 100) + '%';
+    });
+
+    // ── SCROLLSPY ──
+    const navLinks = document.querySelectorAll('nav.sidebar a[data-nav]');
+    const sections = document.querySelectorAll('section.chapter');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          navLinks.forEach(a => a.classList.remove('active'));
+          const link = document.querySelector('nav.sidebar a[href="#' + e.target.id + '"]');
+          if (link) {
+            link.classList.add('active');
+            link.scrollIntoView({block: 'nearest'});
+          }
+        }
+      });
+    }, {rootMargin: '-10% 0px -72% 0px'});
+    sections.forEach(s => io.observe(s));
+
+    // ── BOTÕES EXECUTAR ──
+    document.querySelectorAll('.run-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const result = btn.closest('.console').querySelector('.result');
+        const isOpen = result.classList.contains('open');
+        result.classList.toggle('open');
+        btn.textContent = isOpen ? '▶ Executar' : '↺ Fechar';
+      });
+    });
+
+    // ── BUSCA ──
+    const searchInput = document.getElementById('searchInput');
+    let searchMarks = [];
+
+    function clearSearch() {
+      searchMarks.forEach(el => {
+        const parent = el.parentNode;
+        if (parent) {
+          parent.replaceChild(document.createTextNode(el.textContent), el);
+          parent.normalize();
+        }
+      });
+      searchMarks = [];
+    }
+
+    function highlightText(node, term) {
+      if (node.nodeType === 3) {
+        const idx = node.textContent.toLowerCase().indexOf(term);
+        if (idx === -1) return;
+        const mark = document.createElement('mark');
+        mark.className = 'search-match';
+        const before = document.createTextNode(node.textContent.slice(0, idx));
+        const matched = document.createTextNode(node.textContent.slice(idx, idx + term.length));
+        const after = document.createTextNode(node.textContent.slice(idx + term.length));
+        mark.appendChild(matched);
+        const parent = node.parentNode;
+        parent.insertBefore(before, node);
+        parent.insertBefore(mark, node);
+        parent.insertBefore(after, node);
+        parent.removeChild(node);
+        searchMarks.push(mark);
+      } else if (node.nodeType === 1 && !['SCRIPT', 'STYLE', 'MARK'].includes(node.tagName)) {
+        Array.from(node.childNodes).forEach(child => highlightText(child, term));
+      }
+    }
+
+    searchInput.addEventListener('input', () => {
+      clearSearch();
+      const term = searchInput.value.trim().toLowerCase();
+      if (term.length < 2) return;
+      highlightText(document.querySelector('main'), term);
+      if (searchMarks.length > 0) {
+        searchMarks[0].scrollIntoView({behavior: 'smooth', block: 'center'});
+      }
+    });
+    searchInput.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {searchInput.value = ''; clearSearch();}
+    });
+  </script>
+</body>
+
+</html>
