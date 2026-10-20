@@ -1,0 +1,2225 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTML + CSS + JavaScript — Plano de Aula</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d1117;
+      --bg-panel: #161b22;
+      --bg-panel-alt: #1c2230;
+      --bg-card: #161b22;
+      --border: #21293a;
+      --border-mid: #2d3748;
+      --text: #e2e8f0;
+      --text-muted: #718096;
+      --text-subtle: #4a5568;
+      --cyan: #4dd9c0;
+      --cyan-dim: rgba(77, 217, 192, .12);
+      --amber: #f6ad55;
+      --amber-dim: rgba(246, 173, 85, .12);
+      --green: #68d391;
+      --green-dim: rgba(104, 211, 145, .12);
+      --red: #fc8181;
+      --red-dim: rgba(252, 129, 129, .12);
+      --blue: #63b3ed;
+      --blue-dim: rgba(99, 179, 237, .12);
+      --purple: #b794f4;
+      --purple-dim: rgba(183, 148, 244, .12);
+      --font-display: 'Space Grotesk', sans-serif;
+      --font-body: 'Inter', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --radius: 8px;
+      --radius-lg: 12px;
+      --sidebar-w: 256px;
+      --header-h: 56px;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+      font-size: 15px;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      line-height: 1.65;
+      min-height: 100vh;
+    }
+
+    a {
+      color: var(--cyan);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    ::selection {
+      background: var(--cyan);
+      color: #04140f;
+    }
+
+    /* ── TOP BAR ── */
+    #topbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 200;
+      height: var(--header-h);
+      background: rgba(13, 17, 23, .95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      gap: 16px;
+    }
+
+    #topbar .brand {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      font-size: .9rem;
+      color: var(--cyan);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+    }
+
+    #topbar .brand .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--amber);
+      box-shadow: 0 0 6px var(--amber);
+      animation: blink 1.8s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: .2;
+      }
+    }
+
+    #topbar .search-wrap {
+      flex: 1;
+      max-width: 420px;
+      margin-left: auto;
+      position: relative;
+    }
+
+    #topbar .search-wrap input {
+      width: 100%;
+      background: var(--bg-panel-alt);
+      border: 1px solid var(--border-mid);
+      color: var(--text);
+      font-family: var(--font-body);
+      font-size: .85rem;
+      padding: 7px 12px 7px 34px;
+      border-radius: var(--radius);
+      outline: none;
+      transition: border-color .15s;
+    }
+
+    #topbar .search-wrap input:focus {
+      border-color: var(--cyan);
+    }
+
+    #topbar .search-wrap input::placeholder {
+      color: var(--text-subtle);
+    }
+
+    #topbar .search-wrap .ico {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-subtle);
+      font-size: .85rem;
+      pointer-events: none;
+    }
+
+    #progress {
+      position: fixed;
+      top: var(--header-h);
+      left: 0;
+      height: 2px;
+      width: 0%;
+      background: linear-gradient(90deg, var(--cyan), var(--blue));
+      z-index: 300;
+      transition: width .08s linear;
+    }
+
+    /* ── LAYOUT ── */
+    .layout {
+      display: grid;
+      grid-template-columns: var(--sidebar-w) 1fr;
+      max-width: 1240px;
+      margin: 0 auto;
+      padding-top: var(--header-h);
+      min-height: 100vh;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      nav.sidebar {
+        display: none;
+      }
+    }
+
+    /* ── SIDEBAR ── */
+    nav.sidebar {
+      position: sticky;
+      top: var(--header-h);
+      height: calc(100vh - var(--header-h));
+      overflow-y: auto;
+      border-right: 1px solid var(--border);
+      padding: 20px 0;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border-mid) transparent;
+    }
+
+    .sidebar-section-label {
+      font-family: var(--font-mono);
+      font-size: .62rem;
+      font-weight: 600;
+      color: var(--text-subtle);
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      padding: 14px 18px 4px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .sidebar-section-label::before {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    nav.sidebar ol {
+      list-style: none;
+    }
+
+    nav.sidebar li {
+      position: relative;
+    }
+
+    nav.sidebar a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: .8rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 5px 18px;
+      border-left: 2px solid transparent;
+      transition: all .12s ease;
+      line-height: 1.35;
+    }
+
+    nav.sidebar a .n {
+      font-family: var(--font-mono);
+      font-size: .65rem;
+      color: var(--border-mid);
+      min-width: 22px;
+      flex-shrink: 0;
+    }
+
+    nav.sidebar a:hover {
+      color: var(--text);
+      background: var(--cyan-dim);
+    }
+
+    nav.sidebar a.active {
+      color: var(--cyan);
+      border-left-color: var(--cyan);
+      background: var(--cyan-dim);
+    }
+
+    nav.sidebar a.active .n {
+      color: var(--cyan);
+    }
+
+    /* ── MAIN ── */
+    main {
+      padding: 0 52px 120px;
+      min-width: 0;
+      max-width: 880px;
+      counter-reset: chapnum;
+    }
+
+    @media (max-width: 900px) {
+      main {
+        padding: 0 20px 80px;
+      }
+    }
+
+    /* ── HERO ── */
+    .hero {
+      padding: 72px 0 60px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .hero .eyebrow {
+      font-family: var(--font-mono);
+      font-size: .75rem;
+      color: var(--amber);
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+
+    .hero .eyebrow::before {
+      content: "›";
+      color: var(--cyan);
+    }
+
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -.02em;
+      margin-bottom: 16px;
+    }
+
+    .hero h1 em {
+      color: var(--cyan);
+      font-style: normal;
+    }
+
+    .hero .lead {
+      color: var(--text-muted);
+      font-size: 1rem;
+      max-width: 540px;
+      line-height: 1.75;
+    }
+
+    .hero .data-table {
+      margin-top: 36px;
+    }
+
+    /* ── CHAPTER ── */
+    section.chapter {
+      padding: 60px 0 8px;
+      border-top: 1px solid var(--border);
+      scroll-margin-top: calc(var(--header-h) + 24px);
+      counter-increment: chapnum;
+    }
+
+    section.chapter:first-of-type {
+      border-top: none;
+    }
+
+    .chapter-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 14px;
+    }
+
+    .chap-num {
+      font-family: var(--font-mono);
+      font-size: .68rem;
+      font-weight: 600;
+      color: var(--cyan);
+      background: var(--cyan-dim);
+      border: 1px solid rgba(77, 217, 192, .25);
+      padding: 4px 10px;
+      border-radius: 5px;
+      flex-shrink: 0;
+      margin-top: 7px;
+      min-width: 46px;
+      text-align: center;
+    }
+
+    .chap-num::before {
+      content: counter(chapnum, decimal-leading-zero);
+    }
+
+    .chap-num[data-label]::before {
+      content: attr(data-label);
+    }
+
+    .chapter-header h2 {
+      font-family: var(--font-display);
+      font-size: 1.7rem;
+      font-weight: 600;
+      line-height: 1.2;
+    }
+
+    .chapter-intro {
+      color: var(--text-muted);
+      font-size: .95rem;
+      max-width: 700px;
+      margin-bottom: 24px;
+      line-height: 1.8;
+    }
+
+    .chapter-intro b,
+    .chapter-intro strong {
+      color: var(--text);
+    }
+
+    h3.subhead {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 600;
+      margin: 32px 0 10px;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h3.subhead::before {
+      content: "";
+      display: inline-block;
+      width: 3px;
+      height: 14px;
+      background: var(--cyan);
+      border-radius: 2px;
+      flex-shrink: 0;
+    }
+
+    p.text {
+      color: var(--text-muted);
+      font-size: .92rem;
+      max-width: 700px;
+      margin: 8px 0 12px;
+      line-height: 1.75;
+    }
+
+    p.text b {
+      color: var(--text);
+    }
+
+    /* ── LISTAS ── */
+    ul.list {
+      list-style: none;
+      margin: 10px 0 18px;
+      display: grid;
+      gap: 6px;
+    }
+
+    ul.list li {
+      position: relative;
+      padding-left: 20px;
+      color: var(--text-muted);
+      font-size: .9rem;
+      line-height: 1.6;
+    }
+
+    ul.list li::before {
+      content: "›";
+      position: absolute;
+      left: 4px;
+      color: var(--cyan);
+      font-family: var(--font-mono);
+      font-weight: 600;
+    }
+
+    ul.list.check li::before {
+      content: "☐";
+      left: 0;
+      color: var(--amber);
+    }
+
+    /* ── CARDS ── */
+    .grid {
+      display: grid;
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .grid.cols-2 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .grid.cols-3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .grid.cols-4 {
+      grid-template-columns: repeat(4, 1fr);
+    }
+
+    @media (max-width: 720px) {
+
+      .grid.cols-2,
+      .grid.cols-3,
+      .grid.cols-4 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px;
+      transition: border-color .15s, transform .15s;
+    }
+
+    .card:hover {
+      border-color: var(--border-mid);
+      transform: translateY(-2px);
+    }
+
+    .card h3 {
+      font-family: var(--font-display);
+      font-size: .95rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .card p {
+      color: var(--text-muted);
+      font-size: .85rem;
+      line-height: 1.6;
+    }
+
+    /* ── TAGS ── */
+    .tag {
+      font-family: var(--font-mono);
+      font-size: .6rem;
+      padding: 2px 8px;
+      border-radius: 20px;
+      display: inline-block;
+      margin-bottom: 8px;
+      letter-spacing: .06em;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .tag.blue {
+      background: var(--blue-dim);
+      color: var(--blue);
+      border: 1px solid rgba(99, 179, 237, .2);
+    }
+
+    .tag.green {
+      background: var(--green-dim);
+      color: var(--green);
+      border: 1px solid rgba(104, 211, 145, .2);
+    }
+
+    .tag.purple {
+      background: var(--purple-dim);
+      color: var(--purple);
+      border: 1px solid rgba(183, 148, 244, .2);
+    }
+
+    .tag.amber {
+      background: var(--amber-dim);
+      color: var(--amber);
+      border: 1px solid rgba(246, 173, 85, .2);
+    }
+
+    .tag.red {
+      background: var(--red-dim);
+      color: var(--red);
+      border: 1px solid rgba(252, 129, 129, .2);
+    }
+
+    /* ── CONSOLE ── */
+    .console {
+      background: var(--bg-panel);
+      border: 1px solid var(--border-mid);
+      border-radius: var(--radius-lg);
+      margin: 16px 0;
+      overflow: hidden;
+    }
+
+    .console .bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-panel-alt);
+    }
+
+    .console .bar .label {
+      font-family: var(--font-mono);
+      font-size: .7rem;
+      color: var(--text-subtle);
+      letter-spacing: .04em;
+    }
+
+    .console .bar button {
+      font-family: var(--font-mono);
+      font-size: .7rem;
+      color: #04140f;
+      background: var(--cyan);
+      border: none;
+      padding: 4px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 700;
+      transition: background .12s;
+      white-space: nowrap;
+    }
+
+    .console .bar button:hover {
+      background: #74e8d6;
+    }
+
+    .console pre {
+      padding: 16px 18px;
+      overflow-x: auto;
+      font-family: var(--font-mono);
+      font-size: .84rem;
+      line-height: 1.75;
+      tab-size: 2;
+    }
+
+    .console pre .kw {
+      color: var(--blue);
+      font-weight: 600;
+    }
+
+    .console pre .fn {
+      color: var(--amber);
+    }
+
+    .console pre .str {
+      color: var(--green);
+    }
+
+    .console pre .cmt {
+      color: var(--text-subtle);
+      font-style: italic;
+    }
+
+    .console pre .num {
+      color: var(--purple);
+    }
+
+    .console .result {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height .3s ease;
+      border-top: 1px solid transparent;
+    }
+
+    .console .result.open {
+      max-height: 320px;
+      border-top: 1px solid var(--border);
+    }
+
+    .console .result-inner {
+      padding: 12px 18px;
+      font-family: var(--font-mono);
+      font-size: .8rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    .console .result table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .console .result th {
+      text-align: left;
+      color: var(--cyan);
+      font-weight: 600;
+      padding: 3px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .console .result td {
+      padding: 3px 10px;
+      color: var(--text-muted);
+    }
+
+    .console .result .msg {
+      color: var(--green);
+      font-weight: 600;
+    }
+
+    /* ── TABELA GENÉRICA ── */
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0;
+      font-size: .88rem;
+    }
+
+    .data-table th {
+      text-align: left;
+      padding: 9px 14px;
+      border-bottom: 2px solid var(--border-mid);
+      font-family: var(--font-mono);
+      color: var(--cyan);
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .07em;
+    }
+
+    .data-table td {
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    .data-table tr:hover td {
+      background: var(--bg-panel);
+    }
+
+    .data-table td.desc {
+      color: var(--text-muted);
+    }
+
+    /* ── INLINE CODE ── */
+    code.inline {
+      font-family: var(--font-mono);
+      background: var(--bg-panel-alt);
+      color: var(--amber);
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: .82em;
+    }
+
+    /* ── NOTE ── */
+    .note {
+      display: flex;
+      gap: 12px;
+      background: var(--bg-panel);
+      border-left: 3px solid var(--cyan);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 12px 16px;
+      margin: 16px 0;
+      font-size: .88rem;
+      color: var(--text-muted);
+    }
+
+    .note b {
+      color: var(--text);
+    }
+
+    .note.warn {
+      border-left-color: var(--amber);
+    }
+
+    .note.danger {
+      border-left-color: var(--red);
+    }
+
+    /* ── SEARCH HIGHLIGHT ── */
+    mark.search-match {
+      background: rgba(246, 173, 85, .35);
+      color: var(--text);
+      border-radius: 2px;
+      padding: 0 2px;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      text-align: center;
+      padding: 56px 20px 40px;
+      color: var(--text-subtle);
+      font-size: .8rem;
+      border-top: 1px solid var(--border);
+      margin-top: 48px;
+      font-family: var(--font-mono);
+    }
+
+    footer .dot {
+      color: var(--amber);
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+
+      *,
+      *::before,
+      *::after {
+        animation-duration: .001ms !important;
+        transition-duration: .001ms !important;
+      }
+
+      html {
+        scroll-behavior: auto;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- TOP BAR -->
+  <header id="topbar">
+    <div class="brand"><span class="dot"></span>web://html-css-js</div>
+    <div class="search-wrap">
+      <span class="ico">⌕</span>
+      <input type="text" id="searchInput" placeholder="Buscar no guia…" autocomplete="off" spellcheck="false">
+    </div>
+  </header>
+
+  <div id="progress"></div>
+
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <nav class="sidebar" aria-label="Sumário">
+      <div class="sidebar-section-label">Módulo 1 · HTML</div>
+      <ol>
+        <li><a href="#aula01" data-nav><span class="n">01</span>Introdução e estrutura</a></li>
+        <li><a href="#aula02" data-nav><span class="n">02</span>Textos, listas, links e imagens</a></li>
+        <li><a href="#aula03" data-nav><span class="n">03</span>HTML semântico</a></li>
+        <li><a href="#aula04" data-nav><span class="n">04</span>Tabelas e formulários</a></li>
+        <li><a href="#aula05" data-nav><span class="n">05</span>Revisão + mini projeto</a></li>
+      </ol>
+      <div class="sidebar-section-label">Módulo 2 · CSS</div>
+      <ol>
+        <li><a href="#aula06" data-nav><span class="n">06</span>Seletores e Box Model</a></li>
+        <li><a href="#aula07" data-nav><span class="n">07</span>Flexbox</a></li>
+        <li><a href="#aula08" data-nav><span class="n">08</span>CSS Grid</a></li>
+        <li><a href="#aula09" data-nav><span class="n">09</span>Responsividade</a></li>
+        <li><a href="#aula10" data-nav><span class="n">10</span>Animações e transições</a></li>
+      </ol>
+      <div class="sidebar-section-label">Módulo 3 · JavaScript</div>
+      <ol>
+        <li><a href="#aula11" data-nav><span class="n">11</span>Variáveis, tipos e operadores</a></li>
+        <li><a href="#aula12" data-nav><span class="n">12</span>Funções, condicionais e loops</a></li>
+        <li><a href="#aula13" data-nav><span class="n">13</span>DOM</a></li>
+        <li><a href="#aula14" data-nav><span class="n">14</span>Fetch API</a></li>
+        <li><a href="#aula15" data-nav><span class="n">15</span>LocalStorage</a></li>
+      </ol>
+      <div class="sidebar-section-label">Projetos</div>
+      <ol>
+        <li><a href="#proj1" data-nav><span class="n">P1</span>Calculadora interativa</a></li>
+        <li><a href="#proj2" data-nav><span class="n">P2</span>Lista de tarefas</a></li>
+        <li><a href="#proj3" data-nav><span class="n">P3</span>Portfólio pessoal</a></li>
+      </ol>
+      <div class="sidebar-section-label">Extras</div>
+      <ol>
+        <li><a href="#recursos" data-nav><span class="n">+</span>Recursos complementares</a></li>
+      </ol>
+    </nav>
+
+    <main>
+      <!-- HERO -->
+      <section class="hero">
+        <div class="eyebrow">plano de aula · do zero ao desenvolvimento web real</div>
+        <h1>HTML + CSS + <em>JavaScript</em></h1>
+        <p class="lead">Do zero ao desenvolvimento web real — com exemplos práticos, código comentado e projetos
+          progressivos.</p>
+
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Semana</th>
+              <th>Módulo</th>
+              <th>Conteúdo</th>
+              <th>Carga</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code class="inline">Semana 1</code></td>
+              <td><span class="tag red">HTML</span></td>
+              <td class="desc">Tags básicas, semântica, listas, links, imagens e formulários</td>
+              <td class="desc">~10h</td>
+            </tr>
+            <tr>
+              <td><code class="inline">Semana 2–3</code></td>
+              <td><span class="tag blue">CSS</span></td>
+              <td class="desc">Seletores, Box Model, Flexbox, Grid e responsividade</td>
+              <td class="desc">~15h</td>
+            </tr>
+            <tr>
+              <td><code class="inline">Semana 4–5</code></td>
+              <td><span class="tag amber">JavaScript</span></td>
+              <td class="desc">Variáveis, funções, eventos, DOM e fetch de dados</td>
+              <td class="desc">~15h</td>
+            </tr>
+            <tr>
+              <td><code class="inline">Semana 6</code></td>
+              <td><span class="tag purple">Projetos</span></td>
+              <td class="desc">Portfólio, calculadora, quiz e página completa</td>
+              <td class="desc">~10h</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ═══════════ MÓDULO 1 — HTML ═══════════ -->
+
+      <!-- AULA 01 -->
+      <section class="chapter" id="aula01">
+        <div class="chapter-header"><span class="chap-num"></span>
+          <h2>Introdução ao HTML e estrutura básica</h2>
+        </div>
+        <div class="note"><span>🟥</span>
+          <div><b>Módulo 1 — HTML: Estrutura.</b> HTML (HyperText Markup Language) é a linguagem de marcação que define
+            a <b>estrutura</b> de toda página web. Pense nele como o esqueleto de uma casa.</div>
+        </div>
+
+        <h3 class="subhead">O que você vai aprender</h3>
+        <ul class="list">
+          <li>O que é uma tag e como funciona</li>
+          <li>Estrutura obrigatória: <code class="inline">&lt;!DOCTYPE&gt;</code>, <code
+              class="inline">&lt;html&gt;</code>, <code class="inline">&lt;head&gt;</code>, <code
+              class="inline">&lt;body&gt;</code></li>
+          <li>Diferença entre tags de abertura e fechamento</li>
+          <li>Atributos das tags (<code class="inline">id</code>, <code class="inline">class</code>, <code
+              class="inline">href</code>, <code class="inline">src</code>)</li>
+        </ul>
+
+        <h3 class="subhead">Exemplo</h3>
+        <div class="console">
+          <div class="bar"><span class="label">index.html</span><button class="run-btn">▶ Executar</button></div>
+          <pre data-lang="html">&lt;!-- Todo arquivo HTML começa assim --&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html lang="pt-BR"&gt;
+
+  &lt;head&gt;
+    &lt;!-- Metadados: não aparecem na tela --&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;title&gt;Minha Primeira Página&lt;/title&gt;
+  &lt;/head&gt;
+
+  &lt;body&gt;
+    &lt;!-- Tudo que aparece na tela fica aqui --&gt;
+    &lt;h1&gt;Olá, Mundo!&lt;/h1&gt;
+    &lt;p&gt;Minha primeira página web.&lt;/p&gt;
+  &lt;/body&gt;
+
+&lt;/html&gt;</pre>
+          <div class="result">
+            <div class="result-inner">
+              <span class="msg">✓ No navegador:</span><br>
+              Aba com o título “Minha Primeira Página”, um título grande “Olá, Mundo!” e o parágrafo abaixo dele.
+            </div>
+          </div>
+        </div>
+
+        <div class="note"><span>💡</span>
+          <div><b>Dica:</b> sempre salve o arquivo com extensão <code class="inline">.html</code> e abra no navegador
+            para ver o resultado.</div>
+        </div>
+      </section>
+
+      <!-- AULA 02 -->
+      <section class="chapter" id="aula02">
+        <div class="chapter-header"><span class="chap-num"></span>
+          <h2>Textos, listas, links e imagens</h2>
+        </div>
+
+        <h3 class="subhead">O que você vai aprender</h3>
+        <ul class="list">
+          <li>Títulos: <code class="inline">&lt;h1&gt;</code> ao <code class="inline">&lt;h6&gt;</code></li>
+          <li>Parágrafo: <code class="inline">&lt;p&gt;</code>, negrito: <code class="inline">&lt;strong&gt;</code>,
+            itálico: <code class="inline">&lt;em&gt;</code></li>
+          <li>Listas ordenadas e não-ordenadas: <code class="inline">&lt;ol&gt;</code>, <code
+              class="inline">&lt;ul&gt;</code>, <code class="inline">&lt;li&gt;</code></li>
+          <li>Links: <code class="inline">&lt;a href="..."&gt;</code></li>
+          <li>Imagens: <code class="inline">&lt;img src="..." alt="..."&gt;</code></li>
+        </ul>
+
+        <h3 class="subhead">Exemplo</h3>
+        <div class="console">
+          <div class="bar"><span class="label">blog.html</span></div>
+          <pre data-lang="html">&lt;h1&gt;Meu Blog&lt;/h1&gt;
+&lt;h2&gt;Receitas Favoritas&lt;/h2&gt;
+
+&lt;p&gt;Veja minhas &lt;strong&gt;receitas preferidas&lt;/strong&gt; de 2024.&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Bolo de chocolate&lt;/li&gt;
+  &lt;li&gt;Pizza caseira&lt;/li&gt;
+  &lt;li&gt;Pão de queijo&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;!-- Link abrindo em nova aba --&gt;
+&lt;a href="https://google.com" target="_blank"&gt;
+  Visitar Google
+&lt;/a&gt;
+
+&lt;!-- Imagem com texto alternativo --&gt;
+&lt;img src="foto.jpg" alt="Descrição da imagem" width="300"&gt;</pre>
+        </div>
+
+        <div class="note"><span>💡</span>
+          <div><b>Dica:</b> o atributo <code class="inline">alt</code> nas imagens é essencial para acessibilidade e
+            SEO!</div>
+        </div>
+      </section>
+
+      <!-- AULA 03 -->
+      <section class="chapter" id="aula03">
+        <div class="chapter-header"><span class="chap-num"></span>
+          <h2>HTML semântico e estrutura de página</h2>
+        </div>
+
+        <h3 class="subhead">O que você vai aprender</h3>
+        <div class="grid cols-3">
+          <div class="card">
+            <h3><code class="inline">&lt;header&gt;</code></h3>
+            <p>Cabeçalho da página.</p>
+          </div>
+          <div class="card">
+            <h3><code class="inline">&lt;nav&gt;</code></h3>
+            <p>Menu de navegação.</p>
+          </div>
+          <div class="card">
+            <h3><code class="inline">&lt;main&gt;</code></h3>
+            <p>Conteúdo principal.</p>
+          </div>
+          <div class="card">
+            <h3><code class="inline">&lt;article&gt;</code></h3>
+            <p>Artigo independente.</p>
+          </div>
+          <div class="card">
+            <h3><code class="inline">&lt;section&gt;</code></h3>
+            <p>Seção de conteúdo.</p>
+          </div>
+          <div class="card">
+            <h3><code class="inline">&lt;footer&gt;</code></h3>
+            <p>Rodapé.</p>
+          </div>
+          <div class="card">
+            <h3><code class="inline">&lt;div&gt;</code></h3>
+            <p>Bloco genérico (sem semântica).</p>
+          </div>
+          <div class="card">
+            <h3><code class="inline">&lt;br&gt;</code></h3>
+            <p>Quebra de linha.</p>
+          </div>
+        </div>
+
+        <h3 class="subhead">Por que usar HTML semântico?</h3>
+        <p class="text">HTML semântico usa tags com significado, ajudando buscadores (Google) e leitores de tela a
+          entender a página.</p>
+
+        <h3 class="subhead">Exemplo</h3>
+        <div class="console">
+          <div class="bar"><span class="label">semantico.html</span></div>
+          <pre data-lang="html">&lt;header&gt;
+  &lt;h1&gt;Meu Site&lt;/h1&gt;
+  &lt;nav&gt;
+    &lt;a href="#sobre"&gt;Sobre&lt;/a&gt;
+    &lt;a href="#contato"&gt;Contato&lt;/a&gt;
+  &lt;/nav&gt;
+&lt;/header&gt;
+
+&lt;main&gt;
+  &lt;section id="sobre"&gt;
+    &lt;h2&gt;Sobre Mim&lt;/h2&gt;
+    &lt;p&gt;Desenvolvedor web apaixonado...&lt;/p&gt;
+  &lt;/section&gt;
+
+  &lt;article&gt;
+    &lt;h2&gt;Meu Primeiro Post&lt;/h2&gt;
+    &lt;p&gt;Conteúdo do artigo...&lt;/p&gt;
+  &lt;/article&gt;
+&lt;/main&gt;
+
+&lt;footer&gt;
+  &lt;p&gt;© 2024 Meu Site&lt;/p&gt;
+&lt;/footer&gt;</pre>
+        </div>
+      </section>
+
+      <!-- AULA 04 -->
+      <section class="chapter" id="aula04">
+        <div class="chapter-header"><span class="chap-num"></span>
+          <h2>Tabelas e formulários</h2>
+        </div>
+
+        <h3 class="subhead">O que você vai aprender</h3>
+        <ul class="list">
+          <li>Tabelas: <code class="inline">&lt;table&gt;</code>, <code class="inline">&lt;thead&gt;</code>, <code
+              class="inline">&lt;tbody&gt;</code>, <code class="inline">&lt;tr&gt;</code>, <code
+              class="inline">&lt;th&gt;</code>, <code class="inline">&lt;td&gt;</code></li>
+          <li>Campos de formulário: <code class="inline">&lt;input&gt;</code>, <code
+              class="inline">&lt;textarea&gt;</code>, <code class="inline">&lt;select&gt;</code></li>
+          <li>Tipos de input: <code class="inline">text</code>, <code class="inline">email</code>, <code
+              class="inline">password</code>, <code class="inline">number</code>, <code
+              class="inline">checkbox</code>, <code class="inline">radio</code></li>
+          <li>Atributo <code class="inline">required</code> para validação nativa</li>
+        </ul>
+
+        <h3 class="subhead">Exemplo</h3>
+        <div class="console">
+          <div class="bar"><span class="label">contato.html</span></div>
+          <pre data-lang="html">&lt;form action="/enviar" method="POST"&gt;
+
+  &lt;label for="nome"&gt;Seu nome:&lt;/label&gt;
+  &lt;input type="text" id="nome" name="nome" required&gt;
+
+  &lt;label for="email"&gt;E-mail:&lt;/label&gt;
+  &lt;input type="email" id="email" name="email"&gt;
+
+  &lt;label for="msg"&gt;Mensagem:&lt;/label&gt;
+  &lt;textarea id="msg" name="mensagem" rows="4"&gt;&lt;/textarea&gt;
+
+  &lt;select name="assunto"&gt;
+    &lt;option value="duvida"&gt;Dúvida&lt;/option&gt;
+    &lt;option value="sugestao"&gt;Sugestão&lt;/option&gt;
+  &lt;/select&gt;
+
+  &lt;button type="submit"&gt;Enviar&lt;/button&gt;
+&lt;/form&gt;</pre>
+        </div>
+
+        <div class="note"><span>💡</span>
+          <div><b>Dica:</b> sempre use <code class="inline">&lt;label for="id"&gt;</code> ligado ao <code
+              class="inline">id</code> do input — melhora a acessibilidade!</div>
+        </div>
+
+        <h3 class="subhead"><code class="inline">&lt;input&gt;</code></h3>
+        <p class="text">O <code class="inline">input</code> cria campos onde o usuário pode adicionar, escrever ou
+          repassar informações. Os principais tipos são:</p>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>Uso</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code class="inline">text</code></td>
+              <td class="desc">Texto simples</td>
+            </tr>
+            <tr>
+              <td><code class="inline">email</code></td>
+              <td class="desc">Valida o formato de e-mail</td>
+            </tr>
+            <tr>
+              <td><code class="inline">password</code></td>
+              <td class="desc">Oculta o texto digitado</td>
+            </tr>
+            <tr>
+              <td><code class="inline">number</code></td>
+              <td class="desc">Apenas números</td>
+            </tr>
+            <tr>
+              <td><code class="inline">checkbox</code></td>
+              <td class="desc">Múltipla escolha</td>
+            </tr>
+            <tr>
+              <td><code class="inline">radio</code></td>
+              <td class="desc">Escolha única</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="console">
+          <div class="bar"><span class="label">inputs.html</span></div>
+          <pre data-lang="html">&lt;form&gt;
+    Nome: &lt;input type="text"&gt;&lt;br&gt;
+
+    Email: &lt;input type="email"&gt;&lt;br&gt;
+
+    Senha: &lt;input type="password"&gt;&lt;br&gt;
+
+    Idade: &lt;input type="number"&gt;&lt;br&gt;
+
+    Aceitar termos: &lt;input type="checkbox"&gt;&lt;br&gt;
+
+    Sexo:
+    &lt;input type="radio" name="sexo"&gt; Masculino
+    &lt;input type="radio" name="sexo"&gt; Feminino
+&lt;/form&gt;</pre>
+        </div>
+
+        <h3 class="subhead"><code class="inline">required</code></h3>
+        <p class="text">O atributo <code class="inline">required</code> obriga o usuário a preencher o campo.</p>
+        <div class="console">
+          <div class="bar"><span class="label">required.html</span></div>
+          <pre data-lang="html">&lt;form&gt;
+    Nome: &lt;input type="text" required&gt;&lt;br&gt;
+    Email: &lt;input type="email" required&gt;&lt;br&gt;
+
+    &lt;button type="submit"&gt;Enviar&lt;/button&gt;
+&lt;/form&gt;</pre>
+        </div>
+
+        <h3 class="subhead"><code class="inline">&lt;table&gt;</code></h3>
+        <p class="text">As tabelas servem para organizar dados em <b>linhas e colunas</b>.</p>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Tag</th>
+              <th>Função</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code class="inline">&lt;table&gt;</code></td>
+              <td class="desc">Cria a tabela</td>
+            </tr>
+            <tr>
+              <td><code class="inline">&lt;thead&gt;</code></td>
+              <td class="desc">Cabeçalho</td>
+            </tr>
+            <tr>
+              <td><code class="inline">&lt;tbody&gt;</code></td>
+              <td class="desc">Corpo da tabela</td>
+            </tr>
+            <tr>
+              <td><code class="inline">&lt;tr&gt;</code></td>
+              <td class="desc">Linha (table row)</td>
+            </tr>
+            <tr>
+              <td><code class="inline">&lt;th&gt;</code></td>
+              <td class="desc">Célula de título (negrito)</td>
+            </tr>
+            <tr>
+              <td><code class="inline">&lt;td&gt;</code></td>
+              <td class="desc">Célula comum</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="console">
+          <div class="bar"><span class="label">tabela.html</span></div>
+          <pre data-lang="html">&lt;table border="1"&gt;
+
+    &lt;!-- Cabeçalho --&gt;
+    &lt;thead&gt;
+        &lt;tr&gt;
+            &lt;th&gt;Nome&lt;/th&gt;
+            &lt;th&gt;Idade&lt;/th&gt;
+        &lt;/tr&gt;
+    &lt;/thead&gt;
+
+    &lt;!-- Parte principal: dados --&gt;
+    &lt;tbody&gt;
+        &lt;tr&gt;
+            &lt;td&gt;João&lt;/td&gt;
+            &lt;td&gt;20&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+            &lt;td&gt;Maria&lt;/td&gt;
+            &lt;td&gt;25&lt;/td&gt;
+        &lt;/tr&gt;
+    &lt;/tbody&gt;
+&lt;/table&gt;</pre>
+        </div>
+
+        <h3 class="subhead"><code class="inline">&lt;form&gt;</code></h3>
+        <p class="text">Formulários servem para <b>coletar dados do usuário</b>.</p>
+        <ul class="list">
+          <li><code class="inline">&lt;input&gt;</code> — campo de entrada</li>
+          <li><code class="inline">&lt;textarea&gt;</code> — campo de texto grande</li>
+          <li><code class="inline">&lt;select&gt;</code> — lista de opções</li>
+        </ul>
+        <div class="console">
+          <div class="bar"><span class="label">form.html</span></div>
+          <pre data-lang="html">&lt;form&gt;
+    Nome: &lt;input type="text"&gt;&lt;br&gt;&lt;br&gt;
+
+    Mensagem:&lt;br&gt;
+    &lt;textarea&gt;&lt;/textarea&gt;&lt;br&gt;&lt;br&gt;
+
+    Cidade:
+    &lt;select&gt;
+        &lt;option&gt;São Paulo&lt;/option&gt;
+        &lt;option&gt;Rio de Janeiro&lt;/option&gt;
+    &lt;/select&gt;
+&lt;/form&gt;</pre>
+        </div>
+      </section>
+
+      <!-- AULA 05 -->
+      <section class="chapter" id="aula05">
+        <div class="chapter-header"><span class="chap-num"></span>
+          <h2>Revisão HTML + mini projeto</h2>
+        </div>
+        <p class="chapter-intro">Hora de juntar tudo o que foi visto no módulo de HTML em uma página só.</p>
+
+        <h3 class="subhead">Projeto: página de perfil pessoal</h3>
+        <p class="text">Construa uma página com:</p>
+        <ul class="list check">
+          <li>Header com seu nome e navegação</li>
+          <li>Seção “Sobre mim” com foto e parágrafo</li>
+          <li>Lista de habilidades</li>
+          <li>Formulário de contato básico</li>
+          <li>Footer com links para redes sociais</li>
+        </ul>
+      </section>
+
+      <!-- ═══════════ MÓDULO 2 — CSS ═══════════ -->
+
+      <!-- AULA 06 -->
+      <section class="chapter" id="aula06">
+        <div class="chapter-header"><span class="chap-num"></span>
+          <h2>Seletores, propriedades e Box Model</h2>
+        </div>
+        <div class="note"><span>🟦</span>
+          <div><b>Módulo 2 — CSS: Estilo.</b> CSS (Cascading Style Sheets) controla a aparência visual dos elementos
+            HTML. O <b>Box Model</b> é o conceito mais importante: todo elemento é uma caixa.</div>
+        </div>
+
+        <h3 class="subhead">O que você vai aprender</h3>
+        <ul class="list">
+          <li>Formas de aplicar CSS: inline, <code class="inline">&lt;style&gt;</code>, arquivo externo <code
+              class="inline">.css</code></li>
+          <li>Seletores: tag, <code class="inline">.classe</code>, <code class="inline">#id</code>, combinadores</li>
+          <li>Box Model: <code class="inline">margin</code> → <code class="inline">border</code> → <code
+              class="inline">padding</code> → conteúdo</li>
+          <li>Propriedades básicas: <code class="inline">color</code>, <code class="inline">font-size</code>, <code
+              class="inline">background</code>, <code class="inline">width</code>, <code
+              class="inline">height</code></li>
+        </ul>
+
+        <h3 class="subhead">Exemplo</h3>
+        <div class="console">
+          <div class="bar"><span class="label">style.css</span></div>
+          <pre data-lang="css">/* Seletor por tag */
+h1 {
+  color: #333;
+  font-size: 2rem;
+}
+
+/* Seletor por classe */
+.cartao {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+
+  /* Box Model */
+  padding: 1rem;    /* espaço interno */
+  margin: 1rem;     /* espaço externo */
+  width: 300px;
+}
+
+/* Seletor por ID */
+#titulo-principal {
+  text-align: center;
+  font-weight: bold;
+}
+
+/* Pseudo-classe: estado do hover */
+button:hover {
+  background: #0066cc;
+  cursor: pointer;
+}</pre>
+        </div>
+
+        <div class="note"><span>💡</span>
+          <div><b>Dica:</b> use <code class="inline">box-sizing: border-box</code> globalmente para o padding não
+            aumentar o tamanho do elemento!</div>
+        </div>
+      </section>
+
+      <!-- AULA 07 -->
+      <section class="chapter" id="aula07">
+        <div class="chapter-header"><span class="chap-num"></span>
+          <h2>Flexbox: layout em linha e coluna</h2>
+        </div>
+
+        <h3 class="subhead">O que você vai aprender</h3>
+        <ul class="list">
+          <li><code class="inline">display: flex</code> — ativa o flexbox no container pai</li>
+          <li><code class="inline">justify-content</code> — alinha no eixo horizontal</li>
+          <li><code class="inline">align-items</code> — alinha no eixo vertical</li>
+          <li><code class="inline">flex-wrap</code> — permite quebrar linha</li>
+          <li><code class="inline">gap</code> — espaço entre os filhos</li>
+        </ul>
+
+        <h3 class="subhead">Valores de justify-content</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Valor</th>
+              <th>Efeito</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code class="inline">flex-start</code></td>
+              <td class="desc">Agrupa no início</td>
+            </tr>
+            <tr>
+              <td><code class="inline">flex-end</code></td>
+              <td class="desc">Agrupa no fim</td>
+            </tr>
+            <tr>
+              <td><code class="inline">center</code></td>
+              <td class="desc">Centraliza</td>
+            </tr>
+            <tr>
+              <td><code class="inline">space-between</code></td>
+              <td class="desc">Espaço entre os itens</td>
+            </tr>
+            <tr>
+              <td><code class="inline">space-around</code></td>
+              <td class="desc">Espaço ao redor</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 class="subhead">Exemplo</h3>
+        <div class="console">
+          <div class="bar"><span class="label">flexbox.css</span></div>
+          <pre data-lang="css">/* Container pai */
+.container {
+  display: flex;
+  justify-content: center;  /* horizontal */
+  align-items: center;      /* vertical */
+  gap: 1rem;
+  flex-wrap: wrap;
+  min-height: 100vh;
+}
+
+/* Centralizar um elemento na tela */
+body {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* Navbar com espaço entre logo e links */
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+}</pre>
+        </div>
+
+        <div class="note"><span>💡</span>
+          <div><b>Dica rápida:</b> para centralizar qualquer coisa — <code class="inline">display: flex;
+              justify-content: center; align-items: center</code>.</div>
+        </div>
+      </section>
+
+      <!-- AULA 08 -->
+      <section class="chapter" id="aula08">
+        <div class="chapter-header"><span class="chap-num"></span>
+          <h2>CSS Grid: layouts em grade</h2>
+        </div>
+
+        <h3 class="subhead">O que você vai aprender</h3>
+        <ul class="list">
+          <li><code class="inline">display: grid</code></li>
+          <li><code class="inline">grid-template-columns</code> e <code class="inline">grid-template-rows</code></li>
+          <li>Unidade <code class="inline">fr</code> (fração)</li>
+          <li><code class="inline">grid-template-areas</code> — nomear regiões</li>
+          <li><code class="inline">auto-fit</code> e <code class="inline">minmax</code> para grades responsivas</li>
+        </ul>
+
+        <h3 class="subhead">Exemplo</h3>
+        <div class="console">
+          <div class="bar"><span class="label">grid.css</span></div>
+          <pre data-lang="css">/* Grade de 3 colunas iguais */
+.galeria {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+/* Responsivo: 1 col no mobile, 3 no desktop */
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+/* Layout de página clássico */
+.pagina {
+  display: grid;
+  grid-template-areas:
+    "header header"
+    "sidebar main"
+    "footer footer";
+  grid-template-columns: 250px 1fr;
+}
+
+.pagina header { grid-area: header; }
+.pagina aside  { grid-area: sidebar; }
+.pagina main   { grid-area: main; }
+.pagina footer { grid-area: footer; }</pre>
+        </div>
+
+        <div class="note"><span>💡</span>
+          <div><b>Dica:</b> <code class="inline">repeat(auto-fit, minmax(250px, 1fr))</code> cria grades que se
+            adaptam automaticamente ao tamanho da tela.</div>
+        </div>
+      </section>
+
+      <!-- AULA 09 -->
+      <section class="chapter" id="aula09">
+        <div class="chapter-header"><span class="chap-num"></span>
+          <h2>Responsividade e Media Queries</h2>
+        </div>
+
+        <h3 class="subhead">O que você vai aprender</h3>
+        <ul class="list">
+          <li>Mobile-first: escrever CSS para celular primeiro</li>
+          <li><code class="inline">@media (min-width: ...)</code> para adaptar ao tamanho da tela</li>
+          <li>Breakpoints comuns: 480px (mobile), 768px (tablet), 1024px (desktop)</li>
+          <li>Unidades relativas: <code class="inline">%</code>, <code class="inline">rem</code>, <code
+              class="inline">em</code>, <code class="inline">vw</code>, <code class="inline">vh</code></li>
+        </ul>
+
+        <h3 class="subhead">Exemplo</h3>
+        <div class="console">
+          <div class="bar"><span class="label">responsivo.css</span></div>
+          <pre data-lang="css">/* Estilo padrão: mobile first */
+.container {
+  width: 100%;
+  padding: 1rem;
+}
+
+.menu {
+  display: none; /* esconde em celular */
+}
+
+/* Tablet: 768px ou mais */
+@media (min-width: 768px) {
+  .container {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+
+  .menu {
+    display: flex; /* aparece em tablet+ */
+  }
+}
+
+/* Desktop: 1024px ou mais */
+@media (min-width: 1024px) {
+  .container {
+    max-width: 960px;
+  }
+
+  .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}</pre>
+        </div>
+      </section>
+
+      <!-- AULA 10 -->
+      <section class="chapter" id="aula10">
+        <div class="chapter-header"><span class="chap-num"></span>
+          <h2>Animações e transições CSS</h2>
+        </div>
+
+        <h3 class="subhead">O que você vai aprender</h3>
+        <ul class="list">
+          <li><code class="inline">transition</code> — suaviza mudanças de propriedade</li>
+          <li><code class="inline">@keyframes</code> — define animações personalizadas</li>
+          <li><code class="inline">animation</code> — aplica a animação ao elemento</li>
+          <li>Propriedades animáveis: <code class="inline">opacity</code>, <code class="inline">transform</code>, <code
+              class="inline">color</code>, <code class="inline">background</code></li>
+        </ul>
+
+        <h3 class="subhead">Exemplo</h3>
+        <div class="console">
+          <div class="bar"><span class="label">animacoes.css</span></div>
+          <pre data-lang="css">/* Transição suave no hover */
+.botao {
+  background: #0066cc;
+  transition: background 0.3s ease, transform 0.2s;
+}
+
+.botao:hover {
+  background: #0044aa;
+  transform: scale(1.05);
+}
+
+/* Animação de entrada */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card {
+  animation: fadeIn 0.5s ease forwards;
+}</pre>
+        </div>
+      </section>
+
+      <!-- ═══════════ MÓDULO 3 — JAVASCRIPT ═══════════ -->
+
+      <!-- AULA 11 -->
+      <section class="chapter" id="aula11">
+        <div class="chapter-header"><span class="chap-num"></span>
+          <h2>Variáveis, tipos e operadores</h2>
+        </div>
+        <div class="note"><span>🟨</span>
+          <div><b>Módulo 3 — JavaScript: Interatividade.</b> JavaScript é a linguagem de programação da web. Com ela,
+            você adiciona comportamento e lógica às páginas.</div>
+        </div>
+
+        <h3 class="subhead">O que você vai aprender</h3>
+        <ul class="list">
+          <li><code class="inline">let</code> — variável que pode mudar</li>
+          <li><code class="inline">const</code> — valor que não muda</li>
+          <li>Tipos: <code class="inline">string</code>, <code class="inline">number</code>, <code
+              class="inline">boolean</code>, <code class="inline">array</code>, <code class="inline">object</code>,
+            <code class="inline">null</code>, <code class="inline">undefined</code></li>
+          <li>Operadores: <code class="inline">+</code>, <code class="inline">-</code>, <code
+              class="inline">*</code>, <code class="inline">/</code>, <code class="inline">===</code>, <code
+              class="inline">!==</code>, <code class="inline">&amp;&amp;</code>, <code class="inline">||</code>, <code
+              class="inline">!</code></li>
+        </ul>
+
+        <h3 class="subhead">Exemplo</h3>
+        <div class="console">
+          <div class="bar"><span class="label">variaveis.js</span><button class="run-btn">▶ Executar</button></div>
+          <pre data-lang="js">// Variáveis
+let nome = "Ana";
+let idade = 25;
+const PI = 3.14;
+let ativo = true;
+
+// Template literal (texto com variável)
+let mensagem = `Olá, ${nome}! Você tem ${idade} anos.`;
+console.log(mensagem); // "Olá, Ana! Você tem 25 anos."
+
+// Array (lista)
+let frutas = ["maçã", "banana", "laranja"];
+console.log(frutas[0]); // "maçã"
+
+// Objeto
+let pessoa = {
+  nome: "Carlos",
+  idade: 30,
+  cidade: "São Paulo"
+};
+console.log(pessoa.nome); // "Carlos"</pre>
+          <div class="result">
+            <div class="result-inner">
+              <span class="msg">✓ Console:</span><br>
+              Olá, Ana! Você tem 25 anos.<br>
+              maçã<br>
+              Carlos
+            </div>
+          </div>
+        </div>
+
+        <div class="note"><span>💡</span>
+          <div><b>Dica:</b> prefira sempre <code class="inline">const</code> por padrão. Só use <code
+              class="inline">let</code> quando precisar reatribuir o valor.</div>
+        </div>
+      </section>
+
+      <!-- AULA 12 -->
+      <section class="chapter" id="aula12">
+        <div class="chapter-header"><span class="chap-num"></span>
+          <h2>Funções, condicionais e loops</h2>
+        </div>
+
+        <h3 class="subhead">O que você vai aprender</h3>
+        <ul class="list">
+          <li>Funções tradicionais e arrow functions</li>
+          <li><code class="inline">if / else if / else</code></li>
+          <li><code class="inline">switch</code></li>
+          <li>Loops: <code class="inline">for</code>, <code class="inline">while</code>, <code
+              class="inline">forEach</code>, <code class="inline">map</code>, <code class="inline">filter</code></li>
+        </ul>
+
+        <h3 class="subhead">Exemplo</h3>
+        <div class="console">
+          <div class="bar"><span class="label">funcoes.js</span><button class="run-btn">▶ Executar</button></div>
+          <pre data-lang="js">// Função tradicional
+function somar(a, b) {
+  return a + b;
+}
+
+// Arrow function (moderna)
+const multiplicar = (a, b) => a * b;
+
+console.log(somar(3, 4));        // 7
+console.log(multiplicar(3, 4));  // 12
+
+// Condicional
+const nota = 7.5;
+
+if (nota >= 7) {
+  console.log("Aprovado!");
+} else if (nota >= 5) {
+  console.log("Recuperação");
+} else {
+  console.log("Reprovado");
+}
+
+// Loop com forEach
+const frutas = ["maçã", "banana", "uva"];
+frutas.forEach(fruta => {
+  console.log(`Fruta: ${fruta}`);
+});
+
+// map: transforma array
+const dobros = [1, 2, 3].map(n => n * 2);
+// [2, 4, 6]
+
+// filter: filtra array
+const pares = [1, 2, 3, 4, 5].filter(n => n % 2 === 0);
+// [2, 4]</pre>
+          <div class="result">
+            <div class="result-inner">
+              <span class="msg">✓ Console:</span><br>
+              7<br>
+              12<br>
+              Aprovado!<br>
+              Fruta: maçã<br>
+              Fruta: banana<br>
+              Fruta: uva
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- AULA 13 -->
+      <section class="chapter" id="aula13">
+        <div class="chapter-header"><span class="chap-num"></span>
+          <h2>DOM: manipulando a página com JS</h2>
+        </div>
+
+        <h3 class="subhead">O que você vai aprender</h3>
+        <ul class="list">
+          <li>Selecionar elementos: <code class="inline">querySelector</code>, <code
+              class="inline">querySelectorAll</code></li>
+          <li>Alterar conteúdo: <code class="inline">textContent</code>, <code class="inline">innerHTML</code></li>
+          <li>Alterar estilo: <code class="inline">element.style</code>, <code
+              class="inline">classList.add/remove/toggle</code></li>
+          <li>Criar e inserir elementos: <code class="inline">createElement</code>, <code
+              class="inline">appendChild</code></li>
+          <li>Ouvir eventos: <code class="inline">addEventListener</code></li>
+        </ul>
+
+        <h3 class="subhead">Exemplo</h3>
+        <div class="console">
+          <div class="bar"><span class="label">dom.js</span></div>
+          <pre data-lang="js">// Selecionar elementos
+const titulo = document.querySelector("h1");
+const botao = document.querySelector("#meu-btn");
+const cards = document.querySelectorAll(".card");
+
+// Alterar conteúdo e estilo
+titulo.textContent = "Novo Título!";
+titulo.style.color = "blue";
+titulo.classList.add("destaque");
+
+// Criar e inserir elementos
+const novoItem = document.createElement("li");
+novoItem.textContent = "Novo item da lista";
+document.querySelector("ul").appendChild(novoItem);
+
+// Responder a eventos
+botao.addEventListener("click", () => {
+  alert("Botão clicado!");
+});
+
+// Ler valor de um input
+const input = document.querySelector("#campo-nome");
+input.addEventListener("input", (e) => {
+  console.log(`Digitando: ${e.target.value}`);
+});</pre>
+        </div>
+
+        <div class="note"><span>💡</span>
+          <div><b>Dica:</b> <code class="inline">querySelector</code> retorna 1 elemento. <code
+              class="inline">querySelectorAll</code> retorna uma lista de todos os elementos que batem com o
+            seletor.</div>
+        </div>
+      </section>
+
+      <!-- AULA 14 -->
+      <section class="chapter" id="aula14">
+        <div class="chapter-header"><span class="chap-num"></span>
+          <h2>Fetch API: buscando dados da internet</h2>
+        </div>
+
+        <h3 class="subhead">O que você vai aprender</h3>
+        <ul class="list">
+          <li>O que é uma API e JSON</li>
+          <li><code class="inline">fetch()</code> para fazer requisições HTTP</li>
+          <li><code class="inline">async/await</code> para lidar com operações assíncronas</li>
+          <li>Tratamento de erros com <code class="inline">try/catch</code></li>
+        </ul>
+
+        <h3 class="subhead">Exemplo</h3>
+        <div class="console">
+          <div class="bar"><span class="label">fetch.js</span><button class="run-btn">▶ Executar</button></div>
+          <pre data-lang="js">// Buscar dados de uma API pública
+async function buscarUsuario(id) {
+  try {
+    const resposta = await fetch(
+      `https://jsonplaceholder.typicode.com/users/${id}`
+    );
+
+    if (!resposta.ok) throw new Error("Erro na requisição");
+
+    const dados = await resposta.json();
+
+    // Exibir na página
+    document.querySelector("#nome").textContent = dados.name;
+    document.querySelector("#email").textContent = dados.email;
+
+  } catch (erro) {
+    console.error("Falhou:", erro.message);
+  }
+}
+
+buscarUsuario(1);</pre>
+          <div class="result">
+            <div class="result-inner">
+              <span class="msg">✓ Na página:</span><br>
+              #nome → Leanne Graham<br>
+              #email → Sincere@april.biz
+            </div>
+          </div>
+        </div>
+
+        <div class="note"><span>💡</span>
+          <div><b>Dica:</b> a API <code class="inline">jsonplaceholder.typicode.com</code> é gratuita e perfeita para
+            praticar fetch sem precisar de backend.</div>
+        </div>
+      </section>
+
+      <!-- AULA 15 -->
+      <section class="chapter" id="aula15">
+        <div class="chapter-header"><span class="chap-num"></span>
+          <h2>LocalStorage e projeto final</h2>
+        </div>
+
+        <h3 class="subhead">O que você vai aprender</h3>
+        <ul class="list">
+          <li><code class="inline">localStorage.setItem()</code> e <code class="inline">getItem()</code> — salvar
+            dados no navegador</li>
+          <li><code class="inline">JSON.stringify()</code> e <code class="inline">JSON.parse()</code> — converter
+            objetos para texto e vice-versa</li>
+          <li>Integrar HTML + CSS + JS em um projeto completo</li>
+        </ul>
+
+        <h3 class="subhead">Exemplo</h3>
+        <div class="console">
+          <div class="bar"><span class="label">storage.js</span><button class="run-btn">▶ Executar</button></div>
+          <pre data-lang="js">// Salvar dados
+const usuario = { nome: "Ana", pontos: 150 };
+localStorage.setItem("usuario", JSON.stringify(usuario));
+
+// Recuperar dados
+const salvo = localStorage.getItem("usuario");
+const dados = JSON.parse(salvo);
+console.log(dados.nome); // "Ana"
+
+// Verificar se existe
+if (localStorage.getItem("usuario")) {
+  console.log("Usuário encontrado!");
+}
+
+// Deletar
+localStorage.removeItem("usuario");</pre>
+          <div class="result">
+            <div class="result-inner">
+              <span class="msg">✓ Console:</span><br>
+              Ana<br>
+              Usuário encontrado!
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════ PROJETOS ═══════════ -->
+
+      <!-- PROJETO 1 -->
+      <section class="chapter" id="proj1">
+        <div class="chapter-header"><span class="chap-num" data-label="P1"></span>
+          <h2>Calculadora interativa</h2>
+        </div>
+        <div class="note"><span>🟣</span>
+          <div><b>Projetos integradores.</b> Aqui o conteúdo dos três módulos se junta em projetos de verdade.</div>
+        </div>
+        <p class="chapter-intro"><b>Tecnologias:</b> HTML + CSS (Grid) + JavaScript</p>
+
+        <h3 class="subhead">O que praticar</h3>
+        <ul class="list">
+          <li>Layout com CSS Grid para os botões</li>
+          <li>Eventos de clique</li>
+          <li>Lógica de construção de expressão matemática</li>
+        </ul>
+
+        <h3 class="subhead">Checklist</h3>
+        <ul class="list check">
+          <li>Display mostrando a expressão atual</li>
+          <li>Botões 0–9, operadores <code class="inline">+ - * /</code></li>
+          <li>Botão <code class="inline">=</code> para calcular</li>
+          <li>Botão <code class="inline">C</code> para limpar</li>
+          <li>Estilo com Grid responsivo</li>
+        </ul>
+
+        <h3 class="subhead">Código base</h3>
+        <div class="console">
+          <div class="bar"><span class="label">calculadora.html</span></div>
+          <pre data-lang="html">&lt;div class="calc"&gt;
+  &lt;div id="display"&gt;0&lt;/div&gt;
+  &lt;div class="botoes"&gt;
+    &lt;button onclick="pressionar('7')"&gt;7&lt;/button&gt;
+    &lt;button onclick="pressionar('8')"&gt;8&lt;/button&gt;
+    &lt;button onclick="pressionar('9')"&gt;9&lt;/button&gt;
+    &lt;button onclick="pressionar('+')"&gt;+&lt;/button&gt;
+    &lt;!-- ... mais botões --&gt;
+    &lt;button onclick="calcular()"&gt;=&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+  let expressao = "";
+
+  function pressionar(val) {
+    expressao += val;
+    document.querySelector("#display").textContent = expressao;
+  }
+
+  function calcular() {
+    expressao = String(eval(expressao));
+    document.querySelector("#display").textContent = expressao;
+  }
+&lt;/script&gt;</pre>
+        </div>
+        <div class="note warn"><span>⚠️</span>
+          <div>Este código base usa <code class="inline">eval()</code> por simplicidade. Vale discutir com a turma por
+            que ele é arriscado em aplicações reais e como substituí-lo por um parser de expressões.</div>
+        </div>
+      </section>
+
+      <!-- PROJETO 2 -->
+      <section class="chapter" id="proj2">
+        <div class="chapter-header"><span class="chap-num" data-label="P2"></span>
+          <h2>Lista de tarefas (To-Do App)</h2>
+        </div>
+        <p class="chapter-intro"><b>Tecnologias:</b> HTML + CSS + JavaScript + LocalStorage</p>
+
+        <h3 class="subhead">O que praticar</h3>
+        <ul class="list">
+          <li>Criar elementos dinamicamente com JS</li>
+          <li>Toggle de classes CSS</li>
+          <li>Persistência de dados com localStorage</li>
+        </ul>
+
+        <h3 class="subhead">Checklist</h3>
+        <ul class="list check">
+          <li>Input para digitar nova tarefa</li>
+          <li>Botão “Adicionar”</li>
+          <li>Clicar na tarefa para marcar como concluída</li>
+          <li>Botão para deletar cada tarefa</li>
+          <li>Dados salvos no localStorage (persistem ao recarregar)</li>
+          <li>Contador de tarefas pendentes</li>
+        </ul>
+
+        <h3 class="subhead">Código base</h3>
+        <div class="console">
+          <div class="bar"><span class="label">todo.js</span></div>
+          <pre data-lang="js">function adicionarTarefa(texto) {
+  const li = document.createElement("li");
+  li.textContent = texto;
+
+  // Clique para marcar como feita
+  li.addEventListener("click", () => {
+    li.classList.toggle("concluida");
+    salvar();
+  });
+
+  // Botão de deletar
+  const btn = document.createElement("button");
+  btn.textContent = "✕";
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    li.remove();
+    salvar();
+  });
+
+  li.appendChild(btn);
+  document.querySelector("#lista").appendChild(li);
+}
+
+function salvar() {
+  const itens = [...document.querySelectorAll("li")]
+    .map(li => ({ texto: li.firstChild.textContent, feita: li.classList.contains("concluida") }));
+  localStorage.setItem("tarefas", JSON.stringify(itens));
+}</pre>
+        </div>
+      </section>
+
+      <!-- PROJETO 3 -->
+      <section class="chapter" id="proj3">
+        <div class="chapter-header"><span class="chap-num" data-label="P3"></span>
+          <h2>Portfólio pessoal completo</h2>
+        </div>
+        <p class="chapter-intro"><b>Tecnologias:</b> HTML + CSS + JavaScript · <b>Deploy:</b> GitHub Pages</p>
+
+        <h3 class="subhead">O que praticar</h3>
+        <ul class="list">
+          <li>Estrutura semântica completa</li>
+          <li>Layout responsivo com Flexbox e Grid</li>
+          <li>Animações CSS</li>
+          <li>Modo escuro/claro com JS</li>
+          <li>Deploy real na internet</li>
+        </ul>
+
+        <h3 class="subhead">Checklist</h3>
+        <ul class="list check">
+          <li>Header fixo com navegação suave (<code class="inline">scroll-behavior: smooth</code>)</li>
+          <li>Seção Hero com animação de entrada</li>
+          <li>Seção “Sobre mim” com foto e bio</li>
+          <li>Grid de projetos responsivo com cards</li>
+          <li>Formulário de contato com validação JS</li>
+          <li>Botão de toggle dark/light mode</li>
+          <li>Deploy publicado no GitHub Pages</li>
+        </ul>
+
+        <h3 class="subhead">Estrutura de arquivos</h3>
+        <div class="console">
+          <div class="bar"><span class="label">estrutura</span></div>
+          <pre>meu-portfolio/
+├── index.html
+├── style.css
+├── script.js
+└── assets/
+    ├── foto.jpg
+    └── projeto1.png</pre>
+        </div>
+
+        <div class="note"><span>🎯</span>
+          <div><b>Importante:</b> este projeto vai no seu GitHub! É o que você mostra em entrevistas e processos
+            seletivos.</div>
+        </div>
+      </section>
+
+      <!-- RECURSOS -->
+      <section class="chapter" id="recursos">
+        <div class="chapter-header"><span class="chap-num" data-label="+"></span>
+          <h2>Recursos complementares</h2>
+        </div>
+
+        <h3 class="subhead">Documentação oficial</h3>
+        <div class="grid cols-3">
+          <div class="card">
+            <span class="tag blue">Referência</span>
+            <h3>MDN Web Docs</h3>
+            <p>Referência completa em português.</p>
+          </div>
+          <div class="card">
+            <span class="tag green">Tutoriais</span>
+            <h3>W3Schools</h3>
+            <p>Tutoriais com exemplos interativos.</p>
+          </div>
+          <div class="card">
+            <span class="tag purple">Avançado</span>
+            <h3>CSS-Tricks</h3>
+            <p>Guias avançados de CSS.</p>
+          </div>
+        </div>
+
+        <h3 class="subhead">Ferramentas online para praticar</h3>
+        <div class="grid cols-3">
+          <div class="card">
+            <span class="tag amber">Editor</span>
+            <h3>CodePen</h3>
+            <p>Editor online com preview em tempo real.</p>
+          </div>
+          <div class="card">
+            <span class="tag amber">Editor</span>
+            <h3>JSFiddle</h3>
+            <p>Testar HTML, CSS e JS juntos.</p>
+          </div>
+          <div class="card">
+            <span class="tag amber">API</span>
+            <h3>JSONPlaceholder</h3>
+            <p>API gratuita para praticar fetch.</p>
+          </div>
+        </div>
+
+        <h3 class="subhead">Extensões recomendadas para VS Code</h3>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Extensão</th>
+              <th>Para que serve</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code class="inline">Live Server</code></td>
+              <td class="desc">Recarrega a página automaticamente ao salvar</td>
+            </tr>
+            <tr>
+              <td><code class="inline">Prettier</code></td>
+              <td class="desc">Formata o código automaticamente</td>
+            </tr>
+            <tr>
+              <td><code class="inline">Auto Rename Tag</code></td>
+              <td class="desc">Renomeia tags HTML em par</td>
+            </tr>
+            <tr>
+              <td><code class="inline">CSS Peek</code></td>
+              <td class="desc">Vai para a definição CSS ao clicar na classe</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <footer>fim do guia <span class="dot">●</span> bons estudos! 🚀</footer>
+    </main>
+  </div>
+
+  <script>
+    // ── BARRA DE PROGRESSO ──
+    const bar = document.getElementById('progress');
+    window.addEventListener('scroll', () => {
+      const h = document.documentElement;
+      bar.style.width = (h.scrollTop / (h.scrollHeight - h.clientHeight) * 100) + '%';
+    });
+
+    // ── SCROLLSPY ──
+    const navLinks = document.querySelectorAll('nav.sidebar a[data-nav]');
+    const sections = document.querySelectorAll('section.chapter');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          navLinks.forEach(a => a.classList.remove('active'));
+          const link = document.querySelector('nav.sidebar a[href="#' + e.target.id + '"]');
+          if (link) {
+            link.classList.add('active');
+            link.scrollIntoView({block: 'nearest'});
+          }
+        }
+      });
+    }, {rootMargin: '-10% 0px -72% 0px'});
+    sections.forEach(s => io.observe(s));
+
+    // ── BOTÕES EXECUTAR ──
+    document.querySelectorAll('.run-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const result = btn.closest('.console').querySelector('.result');
+        const isOpen = result.classList.contains('open');
+        result.classList.toggle('open');
+        btn.textContent = isOpen ? '▶ Executar' : '↺ Fechar';
+      });
+    });
+
+    // ── DESTAQUE DE SINTAXE ──
+    const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    const GRAMMARS = {
+      js: {
+        re: /(\/\/.*|\/\*[\s\S]*?\*\/)|(`(?:[^`\\]|\\.)*`|"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*')|\b(\d+\.?\d*)\b|\b(const|let|var|function|return|if|else|async|await|try|catch|throw|new|for|while|switch|case)\b|\b([a-zA-Z_$][\w$]*)(?=\()/g,
+        cls: ['cmt', 'str', 'num', 'kw', 'fn']
+      },
+      css: {
+        re: /(\/\*[\s\S]*?\*\/)|("(?:[^"\\]|\\.)*")|(^[.#@]?[\w.#:\s>,()@-]*?)(?=\s*\{)|([a-z-]+)(?=\s*:\s)|(-?\b\d*\.?\d+(?:px|rem|em|vh|vw|fr|s|%)?)/gm,
+        cls: ['cmt', 'str', 'kw', 'fn', 'num']
+      },
+      html: {
+        re: /(<!--[\s\S]*?-->)|("[^"\n]*")|(<\/?[a-zA-Z!][\w-]*|\/?>)|(\b[\w-]+)(?==)/g,
+        cls: ['cmt', 'str', 'kw', 'fn']
+      }
+    };
+
+    document.querySelectorAll('.console pre[data-lang]').forEach(pre => {
+      const g = GRAMMARS[pre.dataset.lang];
+      if (!g) return;
+      const code = pre.textContent;
+      let out = '', last = 0;
+      for (const m of code.matchAll(g.re)) {
+        if (m[0] === '') continue;
+        const gi = g.cls.findIndex((_, i) => m[i + 1] !== undefined);
+        out += esc(code.slice(last, m.index)) + '<span class="' + g.cls[gi] + '">' + esc(m[0]) + '</span>';
+        last = m.index + m[0].length;
+      }
+      pre.innerHTML = out + esc(code.slice(last));
+    });
+
+    // ── BUSCA ──
+    const searchInput = document.getElementById('searchInput');
+    let searchMarks = [];
+
+    function clearSearch() {
+      searchMarks.forEach(el => {
+        const parent = el.parentNode;
+        if (parent) {
+          parent.replaceChild(document.createTextNode(el.textContent), el);
+          parent.normalize();
+        }
+      });
+      searchMarks = [];
+    }
+
+    function highlightText(node, term) {
+      if (node.nodeType === 3) {
+        const idx = node.textContent.toLowerCase().indexOf(term);
+        if (idx === -1) return;
+        const mark = document.createElement('mark');
+        mark.className = 'search-match';
+        const before = document.createTextNode(node.textContent.slice(0, idx));
+        const matched = document.createTextNode(node.textContent.slice(idx, idx + term.length));
+        const after = document.createTextNode(node.textContent.slice(idx + term.length));
+        mark.appendChild(matched);
+        const parent = node.parentNode;
+        parent.insertBefore(before, node);
+        parent.insertBefore(mark, node);
+        parent.insertBefore(after, node);
+        parent.removeChild(node);
+        searchMarks.push(mark);
+      } else if (node.nodeType === 1 && !['SCRIPT', 'STYLE', 'MARK'].includes(node.tagName)) {
+        Array.from(node.childNodes).forEach(child => highlightText(child, term));
+      }
+    }
+
+    searchInput.addEventListener('input', () => {
+      clearSearch();
+      const term = searchInput.value.trim().toLowerCase();
+      if (term.length < 2) return;
+      highlightText(document.querySelector('main'), term);
+      if (searchMarks.length > 0) {
+        searchMarks[0].scrollIntoView({behavior: 'smooth', block: 'center'});
+      }
+    });
+    searchInput.addEventListener('keydown', e => {
+      if (e.key === 'Escape') {searchInput.value = ''; clearSearch();}
+    });
+  </script>
+</body>
+
+</html>
