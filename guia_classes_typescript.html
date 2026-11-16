@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Classes em TypeScript</title>
+<style>
+:root{--bg:#fff;--side:#f5f6f8;--text:#1c1f26;--muted:#6b7280;--line:#e3e5ea;--accent:#2563eb;--code:#0f172a;--codet:#e2e8f0;--hl:#fde68a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1218;--side:#151922;--text:#e6e8ec;--muted:#9aa3b2;--line:#262c38;--accent:#60a5fa;--code:#0a0d13;--codet:#e2e8f0;--hl:#854d0e}}
+:root[data-theme="dark"]{--bg:#0f1218;--side:#151922;--text:#e6e8ec;--muted:#9aa3b2;--line:#262c38;--accent:#60a5fa;--code:#0a0d13;--codet:#e2e8f0;--hl:#854d0e}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px);scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.6 system-ui,-apple-system,"Segoe UI",sans-serif;display:flex;min-height:100vh}
+aside{position:sticky;top:0;align-self:flex-start;height:100vh;width:260px;flex:none;background:var(--side);border-right:1px solid var(--line);padding:16px;display:flex;flex-direction:column;gap:12px}
+aside h1{font-size:15px;margin:0}
+#q{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--text);font:inherit;font-size:14px}
+#q:focus{outline:2px solid var(--accent);outline-offset:-1px}
+nav{overflow:auto;flex:1}
+nav a{display:block;padding:6px 10px;border-radius:6px;color:var(--muted);text-decoration:none;font-size:14px}
+nav a:hover{background:var(--line);color:var(--text)}
+nav a.on{color:var(--accent);font-weight:600}
+nav a.hide{display:none}
+#none{display:none;color:var(--muted);font-size:14px;padding:6px 10px}
+main{flex:1;min-width:0;max-width:820px;padding:32px 40px 80px}
+section{padding:8px 0 24px;border-bottom:1px solid var(--line);margin-bottom:24px}
+section.hide{display:none}
+h2{font-size:24px;margin:0 0 8px}
+p{margin:8px 0}
+pre{background:var(--code);color:var(--codet);padding:14px;border-radius:8px;overflow-x:auto;font:13px/1.5 ui-monospace,Menlo,Consolas,monospace;margin:12px 0}
+code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.9em;background:var(--side);padding:1px 5px;border-radius:4px}
+pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;font-size:14px;display:block;overflow-x:auto}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:600}
+.note{border-left:3px solid var(--accent);padding:4px 12px;color:var(--muted);margin:12px 0}
+mark{background:var(--hl);color:inherit;border-radius:2px}
+#tog{display:none}
+@media (max-width:760px){body{display:block}aside{position:static;width:auto;height:auto;border-right:0;border-bottom:1px solid var(--line)}nav{display:flex;flex-wrap:wrap;gap:4px;max-height:130px}main{padding:20px 16px 60px}}
+body{line-height:1.7;-webkit-font-smoothing:antialiased}
+aside{padding:22px 16px}
+aside h1{font-size:16px;letter-spacing:-.01em}
+#q{border-radius:8px;padding:9px 12px;background:var(--bg)}
+nav a{border-left:2px solid transparent;border-radius:0 6px 6px 0;padding:7px 12px;transition:background .15s,color .15s}
+nav a.on{background:color-mix(in srgb,var(--accent) 10%,transparent);border-left-color:var(--accent)}
+main{max-width:880px;padding:48px 48px 96px}
+section{border:1px solid var(--line);border-radius:12px;padding:26px 30px;margin-bottom:22px}
+h2{font-size:26px;letter-spacing:-.02em;margin:0 0 12px}
+h3{font-size:17px;margin:22px 0 6px}
+li{margin:3px 0}
+code{border:1px solid var(--line)}
+pre{position:relative;padding:44px 18px 16px;border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.15);font-size:13.5px;line-height:1.6;tab-size:2}
+pre::before{content:"TypeScript";position:absolute;top:0;left:0;right:0;padding:9px 16px;font:600 11px/1 system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:#94a3b8;background:rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.08)}
+pre code{border:0;color:#d4d4d4}
+pre .k{color:#c586c0}pre .t{color:#4ec9b0}pre .f{color:#dcdcaa}pre .s{color:#ce9178}pre .n{color:#b5cea8}pre .c{color:#6a9955;font-style:italic}
+pre mark{background:#fde68a;color:#111}
+table{border:1px solid var(--line);border-radius:8px}
+th{background:var(--side);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+tr:last-child td{border-bottom:0}
+.note{background:var(--side);border-radius:0 8px 8px 0;padding:10px 14px}
+@media (max-width:760px){main{padding:16px 12px 60px}section{padding:18px 16px}h2{font-size:22px}}
+main{margin:0 auto}
+section{scroll-margin-top:16px}
+pre{overflow:hidden;padding:34px 0 0}
+pre::before{height:34px;line-height:34px;padding:0 16px}
+pre code{display:block;overflow-x:auto;padding:16px 18px}
+table{display:table;width:100%}
+nav a:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+@media (max-width:760px){
+aside{position:sticky;top:0;z-index:5;padding:10px 12px;gap:8px}
+aside h1{display:none}
+nav{display:flex;flex-wrap:nowrap;overflow-x:auto;max-height:none;gap:6px;padding-bottom:2px}
+nav a{white-space:nowrap;flex:none;border:1px solid var(--line);border-radius:999px;padding:5px 12px}
+nav a.on{border-color:var(--accent)}
+section{scroll-margin-top:110px}
+table{display:block;overflow-x:auto}
+}
+.resumo{background:var(--side);border:1px solid var(--line);border-radius:10px;padding:2px 16px;margin:12px 0 20px}
+.resumo p{margin:10px 0}
+.resumo b{color:var(--accent)}
+</style>
+</head>
+<body>
+<aside>
+<h1>Classes em TypeScript</h1>
+<input id="q" type="search" placeholder="Pesquisar…" autocomplete="off" aria-label="Pesquisar">
+<nav id="nav"></nav>
+<div id="none">Nada encontrado.</div>
+</aside>
+<main id="main">
+
+<section id="classe" data-t="Classe">
+<h2>Classe</h2>
+<div class="resumo"><p><b>Em resumo:</b> a classe é a "planta" de um objeto: descreve o que ele tem (atributos) e o que ele faz (métodos). Com <code>new</code> você cria objetos reais a partir dela, e cada um guarda seus próprios valores.</p><p><b>Quando usar:</b> quando vários objetos têm a mesma estrutura (carros, alunos, produtos).</p></div>
+<p>Uma classe é um molde que define <b>propriedades</b> (atributos: características do objeto) e <b>métodos</b> (ações que o objeto pode realizar). Se o objeto é um carro específico, a classe é o projeto do carro.</p>
+<pre><code>class Carro {
+  marca: string;   // atributo
+  modelo: string;  // atributo
+  ano: number;     // atributo
+
+  buzinar() {      // método
+    console.log('Biiii!');
+  }
+}
+
+const meuCarro: Carro = new Carro();
+meuCarro.marca = "Toyota";
+meuCarro.modelo = "Corolla";</code></pre>
+</section>
+
+<section id="construtor" data-t="Construtor">
+<h2>Construtor</h2>
+<div class="resumo"><p><b>Em resumo:</b> roda sozinho no momento do <code>new</code> e já entrega o objeto pronto, com os valores iniciais. Sem ele, seria preciso preencher cada atributo depois de criar o objeto.</p><p><b>Quando usar:</b> sempre que o objeto precisa de dados para existir (nome, idade, marca).</p></div>
+<p>Método especial usado para inicializar objetos quando são criados. Em TypeScript/JavaScript usa a palavra reservada <code>constructor</code>.</p>
+<ul>
+<li>É chamado automaticamente ao criar uma instância.</li>
+<li>Pode receber parâmetros para inicializar os atributos.</li>
+<li>Normalmente não retorna nada (retorna implicitamente o próprio objeto).</li>
+</ul>
+<pre><code>class Pessoa {
+  nome: string;
+  idade: number;
+
+  constructor(nome: string, idade: number) {
+    this.nome = nome;
+    this.idade = idade;
+  }
+}
+
+const pessoa1 = new Pessoa("Ana", 25);
+const pessoa2 = new Pessoa("Joao", 40);</code></pre>
+<h3>2.1 Atalho (opcional)</h3>
+<p>Um modificador antes do parâmetro cria <i>e</i> inicializa a propriedade automaticamente.</p>
+<pre><code>class Carro {
+  constructor(
+    public marca: string,
+    public modelo: string,
+    public velocidade: number = 0
+  ) {}
+}</code></pre>
+</section>
+
+<section id="modificadores" data-t="Modificadores de acesso">
+<h2>Modificadores de acesso</h2>
+<div class="resumo"><p><b>Em resumo:</b> controlam quem pode ver ou alterar cada membro da classe. É assim que se protege os dados (encapsulamento). Sem nenhum modificador, o membro é <code>public</code>.</p><p><b>Quando usar:</b> deixe <code>private</code> o que é interno e abra apenas o necessário.</p></div>
+<p>Definem quem pode acessar os membros de uma classe (propriedades e métodos).</p>
+<table>
+<tr><th>Modificador</th><th>Acesso</th><th>Quando usar</th></tr>
+<tr><td><code>public</code></td><td>Em qualquer lugar</td><td>Interface pública da classe (padrão)</td></tr>
+<tr><td><code>private</code></td><td>Somente dentro da classe</td><td>Dados internos que não devem ser expostos</td></tr>
+<tr><td><code>protected</code></td><td>Dentro da classe e subclasses</td><td>Dados que as filhas precisam acessar</td></tr>
+<tr><td><code>readonly</code></td><td>Leitura em qualquer lugar</td><td>Valores que não devem mudar após a criação</td></tr>
+</table>
+</section>
+
+<section id="readonly" data-t="readonly">
+<h2>readonly</h2>
+<div class="resumo"><p><b>Em resumo:</b> o valor é definido uma vez (na declaração ou no construtor) e nunca mais muda. Tentar alterá-lo gera erro de compilação.</p><p><b>Quando usar:</b> identificadores e dados fixos, como o <code>id</code>.</p></div>
+<p>Permite que uma propriedade seja somente leitura.</p>
+<pre><code>class Produto {
+  readonly id: number;
+  constructor(id: number) {
+    this.id = id;
+  }
+}</code></pre>
+</section>
+
+<section id="static" data-t="static">
+<h2>static</h2>
+<div class="resumo"><p><b>Em resumo:</b> o membro pertence à classe, não ao objeto: existe uma única cópia, compartilhada por todos. Acesse com <code>Classe.membro</code>.</p><p><b>Quando usar:</b> contadores, constantes e funções utilitárias que não dependem de um objeto específico.</p></div>
+<p>Membros estáticos pertencem à <b>classe em si</b>, e não a cada instância. São acessados pelo nome da classe, sem criar um objeto.</p>
+<pre><code>class Contador {
+  static total: number = 0;  // pertence à classe
+  public nome: string;       // pertence à instância
+
+  constructor(nome: string) {
+    this.nome = nome;
+    Contador.total++;
+  }
+
+  static resetar(): void {
+    Contador.total = 0;
+  }
+}
+
+const a = new Contador("Alice");
+const b = new Contador("Bob");
+console.log(Contador.total); // 2
+console.log(a.nome);         // "Alice"</code></pre>
+</section>
+
+<section id="heranca" data-t="Herança">
+<h2>Herança</h2>
+<div class="resumo"><p><b>Em resumo:</b> a classe filha aproveita tudo da classe pai e acrescenta ou muda apenas o que for diferente, evitando código repetido. Vale a relação "é um": um Carro <i>é um</i> Veículo.</p><p><b>Quando usar:</b> quando a relação "é um" faz sentido. Se for "tem um", use um atributo.</p></div>
+<p>Uma classe filha (subclasse) herda propriedades e métodos de uma classe pai (superclasse). É a base do princípio "não repita a si mesmo". Use <code>extends</code> para herdar e <code>super()</code> para chamar o construtor do pai.</p>
+<div class="note">Analogia: um filho herda características do pai, mas pode ter as suas próprias ou modificar as herdadas.</div>
+<pre><code>class Veiculo {
+  constructor(
+    public marca: string,
+    protected velocidade: number = 0
+  ) {}
+
+  acelerar(v: number): void {
+    this.velocidade += v;
+  }
+
+  descrever(): string {
+    return `${this.marca} a ${this.velocidade} km/h`;
+  }
+}
+
+class Carro extends Veiculo {
+  constructor(marca: string, public portas: number) {
+    super(marca); // OBRIGATÓRIO: chama o construtor do pai
+  }
+
+  buzinar(): void {
+    console.log("Biiiiip!");
+  }
+}
+
+const carro = new Carro("Toyota", 4);
+carro.acelerar(80);  // herdado do pai
+carro.buzinar();     // próprio do Carro
+console.log(carro.descrever()); // "Toyota a 80 km/h"</code></pre>
+</section>
+
+<section id="super" data-t="super()">
+<h2>super()</h2>
+<div class="resumo"><p><b>Em resumo:</b> <code>super</code> é o atalho para a classe pai. <code>super(...)</code> executa o construtor do pai; <code>super.metodo()</code> chama a versão do pai de um método.</p><p><b>Quando usar:</b> no construtor da filha (obrigatório, antes do <code>this</code>) e para completar o método do pai em vez de substituí-lo.</p></div>
+<p><code>super</code> é uma referência à classe pai. Use <code>super()</code> para chamar o constructor do pai e <code>super.metodo()</code> para chamar um método do pai dentro da filha.</p>
+<div class="note"><b>Regra de ouro:</b> se a classe filha tem um constructor, ela precisa chamar <code>super()</code> antes de usar <code>this</code>. Sem isso, o TypeScript dá erro de compilação.</div>
+<pre><code>class Veiculo {
+  marca: string;
+  ano: number;
+  constructor(marca: string, ano: number) {
+    this.marca = marca;
+    this.ano = ano;
+  }
+  descrever(): string {
+    return `${this.marca} (${this.ano})`;
+  }
+}
+
+class Carro extends Veiculo {
+  portas: number;
+  constructor(marca: string, ano: number, portas: number) {
+    super(marca, ano);   // chama o constructor do pai
+    this.portas = portas; // só pode usar this DEPOIS do super()
+  }
+  descrever(): string {
+    return super.descrever() + ` - ${this.portas} portas`;
+  }
+}</code></pre>
+</section>
+
+<section id="override" data-t="override">
+<h2>override</h2>
+<div class="resumo"><p><b>Em resumo:</b> a filha troca um método herdado por uma versão própria. A palavra <code>override</code> declara essa intenção: se o método não existir no pai (por exemplo, erro de digitação), o compilador avisa.</p><p><b>Quando usar:</b> sempre que reescrever um método do pai.</p></div>
+<p>Quando uma subclasse reescreve um método que já existe na classe pai, isso se chama <b>sobrescrita</b>. A palavra-chave <code>override</code> torna a intenção explícita e protege contra erros: o compilador avisa se o método não existe no pai.</p>
+<div class="note">Analogia: você recebeu a receita de bolo da vó e usa <code>override</code> para mudar o recheio.</div>
+<pre><code>class Animal {
+  falar(): string { return "..."; }
+}
+
+class Cachorro extends Animal {
+  override falar(): string { return "Au!"; }
+}</code></pre>
+</section>
+
+<section id="abstract" data-t="abstract">
+<h2>abstract</h2>
+<div class="resumo"><p><b>Em resumo:</b> é uma classe incompleta de propósito. Define o que as filhas são obrigadas a ter (método abstrato) e pode trazer código já pronto. Não é possível usar <code>new</code> nela.</p><p><b>Quando usar:</b> quando várias classes têm uma base comum, mas cada uma faz uma parte do seu jeito (ex.: <code>calcularArea</code> de cada forma).</p></div>
+<p>Classes e métodos abstratos definem um <b>contrato</b> que as subclasses devem implementar. Não é possível criar instâncias diretas de uma classe abstrata: ela serve como molde.</p>
+<div class="note">Analogia: uma receita "abstrata" diz que você precisa de <code>misturar()</code> e <code>assar()</code>, mas não define como. Cada receita concreta implementa do seu jeito.</div>
+<pre><code>abstract class Forma {
+  // Método abstrato: subclasses DEVEM implementar
+  abstract calcularArea(): number;
+
+  // Método concreto: herdado por todos
+  descrever(): string {
+    return `Área: ${this.calcularArea()}`;
+  }
+}
+
+class Circulo extends Forma {
+  constructor(private raio: number) { super(); }
+
+  calcularArea(): number { // obrigatório!
+    return Math.PI * this.raio ** 2;
+  }
+}</code></pre>
+</section>
+
+<section id="interface" data-t="Interface">
+<h2>Interface</h2>
+<div class="resumo"><p><b>Em resumo:</b> é uma lista do que um objeto precisa ter (propriedades e métodos), sem código. Quem implementa a interface é obrigado a cumprir a lista.</p><p><b>Quando usar:</b> para descrever o formato de dados e para garantir que classes sem parentesco ofereçam os mesmos métodos.</p></div>
+<p>Uma interface define o <b>formato</b> de um objeto ou classe: quais propriedades e métodos ele deve ter, sem implementar nada. Uma classe usa <code>implements</code> para assumir esse contrato e o compilador exige que todos os membros existam.</p>
+<ul>
+<li>Existe só em tempo de compilação: não gera código JavaScript.</li>
+<li>Propriedades opcionais usam <code>?</code>, e também é possível usar <code>readonly</code>.</li>
+<li>Uma classe pode implementar várias interfaces.</li>
+</ul>
+<pre><code>interface Pessoa {
+  readonly id: number;
+  nome: string;
+  email?: string;      // opcional
+  saudar(): string;
+}
+
+class Aluno implements Pessoa {
+  constructor(public readonly id: number, public nome: string) {}
+
+  saudar(): string {
+    return `Olá, ${this.nome}!`;
+  }
+}
+
+function apresentar(p: Pessoa): void {
+  console.log(p.saudar());
+}
+
+apresentar(new Aluno(1, "Ana"));</code></pre>
+<h3>Várias interfaces</h3>
+<pre><code>interface Voador { voar(): void; }
+interface Nadador { nadar(): void; }
+
+class Pato implements Voador, Nadador {
+  voar(): void { console.log("Voando"); }
+  nadar(): void { console.log("Nadando"); }
+}</code></pre>
+<h3>Interface x classe abstrata</h3>
+<table>
+<tr><th>Interface</th><th>Classe abstrata</th></tr>
+<tr><td>Só descreve o contrato, sem código</td><td>Pode ter métodos já implementados</td></tr>
+<tr><td>Uma classe implementa várias</td><td>Uma classe herda de apenas uma</td></tr>
+<tr><td>Não existe em tempo de execução</td><td>Existe em tempo de execução</td></tr>
+</table>
+</section>
+
+<section id="enum" data-t="Enum">
+<h2>Enum</h2>
+<div class="resumo"><p><b>Em resumo:</b> dá nomes legíveis a um conjunto fixo de valores. <code>Status.Ativo</code> é mais claro e seguro do que usar o número 1 ou o texto "ativo" solto pelo código.</p><p><b>Quando usar:</b> status, tipos e categorias com opções limitadas.</p></div>
+<p>Um enum é um conjunto de <b>constantes nomeadas</b>. Serve para representar valores fixos (status, direções, perfis) de forma legível e segura, no lugar de números ou textos soltos.</p>
+<h3>Enum numérico</h3>
+<p>Por padrão os valores começam em 0 e aumentam de 1 em 1.</p>
+<pre><code>enum Status {
+  Pendente,   // 0
+  Ativo,      // 1
+  Cancelado   // 2
+}
+
+let s: Status = Status.Ativo;
+console.log(s);          // 1
+console.log(Status[1]);  // "Ativo"</code></pre>
+<div class="note">Apenas enums numéricos permitem buscar o nome pelo valor (<code>Status[1]</code>).</div>
+<h3>Enum de strings</h3>
+<pre><code>enum Direcao {
+  Cima = "CIMA",
+  Baixo = "BAIXO"
+}
+
+console.log(Direcao.Cima); // "CIMA"</code></pre>
+<h3>Uso em classes</h3>
+<pre><code>class Pedido {
+  constructor(public status: Status = Status.Pendente) {}
+
+  cancelar(): void {
+    this.status = Status.Cancelado;
+  }
+}</code></pre>
+</section>
+
+<section id="condicionais" data-t="Condicionais">
+<h2>Condicionais</h2>
+<div class="resumo"><p><b>Em resumo:</b> fazem o programa tomar decisões: um trecho só executa se a condição for verdadeira.</p><p><b>Quando usar:</b> <code>if</code> para decisões em geral; ternário para escolher entre dois valores em uma linha; <code>switch</code> para comparar uma variável com vários valores exatos.</p></div>
+<p>Controlam qual trecho do código será executado, de acordo com uma condição.</p>
+<h3>if / else if / else</h3>
+<pre><code>const nota: number = 7;
+
+if (nota >= 7) {
+  console.log("Aprovado");
+} else if (nota >= 5) {
+  console.log("Recuperação");
+} else {
+  console.log("Reprovado");
+}</code></pre>
+<h3>If ternário</h3>
+<p>Forma curta de um <code>if / else</code> que devolve um valor: <code>condição ? seVerdadeiro : seFalso</code>.</p>
+<pre><code>const situacao = nota >= 7 ? "Aprovado" : "Reprovado";
+console.log(situacao);</code></pre>
+<h3>switch / case</h3>
+<p>Compara um valor com vários casos. Use <code>break</code> para encerrar cada caso e <code>default</code> para os demais valores.</p>
+<pre><code>const dia: number = 2;
+
+switch (dia) {
+  case 1:
+    console.log("Domingo");
+    break;
+  case 2:
+    console.log("Segunda");
+    break;
+  default:
+    console.log("Outro dia");
+}</code></pre>
+<div class="note">Sem o <code>break</code>, a execução "cai" para o próximo <code>case</code>.</div>
+</section>
+
+<section id="operadores" data-t="Operadores ?? e ?.">
+<h2>Operadores ?? e ?</h2>
+<div class="resumo"><p><b>Em resumo:</b> dois atalhos para valores que podem não existir. <code>??</code> define um valor padrão; <code>?.</code> evita erro ao acessar algo que pode estar ausente.</p><p><b>Quando usar:</b> com dados opcionais ou vindos de fora, como API e formulários.</p></div>
+<h3>?? (coalescência nula)</h3>
+<p>Devolve o valor da direita somente se o da esquerda for <code>null</code> ou <code>undefined</code>. Diferente do <code>||</code>, ele mantém valores como <code>0</code> e <code>""</code>.</p>
+<pre><code>const nome: string | null = null;
+console.log(nome ?? "Sem nome");  // "Sem nome"
+
+const qtd: number = 0;
+console.log(qtd ?? 10);  // 0
+console.log(qtd || 10);  // 10</code></pre>
+<h3>?. (encadeamento opcional)</h3>
+<p>Acessa uma propriedade ou método apenas se o objeto existir. Se não existir, o resultado é <code>undefined</code>, sem erro.</p>
+<pre><code>interface Usuario {
+  nome: string;
+  endereco?: { cidade: string };
+}
+
+const u: Usuario = { nome: "Ana" };
+console.log(u.endereco?.cidade);                // undefined
+console.log(u.endereco?.cidade ?? "Não informada");</code></pre>
+<h3>? em propriedades e parâmetros</h3>
+<p>O <code>?</code> depois do nome marca o item como opcional.</p>
+<pre><code>function saudar(nome: string, titulo?: string): string {
+  return titulo ? `${titulo} ${nome}` : nome;
+}</code></pre>
+</section>
+
+<section id="lacos" data-t="Laços de repetição">
+<h2>Laços de repetição</h2>
+<div class="resumo"><p><b>Em resumo:</b> repetem um trecho de código sem precisar escrevê-lo várias vezes.</p><p><b>Quando usar:</b> <code>for</code> quando sabe quantas vezes repetir; <code>for...of</code> para percorrer uma lista; <code>while</code> para repetir até uma condição mudar; <code>do while</code> quando precisa executar ao menos uma vez.</p></div>
+<p>Repetem um bloco de código enquanto uma condição for verdadeira ou para cada item de uma coleção.</p>
+<h3>for</h3>
+<pre><code>for (let i = 0; i < 5; i++) {
+  console.log(i);  // 0, 1, 2, 3, 4
+}</code></pre>
+<h3>for...of</h3>
+<pre><code>const frutas: string[] = ["maçã", "uva", "pera"];
+
+for (const fruta of frutas) {
+  console.log(fruta);
+}</code></pre>
+<h3>while</h3>
+<p>Testa a condição <b>antes</b> de cada repetição.</p>
+<pre><code>let n = 0;
+while (n < 3) {
+  console.log(n);
+  n++;
+}</code></pre>
+<h3>do while</h3>
+<p>Testa a condição <b>depois</b>, então executa pelo menos uma vez.</p>
+<pre><code>let m = 10;
+do {
+  console.log(m);  // executa uma vez
+  m++;
+} while (m < 3);</code></pre>
+<div class="note"><code>break</code> encerra o laço e <code>continue</code> pula para a próxima repetição.</div>
+</section>
+
+<section id="arrays" data-t="forEach, map e filter">
+<h2>forEach, map e filter</h2>
+<div class="resumo"><p><b>Em resumo:</b> percorrem uma lista aplicando uma função a cada item. <code>forEach</code> apenas executa; <code>map</code> transforma; <code>filter</code> seleciona. <code>map</code> e <code>filter</code> não alteram o array original: devolvem um novo.</p><p><b>Quando usar:</b> <code>forEach</code> para efeitos (exibir, salvar); <code>map</code> para criar uma lista transformada; <code>filter</code> para escolher itens.</p></div>
+<p>Métodos de array que percorrem os itens usando uma função (callback).</p>
+<table>
+<tr><th>Método</th><th>O que faz</th><th>Retorno</th></tr>
+<tr><td><code>forEach</code></td><td>Executa uma ação para cada item</td><td><code>void</code></td></tr>
+<tr><td><code>map</code></td><td>Transforma cada item</td><td>Novo array do mesmo tamanho</td></tr>
+<tr><td><code>filter</code></td><td>Mantém só os itens que passam no teste</td><td>Novo array, igual ou menor</td></tr>
+</table>
+<pre><code>const numeros: number[] = [1, 2, 3, 4, 5, 6];
+
+numeros.forEach((n) => console.log(n));
+
+const dobro = numeros.map((n) => n * 2);
+// [2, 4, 6, 8, 10, 12]
+
+const pares = numeros.filter((n) => n % 2 === 0);
+// [2, 4, 6]
+
+// Encadeando
+const resultado = numeros
+  .filter((n) => n > 2)
+  .map((n) => n * 10);
+// [30, 40, 50, 60]</code></pre>
+</section>
+
+</main>
+<script>
+(function(){
+  var KW=/^(class|extends|constructor|public|private|protected|readonly|static|abstract|override|super|this|new|const|return|interface|enum|implements|if|else|switch|case|break|continue|default|for|of|while|do|let|null|undefined|true|false)$/,TY=/^(string|number|boolean|void)$/;
+  function e(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function hl(s){var re=/(\/\/[^\n]*)|(`[^`]*`|"[^"\n]*"|'[^'\n]*')|(\b\d+(?:\.\d+)?\b)|(\b[A-Za-z_]\w*\b)/g,o='',l=0,m,c,t;
+    while((m=re.exec(s))){o+=e(s.slice(l,m.index));t=m[0];c=null;
+      if(m[1])c='c';else if(m[2])c='s';else if(m[3])c='n';else if(KW.test(t))c='k';else if(TY.test(t)||/^[A-Z]/.test(t))c='t';else if(s.charAt(re.lastIndex)==='(')c='f';
+      o+=c?'<span class="'+c+'">'+e(t)+'</span>':e(t);l=re.lastIndex;}
+    return o+e(s.slice(l));}
+  [].forEach.call(document.querySelectorAll('pre code'),function(c){c.innerHTML=hl(c.textContent);});
+  var secs=[].slice.call(document.querySelectorAll('section'));
+  var nav=document.getElementById('nav'),q=document.getElementById('q'),none=document.getElementById('none');
+  var links=secs.map(function(s,i){var h=s.querySelector('h2');h.textContent=(i+1)+'. '+h.textContent;
+    var a=document.createElement('a');a.href='#'+s.id;a.textContent=(i+1)+'. '+s.dataset.t;nav.appendChild(a);return a;
+  });
+  secs.forEach(function(s){s._html=s.innerHTML;});
+  function esc(t){return t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');}
+  function filter(){
+    var v=q.value.trim().toLowerCase(),shown=0;
+    secs.forEach(function(s,i){
+      s.innerHTML=s._html;
+      var ok=!v||s.textContent.toLowerCase().indexOf(v)>-1;
+      s.classList.toggle('hide',!ok);links[i].classList.toggle('hide',!ok);
+      if(ok){shown++;if(v){
+        var re=new RegExp(esc(v),'gi'),w=document.createTreeWalker(s,NodeFilter.SHOW_TEXT),nodes=[],n;
+        while((n=w.nextNode()))if(re.test(n.nodeValue))nodes.push(n);
+        nodes.forEach(function(t){
+          var sp=document.createElement('span');
+          sp.innerHTML=t.nodeValue.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(re,function(m){return '<mark>'+m+'</mark>';});
+          t.parentNode.replaceChild(sp,t);
+        });
+      }}
+    });
+    none.style.display=shown?'none':'block';
+  }
+  q.addEventListener('input',filter);
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(e){if(e.isIntersecting){links.forEach(function(l){var on=l.getAttribute('href')==='#'+e.target.id;l.classList.toggle('on',on);if(on&&innerWidth>760){var t=l.offsetTop-nav.offsetTop;if(t<nav.scrollTop||t>nav.scrollTop+nav.clientHeight-40)nav.scrollTop=t-60;}});}});
+  },{rootMargin:'0px 0px -70% 0px'});
+  secs.forEach(function(s){io.observe(s);});
+})();
+</script>
+</body>
+</html>
