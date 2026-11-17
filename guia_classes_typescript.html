@@ -77,12 +77,36 @@ table{display:block;overflow-x:auto}
 .resumo{background:var(--side);border:1px solid var(--line);border-radius:10px;padding:2px 16px;margin:12px 0 20px}
 .resumo p{margin:10px 0}
 .resumo b{color:var(--accent)}
+.dg{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:12px;margin:16px 0;padding:18px;background:var(--side);border:1px solid var(--line);border-radius:10px;font-size:14px}
+.bx{border:1.5px solid var(--accent);border-radius:8px;padding:8px 14px;text-align:center;background:var(--bg);font-weight:600}
+.bx small{display:block;font-weight:400;color:var(--muted);font-size:12px;line-height:1.4;margin-top:2px}
+.bx.dash{border-style:dashed}.bx.ok{border-color:#16a34a}.bx.no{border-color:#dc2626}
+.ar{color:var(--muted);font-size:13px;text-align:center;line-height:1.3}
+.col{display:flex;flex-direction:column;gap:10px;align-items:center}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:center}
+.anim section{opacity:0;transform:translateY(16px);transition:opacity .5s ease,transform .5s ease}
+.anim section.in{opacity:1;transform:none}
+.anim section.in .bx{animation:pop .5s cubic-bezier(.2,.8,.3,1.2) backwards}
+.anim section.in .bx:nth-child(2){animation-delay:.12s}
+.anim section.in .bx:nth-child(3){animation-delay:.24s}
+.anim section.in .bx:nth-child(4){animation-delay:.36s}
+.anim section.in .ar{animation:fade .5s .35s backwards,pulse 2s 1.2s ease-in-out infinite}
+.bx{transition:transform .2s,box-shadow .2s}
+.bx:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.15)}
+.spin{display:inline-block;animation:spin 2.5s linear infinite}
+section:target{animation:flash 1.2s ease-out}
+@keyframes pop{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes pulse{50%{opacity:.4}}
+@keyframes spin{to{transform:rotate(-360deg)}}
+@keyframes flash{from{box-shadow:0 0 0 4px color-mix(in srgb,var(--accent) 45%,transparent)}to{box-shadow:0 0 0 0 transparent}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.anim section{opacity:1!important;transform:none!important}}
 </style>
 </head>
 <body>
 <aside>
 <h1>Classes em TypeScript</h1>
-<input id="q" type="search" placeholder="Pesquisar…" autocomplete="off" aria-label="Pesquisar">
+<input id="q" type="search" placeholder="Pesquisar…  ( / )" autocomplete="off" aria-label="Pesquisar">
 <nav id="nav"></nav>
 <div id="none">Nada encontrado.</div>
 </aside>
@@ -91,6 +115,8 @@ table{display:block;overflow-x:auto}
 <section id="classe" data-t="Classe">
 <h2>Classe</h2>
 <div class="resumo"><p><b>Em resumo:</b> a classe é a "planta" de um objeto: descreve o que ele tem (atributos) e o que ele faz (métodos). Com <code>new</code> você cria objetos reais a partir dela, e cada um guarda seus próprios valores.</p><p><b>Quando usar:</b> quando vários objetos têm a mesma estrutura (carros, alunos, produtos).</p></div>
+<div class="dg"><div class="bx dash">Classe Carro<small>marca · modelo · ano<br>buzinar()</small></div><div class="ar">new<br>→</div><div class="col"><div class="bx">meuCarro<small>Toyota · Corolla</small></div><div class="bx">outroCarro<small>Honda · Civic</small></div></div></div>
+<p>A classe é escrita uma vez. Cada <code>new</code> cria um objeto independente, com a mesma estrutura e valores próprios: mudar a marca de um carro não afeta o outro.</p>
 <p>Uma classe é um molde que define <b>propriedades</b> (atributos: características do objeto) e <b>métodos</b> (ações que o objeto pode realizar). Se o objeto é um carro específico, a classe é o projeto do carro.</p>
 <pre><code>class Carro {
   marca: string;   // atributo
@@ -110,6 +136,7 @@ meuCarro.modelo = "Corolla";</code></pre>
 <section id="construtor" data-t="Construtor">
 <h2>Construtor</h2>
 <div class="resumo"><p><b>Em resumo:</b> roda sozinho no momento do <code>new</code> e já entrega o objeto pronto, com os valores iniciais. Sem ele, seria preciso preencher cada atributo depois de criar o objeto.</p><p><b>Quando usar:</b> sempre que o objeto precisa de dados para existir (nome, idade, marca).</p></div>
+<p><b>Passo a passo:</b> (1) <code>new Pessoa("Ana", 25)</code> cria um objeto vazio; (2) o <code>constructor</code> é chamado com "Ana" e 25; (3) <code>this.nome = nome</code> copia o parâmetro para o atributo. O <code>this</code> é o próprio objeto que está sendo criado.</p>
 <p>Método especial usado para inicializar objetos quando são criados. Em TypeScript/JavaScript usa a palavra reservada <code>constructor</code>.</p>
 <ul>
 <li>É chamado automaticamente ao criar uma instância.</li>
@@ -142,6 +169,7 @@ const pessoa2 = new Pessoa("Joao", 40);</code></pre>
 <section id="modificadores" data-t="Modificadores de acesso">
 <h2>Modificadores de acesso</h2>
 <div class="resumo"><p><b>Em resumo:</b> controlam quem pode ver ou alterar cada membro da classe. É assim que se protege os dados (encapsulamento). Sem nenhum modificador, o membro é <code>public</code>.</p><p><b>Quando usar:</b> deixe <code>private</code> o que é interno e abra apenas o necessário.</p></div>
+<div class="note"><b>Erro comum:</b> acessar um membro <code>private</code> de fora da classe (<code>conta.saldo</code>) gera erro de compilação. Crie um método público (como <code>getSaldo()</code>) para expor o dado de forma controlada.</div>
 <p>Definem quem pode acessar os membros de uma classe (propriedades e métodos).</p>
 <table>
 <tr><th>Modificador</th><th>Acesso</th><th>Quando usar</th></tr>
@@ -191,6 +219,8 @@ console.log(a.nome);         // "Alice"</code></pre>
 <section id="heranca" data-t="Herança">
 <h2>Herança</h2>
 <div class="resumo"><p><b>Em resumo:</b> a classe filha aproveita tudo da classe pai e acrescenta ou muda apenas o que for diferente, evitando código repetido. Vale a relação "é um": um Carro <i>é um</i> Veículo.</p><p><b>Quando usar:</b> quando a relação "é um" faz sentido. Se for "tem um", use um atributo.</p></div>
+<div class="dg"><div class="col"><div class="bx">Veiculo<small>marca · velocidade<br>acelerar() · descrever()</small></div><div class="ar">▲ extends</div><div class="row"><div class="bx">Carro<small>+ portas · buzinar()</small></div><div class="bx">Moto<small>+ cilindradas</small></div></div></div></div>
+<p>A seta aponta de quem herda para quem é herdado. <code>Carro</code> e <code>Moto</code> recebem tudo de <code>Veiculo</code> e declaram apenas o que é novo. Mudar algo em <code>Veiculo</code> vale para todas as filhas.</p>
 <p>Uma classe filha (subclasse) herda propriedades e métodos de uma classe pai (superclasse). É a base do princípio "não repita a si mesmo". Use <code>extends</code> para herdar e <code>super()</code> para chamar o construtor do pai.</p>
 <div class="note">Analogia: um filho herda características do pai, mas pode ter as suas próprias ou modificar as herdadas.</div>
 <pre><code>class Veiculo {
@@ -227,6 +257,7 @@ console.log(carro.descrever()); // "Toyota a 80 km/h"</code></pre>
 <section id="super" data-t="super()">
 <h2>super()</h2>
 <div class="resumo"><p><b>Em resumo:</b> <code>super</code> é o atalho para a classe pai. <code>super(...)</code> executa o construtor do pai; <code>super.metodo()</code> chama a versão do pai de um método.</p><p><b>Quando usar:</b> no construtor da filha (obrigatório, antes do <code>this</code>) e para completar o método do pai em vez de substituí-lo.</p></div>
+<div class="note"><b>Erro comum:</b> usar <code>this</code> antes de chamar <code>super()</code> no construtor da filha. O objeto só é montado depois que o pai é construído, então o TypeScript bloqueia.</div>
 <p><code>super</code> é uma referência à classe pai. Use <code>super()</code> para chamar o constructor do pai e <code>super.metodo()</code> para chamar um método do pai dentro da filha.</p>
 <div class="note"><b>Regra de ouro:</b> se a classe filha tem um constructor, ela precisa chamar <code>super()</code> antes de usar <code>this</code>. Sem isso, o TypeScript dá erro de compilação.</div>
 <pre><code>class Veiculo {
@@ -270,6 +301,8 @@ class Cachorro extends Animal {
 <section id="abstract" data-t="abstract">
 <h2>abstract</h2>
 <div class="resumo"><p><b>Em resumo:</b> é uma classe incompleta de propósito. Define o que as filhas são obrigadas a ter (método abstrato) e pode trazer código já pronto. Não é possível usar <code>new</code> nela.</p><p><b>Quando usar:</b> quando várias classes têm uma base comum, mas cada uma faz uma parte do seu jeito (ex.: <code>calcularArea</code> de cada forma).</p></div>
+<div class="dg"><div class="col"><div class="bx dash">«abstract» Forma<small>calcularArea() → sem código<br>descrever() → já pronto</small></div><div class="ar">▲ extends</div><div class="row"><div class="bx">Circulo<small>implementa calcularArea()</small></div><div class="bx">Retangulo<small>implementa calcularArea()</small></div></div></div></div>
+<p>A classe abstrata fixa a regra ("toda forma calcula sua área") e já entrega o que é comum (<code>descrever</code>). Cada filha completa a parte que é só dela. Se uma filha esquecer de implementar o método abstrato, o compilador dá erro.</p>
 <p>Classes e métodos abstratos definem um <b>contrato</b> que as subclasses devem implementar. Não é possível criar instâncias diretas de uma classe abstrata: ela serve como molde.</p>
 <div class="note">Analogia: uma receita "abstrata" diz que você precisa de <code>misturar()</code> e <code>assar()</code>, mas não define como. Cada receita concreta implementa do seu jeito.</div>
 <pre><code>abstract class Forma {
@@ -294,6 +327,8 @@ class Circulo extends Forma {
 <section id="interface" data-t="Interface">
 <h2>Interface</h2>
 <div class="resumo"><p><b>Em resumo:</b> é uma lista do que um objeto precisa ter (propriedades e métodos), sem código. Quem implementa a interface é obrigado a cumprir a lista.</p><p><b>Quando usar:</b> para descrever o formato de dados e para garantir que classes sem parentesco ofereçam os mesmos métodos.</p></div>
+<div class="dg"><div class="bx dash">«interface» Pessoa<small>id · nome · saudar()</small></div><div class="ar">◀ implements</div><div class="col"><div class="bx">Aluno</div><div class="bx">Professor</div></div></div>
+<p>A interface é só a lista de exigências. <code>Aluno</code> e <code>Professor</code> não precisam ter parentesco entre si: basta cumprirem o contrato.</p>
 <p>Uma interface define o <b>formato</b> de um objeto ou classe: quais propriedades e métodos ele deve ter, sem implementar nada. Uma classe usa <code>implements</code> para assumir esse contrato e o compilador exige que todos os membros existam.</p>
 <ul>
 <li>Existe só em tempo de compilação: não gera código JavaScript.</li>
@@ -340,6 +375,7 @@ class Pato implements Voador, Nadador {
 <section id="enum" data-t="Enum">
 <h2>Enum</h2>
 <div class="resumo"><p><b>Em resumo:</b> dá nomes legíveis a um conjunto fixo de valores. <code>Status.Ativo</code> é mais claro e seguro do que usar o número 1 ou o texto "ativo" solto pelo código.</p><p><b>Quando usar:</b> status, tipos e categorias com opções limitadas.</p></div>
+<div class="note"><b>Por que não usar números soltos?</b> Com <code>status === 1</code> ninguém sabe o que o 1 significa. Com <code>status === Status.Ativo</code> o código se explica e o compilador impede valores inválidos.</div>
 <p>Um enum é um conjunto de <b>constantes nomeadas</b>. Serve para representar valores fixos (status, direções, perfis) de forma legível e segura, no lugar de números ou textos soltos.</p>
 <h3>Enum numérico</h3>
 <p>Por padrão os valores começam em 0 e aumentam de 1 em 1.</p>
@@ -373,6 +409,8 @@ console.log(Direcao.Cima); // "CIMA"</code></pre>
 <section id="condicionais" data-t="Condicionais">
 <h2>Condicionais</h2>
 <div class="resumo"><p><b>Em resumo:</b> fazem o programa tomar decisões: um trecho só executa se a condição for verdadeira.</p><p><b>Quando usar:</b> <code>if</code> para decisões em geral; ternário para escolher entre dois valores em uma linha; <code>switch</code> para comparar uma variável com vários valores exatos.</p></div>
+<div class="dg"><div class="bx">nota ≥ 7 ?</div><div class="col"><div class="row"><span class="ar">sim →</span><div class="bx ok">Aprovado</div></div><div class="row"><span class="ar">não →</span><div class="bx">nota ≥ 5 ?</div><div class="col"><div class="row"><span class="ar">sim →</span><div class="bx ok">Recuperação</div></div><div class="row"><span class="ar">não →</span><div class="bx no">Reprovado</div></div></div></div></div></div>
+<p>As condições são testadas de cima para baixo e o primeiro caso verdadeiro vence. Por isso a ordem importa: teste o caso mais específico primeiro.</p>
 <p>Controlam qual trecho do código será executado, de acordo com uma condição.</p>
 <h3>if / else if / else</h3>
 <pre><code>const nota: number = 7;
@@ -436,6 +474,8 @@ console.log(u.endereco?.cidade ?? "Não informada");</code></pre>
 <section id="lacos" data-t="Laços de repetição">
 <h2>Laços de repetição</h2>
 <div class="resumo"><p><b>Em resumo:</b> repetem um trecho de código sem precisar escrevê-lo várias vezes.</p><p><b>Quando usar:</b> <code>for</code> quando sabe quantas vezes repetir; <code>for...of</code> para percorrer uma lista; <code>while</code> para repetir até uma condição mudar; <code>do while</code> quando precisa executar ao menos uma vez.</p></div>
+<div class="dg"><div class="bx">condição ?</div><div class="ar">sim →</div><div class="bx ok">executa o bloco</div><div class="ar"><span class="spin">↺</span> volta à condição</div><div class="ar">não →</div><div class="bx no">sai do laço</div></div>
+<p>O laço repete o ciclo "testa a condição → executa → volta" até a condição ficar falsa. Se nada dentro do bloco mudar a condição (como o <code>n++</code>), o laço nunca termina (laço infinito).</p>
 <p>Repetem um bloco de código enquanto uma condição for verdadeira ou para cada item de uma coleção.</p>
 <h3>for</h3>
 <pre><code>for (let i = 0; i < 5; i++) {
@@ -467,6 +507,9 @@ do {
 <section id="arrays" data-t="forEach, map e filter">
 <h2>forEach, map e filter</h2>
 <div class="resumo"><p><b>Em resumo:</b> percorrem uma lista aplicando uma função a cada item. <code>forEach</code> apenas executa; <code>map</code> transforma; <code>filter</code> seleciona. <code>map</code> e <code>filter</code> não alteram o array original: devolvem um novo.</p><p><b>Quando usar:</b> <code>forEach</code> para efeitos (exibir, salvar); <code>map</code> para criar uma lista transformada; <code>filter</code> para escolher itens.</p></div>
+<div class="dg"><div class="bx">[1, 2, 3, 4, 5, 6]</div><div class="ar">filter<br>n % 2 === 0<br>→</div><div class="bx">[2, 4, 6]</div><div class="ar">map<br>n × 10<br>→</div><div class="bx">[20, 40, 60]</div></div>
+<p>Cada etapa recebe um array e devolve um novo, sem alterar o original. Isso permite encadear: primeiro selecione com <code>filter</code>, depois transforme com <code>map</code>.</p>
+<div class="note"><b>Erro comum:</b> usar <code>map</code> só para exibir itens. Se você não usa a lista devolvida, use <code>forEach</code>.</div>
 <p>Métodos de array que percorrem os itens usando uma função (callback).</p>
 <table>
 <tr><th>Método</th><th>O que faz</th><th>Retorno</th></tr>
@@ -528,10 +571,14 @@ const resultado = numeros
     none.style.display=shown?'none':'block';
   }
   q.addEventListener('input',filter);
+  document.addEventListener('keydown',function(ev){if(ev.key==='/'&&document.activeElement!==q){ev.preventDefault();q.focus();}if(ev.key==='Escape'&&document.activeElement===q){q.value='';filter();q.blur();}});
   var io=new IntersectionObserver(function(es){
     es.forEach(function(e){if(e.isIntersecting){links.forEach(function(l){var on=l.getAttribute('href')==='#'+e.target.id;l.classList.toggle('on',on);if(on&&innerWidth>760){var t=l.offsetTop-nav.offsetTop;if(t<nav.scrollTop||t>nav.scrollTop+nav.clientHeight-40)nav.scrollTop=t-60;}});}});
   },{rootMargin:'0px 0px -70% 0px'});
   secs.forEach(function(s){io.observe(s);});
+  document.documentElement.classList.add('anim');
+  var rv=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');rv.unobserve(e.target);}});},{threshold:.08});
+  secs.forEach(function(s){rv.observe(s);});
 })();
 </script>
 </body>
